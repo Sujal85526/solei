@@ -11,16 +11,16 @@ Phase 1 milestones (one branch + PR each, in order). See `docs/BUILD_PROMPT.md` 
 | 4 | `feat/admin-auth-staff` | ✅ merged | [#5](https://github.com/Sujal85526/solei/pull/5) |
 | 5 | `feat/admin-catalog-inventory` | ✅ merged | [#8](https://github.com/Sujal85526/solei/pull/8) |
 | 6 | `feat/storefront-shop-cart` | ✅ merged | [#7](https://github.com/Sujal85526/solei/pull/7) |
-| 7 | `feat/checkout-payments` | 🔄 in review | |
+| 7 | `feat/checkout-payments` | ✅ merged | [#9](https://github.com/Sujal85526/solei/pull/9) |
 | 8 | `feat/orders-admin-notifications` | ✅ merged | [#14](https://github.com/Sujal85526/solei/pull/14) |
-| 9 | `feat/manual-orders-payment-links` | 🔄 in review |  |
+| 9 | `feat/manual-orders-payment-links` | ✅ merged | [#17](https://github.com/Sujal85526/solei/pull/17) |
 | 10 | `feat/customers` | ✅ merged | [#15](https://github.com/Sujal85526/solei/pull/15) |
 | 11 | `feat/event-calendar` | ✅ merged | [#10](https://github.com/Sujal85526/solei/pull/10) |
 | 12 | `feat/event-pos` | ✅ merged | [#20](https://github.com/Sujal85526/solei/pull/20) |
-| 13 | `feat/event-reports` | 🔄 in review | |
+| 13 | `feat/event-reports` | ✅ merged | [#18](https://github.com/Sujal85526/solei/pull/18) |
 | 14 | `feat/event-booking` | ✅ merged | [#16](https://github.com/Sujal85526/solei/pull/16) |
 | 15 | `feat/loyalty-passport` | ✅ merged | [#19](https://github.com/Sujal85526/solei/pull/19) |
-| 16 | `feat/dashboard-exports` | ✅ merged | |
+| 16 | `feat/dashboard-exports` | ✅ merged | [#21](https://github.com/Sujal85526/solei/pull/21) |
 | 17 | `chore/hardening` | ⬜ | |
 
 ## Current notes
