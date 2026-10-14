@@ -1476,6 +1476,10 @@ export type Database = {
     }
     Functions: {
       after_order_paid: { Args: { p_order_id: string }; Returns: undefined }
+      allocate_event_stock: {
+        Args: { p_event_id: string; p_from_location?: string; p_lines: Json }
+        Returns: number
+      }
       apply_order_stock: { Args: { p_order_id: string }; Returns: undefined }
       business_day: { Args: { ts: string }; Returns: string }
       business_today: { Args: never; Returns: string }

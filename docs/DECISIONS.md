@@ -148,24 +148,24 @@ Open client questions are built as configurable defaults. Each row: what we chos
 - **T49 — Product images** come from the database (admin uploads); Blender renders are the default covers.
 
 ## Event calendar (milestone 11)
-- **T32 — Overlap is a warning, never a block** (D9): `overlapping_events()` returns other non-cancelled events
+- **T40 — Overlap is a warning, never a block** (D9): `overlapping_events()` returns other non-cancelled events
   whose inclusive date ranges intersect (an event ending the day another starts counts) and flags the same venue
   (case/space-insensitive). Shown live on the create/edit form and on the event overview.
-- **T33 — Daily hours** are stored per business day in `events.daily_hours` (`{ "YYYY-MM-DD": { open, close } }`);
+- **T41 — Daily hours** are stored per business day in `events.daily_hours` (`{ "YYYY-MM-DD": { open, close } }`);
   the form generates one row per day and offers "same hours every day". Closing after midnight is allowed.
   Events are capped at 62 days. Weeks start on Monday.
-- **T34 — Expenses are financial**: `event_expenses` and receipts (`event-docs/<event>/receipts/…`) need
+- **T42 — Expenses are financial**: `event_expenses` and receipts (`event-docs/<event>/receipts/…`) need
   `reports.financial.view` to read or write; documents (`event-docs/<event>/docs/…`) follow `events.view` /
   `events.manage`. The bucket is private; downloads use 1-hour signed URLs. The participation fee amount is
   hidden in the UI without `reports.financial.view` (row-level RLS can't hide a column).
-- **T35 — Staff names for events** come from `event_staff_options()` (security definer, `events.view`), because
+- **T43 — Staff names for events** come from `event_staff_options()` (security definer, `events.view`), because
   `staff_profiles` is readable only with `staff.manage`.
-- **T36 — Stock**: allocation is one transaction (`allocate_event_stock`, main → event location). Close-out
+- **T44 — Stock**: allocation is one transaction (`allocate_event_stock`, main → event location). Close-out
   (`close_event_stock`) requires returned + broken = remaining for every product, so the event location ends at
   zero; breakage is a `damage` movement with a reason (default "Broken at event"). Closing sets `closed_at` and
   status → completed; `reopen_event()` exists for mistakes (ledger moves stay). Per-event numbers come from the
   view `event_stock_summary` (allocated / net sold / returned / damaged / other / remaining). Closing needs
   `events.manage` + `inventory.transfer` (not `inventory.adjust` — breakage is part of the close-out).
-- **T37 — Calendar default view** is automatic: list on phones, month on tablet/desktop; `?view=` pins one.
+- **T45 — Calendar default view** is automatic: list on phones, month on tablet/desktop; `?view=` pins one.
   Status drives colour (potential dashed, confirmed burgundy, completed sage, cancelled struck grey); type drives
   the icon; private bookings get a gold edge so customer bookings (M14) stand out.
