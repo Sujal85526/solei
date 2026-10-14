@@ -18,6 +18,12 @@ import { ProductGridSkeleton } from "@/components/store/shop/product-grid";
 import { t } from "@/content/en";
 import { getDestination, listDestinations } from "@/modules/storefront/queries";
 
+/**
+ * Fully static: every known slug is prerendered, and an unknown slug waits for its static render
+ * (instead of streaming a 200 shell) so `notFound()` answers with a real 404.
+ */
+export const ensureStatic = "navigation";
+
 export async function generateStaticParams() {
   return (await listDestinations()).map((d) => ({ slug: d.slug }));
 }

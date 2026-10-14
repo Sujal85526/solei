@@ -19,6 +19,12 @@ import {
 } from "@/modules/storefront/queries";
 import type { StoreProduct } from "@/modules/storefront/types";
 
+/**
+ * Fully static: every known slug is prerendered, and an unknown slug waits for its static render
+ * (instead of streaming a 200 shell) so `notFound()` answers with a real 404.
+ */
+export const ensureStatic = "navigation";
+
 export async function generateStaticParams() {
   return (await listProducts()).map((p) => ({ slug: p.slug }));
 }

@@ -11,6 +11,12 @@ import { t } from "@/content/en";
 import { formatAED } from "@/lib/money";
 import { getCategory, listCategories, listProducts } from "@/modules/storefront/queries";
 
+/**
+ * Fully static: every known slug is prerendered, and an unknown slug waits for its static render
+ * (instead of streaming a 200 shell) so `notFound()` answers with a real 404.
+ */
+export const ensureStatic = "navigation";
+
 export async function generateStaticParams() {
   return (await listCategories()).map((c) => ({ category: c.slug }));
 }
