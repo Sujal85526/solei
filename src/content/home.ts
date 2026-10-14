@@ -33,30 +33,6 @@ export function homeImages() {
   };
 }
 
-/** "More than a fragrance." sequence: moments from our pop-ups and the Solei bag. */
-export function experienceImages() {
-  return [
-    {
-      src: "/images/events/booth-table.jpg",
-      alt: "Solei perfumes, destination cards and passports on a floral pop-up table",
-    },
-    { src: "/images/products/sprays-stone.jpg", alt: "Three Solei all-over sprays on warm stone" },
-    {
-      src: homeImages().bag,
-      alt: "A burgundy Solei gift bag with a satin ribbon in late-afternoon light",
-      position: "35% 50%",
-    },
-    {
-      src: "/images/products/perfumes-trio.jpg",
-      alt: "Cannes, Marbella and Verona perfumes in front of their destination cards",
-    },
-    {
-      src: "/images/events/booth-passport.jpg",
-      alt: "Solei passports and perfumes beneath pink and burgundy flowers",
-    },
-  ];
-}
-
 export function heroSlides(): HeroSlide[] {
   const img = homeImages();
   return [
