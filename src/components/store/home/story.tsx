@@ -1,4 +1,3 @@
-import Image from "next/image";
 import {
   ArchPalm,
   Container,
@@ -8,27 +7,45 @@ import {
   Postmark,
   Section,
 } from "@/components/brand";
+import { Parallax } from "@/components/motion/parallax";
+import { Stagger } from "@/components/motion/reveal";
+import { ShimmerImage } from "@/components/motion/shimmer-image";
 import { t } from "@/content/en";
 
 export function BrandStory() {
   return (
     <Section aria-labelledby="story-title" id="story" className="relative overflow-hidden">
-      <ArchPalm className="text-gold/25 pointer-events-none absolute -start-8 top-16 hidden h-96 xl:block" />
+      <Parallax
+        from="60px"
+        to="-60px"
+        className="pointer-events-none absolute -start-8 top-16 hidden xl:block"
+      >
+        <ArchPalm className="text-gold/25 h-96" />
+      </Parallax>
       <Container className="grid items-center gap-16 lg:grid-cols-2">
         <div className="relative order-2 mx-auto w-full max-w-md lg:order-1">
-          <PostcardFrame tilt={-2}>
-            <Image
-              src="/images/products/sprays-stone.jpg"
-              alt="Soho all-over sprays resting on warm sandstone"
-              width={1070}
-              height={1470}
-              sizes="(min-width: 1024px) 28rem, 90vw"
-              className="aspect-[4/5] object-cover"
-            />
-          </PostcardFrame>
-          <Postmark className="bg-cream/0 text-burgundy/60 absolute -end-6 -bottom-8 size-28 rotate-12 sm:-end-10" />
+          <Parallax from="20px" to="-20px">
+            <PostcardFrame tilt={-2}>
+              <ShimmerImage
+                src="/images/products/sprays-stone.jpg"
+                alt="Soho all-over sprays resting on warm sandstone"
+                width={1070}
+                height={1470}
+                sizes="(min-width: 1024px) 28rem, 90vw"
+                className="aspect-[4/5] object-cover"
+              />
+            </PostcardFrame>
+          </Parallax>
+          <Parallax
+            from="50px"
+            to="-40px"
+            rotate={[-6, 6]}
+            className="absolute -end-6 -bottom-8 sm:-end-10"
+          >
+            <Postmark className="bg-cream/0 text-burgundy/60 size-28 rotate-12" />
+          </Parallax>
         </div>
-        <div className="order-1 flex flex-col gap-6 lg:order-2">
+        <Stagger className="order-1 flex flex-col gap-6 lg:order-2">
           <Eyebrow>The brand story</Eyebrow>
           <h2 id="story-title" className="text-4xl leading-[1.05] sm:text-5xl">
             Inspired by destinations, memory and{" "}
@@ -49,7 +66,7 @@ export function BrandStory() {
             together, so that every purchase feels like an experience. {t.brand.invitation}
           </p>
           <p className="eyebrow text-burgundy">{t.brand.tagline}</p>
-        </div>
+        </Stagger>
       </Container>
     </Section>
   );

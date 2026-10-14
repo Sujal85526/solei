@@ -1,6 +1,7 @@
-import Image from "next/image";
 import Link from "next/link";
 import { Container, Eyebrow, Section, SectionHeading } from "@/components/brand";
+import { Stagger } from "@/components/motion/reveal";
+import { ShimmerImage } from "@/components/motion/shimmer-image";
 import { formatAED } from "@/lib/money";
 import type { HomeContent } from "@/modules/content/queries";
 
@@ -18,8 +19,9 @@ export function Collection({ collection }: { collection: HomeContent["collection
           }
           lede="Each scent offers its own atmosphere, character and emotional memory."
           align="center"
+          reveal
         />
-        <ul className="mt-14 grid gap-8 md:grid-cols-2 lg:gap-12">
+        <Stagger as="ul" step={140} className="mt-14 grid gap-8 md:grid-cols-2 lg:gap-12">
           {collection.map((c) => (
             <li key={c.slug}>
               <Link
@@ -27,12 +29,13 @@ export function Collection({ collection }: { collection: HomeContent["collection
                 className="group bg-burgundy relative block overflow-hidden"
               >
                 <div className="relative aspect-[4/5] sm:aspect-[5/4]">
-                  <Image
+                  <ShimmerImage
                     src={c.image}
                     alt=""
                     fill
+                    tone="dark"
                     sizes="(min-width: 768px) 45vw, 100vw"
-                    className="object-cover transition-transform duration-700 ease-(--ease-soft) group-hover:scale-[1.03]"
+                    className="object-cover group-hover:scale-[1.03]"
                   />
                   <div
                     aria-hidden
@@ -57,7 +60,7 @@ export function Collection({ collection }: { collection: HomeContent["collection
               </Link>
             </li>
           ))}
-        </ul>
+        </Stagger>
       </Container>
     </Section>
   );

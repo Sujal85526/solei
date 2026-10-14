@@ -1,7 +1,9 @@
-import Image from "next/image";
 import Link from "next/link";
 import { Check } from "lucide-react";
 import { Container, Eyebrow, OrnamentDivider, Section } from "@/components/brand";
+import { Parallax } from "@/components/motion/parallax";
+import { Stagger } from "@/components/motion/reveal";
+import { ShimmerImage } from "@/components/motion/shimmer-image";
 import { buttonVariants } from "@/components/ui/button";
 
 const services = [
@@ -15,21 +17,27 @@ export function PlanYourEvent({ eventTypes }: { eventTypes: readonly string[] })
     <Section tone="burgundy" aria-labelledby="events-title" className="relative overflow-hidden">
       <Container size="wide" className="grid items-center gap-14 lg:grid-cols-12">
         <div className="relative mx-auto w-full max-w-md lg:col-span-5">
-          {/* Arch-shaped photo, echoing the profile's arch motif */}
-          <div className="border-pink/30 relative aspect-[3/4] overflow-hidden rounded-t-full border p-2">
-            <div className="relative h-full w-full overflow-hidden rounded-t-full">
-              <Image
-                src="/images/events/booth-florals.jpg"
-                alt="A Solei display booth with pink florals, perfume bottles and passports"
-                fill
-                sizes="(min-width: 1024px) 34vw, 90vw"
-                className="object-cover"
-              />
+          {/* Arch-shaped photo, echoing the profile's arch motif. Two depths: the frame drifts up
+              against the page while the photo inside drifts the other way. */}
+          <Parallax from="40px" to="-40px">
+            <div className="border-pink/30 relative aspect-[3/4] overflow-hidden rounded-t-full border p-2">
+              <div className="relative h-full w-full overflow-hidden rounded-t-full">
+                <Parallax from="-7%" to="7%" scale={1.16} className="absolute inset-0">
+                  <ShimmerImage
+                    src="/images/events/booth-florals.jpg"
+                    alt="A Solei display booth with pink florals, perfume bottles and passports"
+                    fill
+                    tone="dark"
+                    sizes="(min-width: 1024px) 34vw, 90vw"
+                    className="object-cover"
+                  />
+                </Parallax>
+              </div>
             </div>
-          </div>
+          </Parallax>
         </div>
 
-        <div className="flex flex-col gap-7 lg:col-span-6 lg:col-start-7">
+        <Stagger className="flex flex-col gap-7 lg:col-span-6 lg:col-start-7">
           <Eyebrow className="text-pink/90">Plan your event</Eyebrow>
           <h2 id="events-title" className="text-4xl leading-[1.05] sm:text-5xl lg:text-6xl">
             Bring Solei <span className="italic">to your celebration.</span>
@@ -69,7 +77,7 @@ export function PlanYourEvent({ eventTypes }: { eventTypes: readonly string[] })
               View packages
             </Link>
           </div>
-        </div>
+        </Stagger>
       </Container>
     </Section>
   );

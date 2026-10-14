@@ -1,3 +1,5 @@
+import { IntroLoader } from "@/components/motion/intro-loader";
+import { ParallaxFallback } from "@/components/motion/parallax-fallback";
 import { Collection } from "@/components/store/home/collection";
 import { ShopByDestination } from "@/components/store/home/destinations";
 import { Hero } from "@/components/store/home/hero";
@@ -12,6 +14,7 @@ export default async function HomePage() {
   const content = await getHomeContent();
   return (
     <>
+      <IntroLoader />
       <Hero />
       <ShopByDestination destinations={content.destinations} />
       <Collection collection={content.collection} />
@@ -20,6 +23,7 @@ export default async function HomePage() {
       <BrandStory />
       <InstagramStrip handle={content.instagram.handle} url={content.instagram.url} />
       <OptIn />
+      <ParallaxFallback />
     </>
   );
 }
