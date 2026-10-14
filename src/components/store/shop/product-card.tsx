@@ -1,16 +1,31 @@
 import Image from "next/image";
 import Link from "next/link";
+import { QuickAdd } from "@/components/store/cart/quick-add";
 import { t } from "@/content/en";
 import { formatAED } from "@/lib/money";
 import { cn } from "@/lib/utils";
 import type { StoreProduct } from "@/modules/storefront/types";
 
-/** Editorial product card: photograph, destination eyebrow, name, size and price. Colours follow
- * the surrounding theme (dark store or blush panel). */
+/** "Eau de parfum" / "All over spray" — the line under the destination name. */
+export function productTypeLabel(product: StoreProduct): string {
+  switch (product.category.slug) {
+    case "perfume":
+      return "Eau de parfum";
+    case "all_over_spray":
+      return "All over spray";
+    default:
+      return product.category.name;
+  }
+}
+
+/**
+ * Collection card: square photograph, the destination in serif capitals, the product type, a
+ * hairline, then the price and a one-tap add. Colours follow the surrounding theme.
+ */
 export function ProductCard({
   product,
   available,
-  sizes = "(min-width: 1024px) 22vw, (min-width: 768px) 30vw, 45vw",
+  sizes = "(min-width: 1024px) 30vw, 50vw",
   priority = false,
 }: {
   product: StoreProduct;
@@ -20,22 +35,19 @@ export function ProductCard({
   priority?: boolean;
 }) {
   const image = product.images[0];
+  const href = `/products/${product.slug}`;
   const soldOut = available === 0;
   const prices = product.variants.map((v) => v.priceFils);
-  const from = Math.min(...prices);
   const varies = new Set(prices).size > 1;
-  const sizeLabel = product.variants
-    .map((v) => v.label)
-    .filter(Boolean)
-    .join(" · ");
+  const title = product.destination?.name ?? product.name;
 
   return (
-    <Link
-      href={`/products/${product.slug}`}
-      className="group block focus-visible:outline-none"
-      data-testid="product-card"
-    >
-      <div className="bg-wine group-focus-visible:ring-pink relative aspect-[4/5] overflow-hidden group-focus-visible:ring-2 group-focus-visible:ring-offset-2">
+    <article className="group" data-testid="product-card">
+      <Link
+        href={href}
+        aria-label={product.name}
+        className="bg-noir/10 focus-visible:ring-primary relative block aspect-square overflow-hidden focus-visible:ring-2 focus-visible:outline-none"
+      >
         <Image
           src={image.url}
           alt={image.alt}
@@ -47,48 +59,40 @@ export function ProductCard({
             soldOut && "opacity-70 grayscale-[35%]",
           )}
         />
-        <div
-          aria-hidden
-          className="outline-cream/60 pointer-events-none absolute inset-2.5 outline outline-1"
-        />
         {soldOut ? (
-          <span className="bg-noir/95 text-pink eyebrow absolute start-4 top-4 px-3 py-1.5 text-[0.6rem]">
+          <span className="bg-noir/90 text-pink eyebrow absolute start-3 top-3 px-3 py-1.5 text-[0.6rem]">
             {t.shop.soldOut}
           </span>
         ) : null}
-      </div>
-      <div className="flex flex-col gap-1.5 pt-4">
-        {product.destination ? (
-          <p className="eyebrow text-primary/70 text-[0.65rem]">
-            {product.destination.name}
-            <span className="text-muted-foreground/70 hidden xl:inline">
-              {" "}
-              · {product.destination.region}
-            </span>
-          </p>
-        ) : null}
-        <h3 className="font-display text-primary text-lg leading-snug sm:text-xl">
-          {product.name}
+      </Link>
+      <div className="pt-4">
+        <h3 className="font-display text-primary text-lg leading-tight tracking-[0.06em] uppercase sm:text-xl">
+          <Link href={href}>{title}</Link>
         </h3>
-        <p className="flex items-baseline justify-between gap-3 text-sm">
-          <span className="text-muted-foreground">{sizeLabel || product.category.name}</span>
-          <span className="numeric text-primary font-medium">
-            {varies ? `${t.shop.from} ` : ""}
-            {formatAED(from)}
-          </span>
+        <p className="eyebrow text-primary/60 mt-1 text-[0.55rem] sm:text-[0.6rem]">
+          {productTypeLabel(product)}
         </p>
+        <div className="border-primary/20 mt-3 flex min-h-[3.25rem] items-center justify-between gap-3 border-t pt-3">
+          <span className="numeric text-primary text-[0.7rem] tracking-[0.18em] sm:text-xs">
+            {varies ? `${t.shop.from} ` : ""}
+            {formatAED(Math.min(...prices))}
+          </span>
+          {soldOut ? null : (
+            <QuickAdd variantId={product.variants[0].id} name={product.name} tone="outline" />
+          )}
+        </div>
       </div>
-    </Link>
+    </article>
   );
 }
 
 export function ProductCardSkeleton() {
   return (
     <div aria-hidden className="animate-pulse">
-      <div className="bg-wine aspect-[4/5]" />
-      <div className="bg-wine mt-4 h-3 w-1/3" />
-      <div className="bg-wine mt-3 h-5 w-2/3" />
-      <div className="bg-wine mt-3 h-3 w-1/2" />
+      <div className="bg-primary/10 aspect-square" />
+      <div className="bg-primary/10 mt-4 h-5 w-1/2" />
+      <div className="bg-primary/10 mt-2 h-3 w-1/3" />
+      <div className="bg-primary/10 mt-4 h-3 w-full" />
     </div>
   );
 }

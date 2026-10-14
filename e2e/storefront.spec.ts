@@ -6,10 +6,13 @@ test.describe("storefront — browse and cart", () => {
     page,
   }) => {
     await page.goto("/shop");
-    await expect(page.getByRole("heading", { level: 1, name: /Shop the journey/ })).toBeVisible();
+    await expect(
+      page.getByRole("heading", { level: 1, name: /Scents for every destination/ }),
+    ).toBeVisible();
     await expect(page.getByRole("link", { name: /Mayfair All-over spray/ })).toBeVisible();
 
     // Filter by destination (plain links — URL search params).
+    await page.getByText("Filter + Sort").click();
     const destinations = page.getByRole("list", { name: "Destination" });
     await destinations.getByRole("link", { name: "Cannes" }).click();
     await expect(page).toHaveURL(/destination=cannes/);

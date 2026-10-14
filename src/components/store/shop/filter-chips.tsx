@@ -5,13 +5,13 @@ export type Chip = { label: string; href: string; active: boolean; count?: numbe
 
 /**
  * A labelled row of filter links. Plain links (URL search params) so filtering works without
- * JavaScript; scrolls horizontally on small screens.
+ * JavaScript; scrolls horizontally on small screens. Colours follow the section theme.
  */
 export function FilterChips({ label, chips }: { label: string; chips: Chip[] }) {
   const id = `filter-${label.toLowerCase().replace(/\W+/g, "-")}`;
   return (
     <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:gap-6">
-      <p id={id} className="eyebrow text-pink/70 w-28 shrink-0 text-[0.65rem]">
+      <p id={id} className="eyebrow text-primary/70 w-28 shrink-0 text-[0.65rem]">
         {label}
       </p>
       <ul
@@ -25,15 +25,15 @@ export function FilterChips({ label, chips }: { label: string; chips: Chip[] }) 
               scroll={false}
               aria-current={c.active ? "true" : undefined}
               className={cn(
-                "inline-flex h-11 items-center gap-2 rounded-full border px-5 text-[0.7rem] tracking-[0.2em] whitespace-nowrap uppercase transition-colors duration-300",
+                "inline-flex h-10 items-center gap-2 rounded-full border px-5 text-[0.65rem] tracking-[0.2em] whitespace-nowrap uppercase transition-colors duration-300",
                 c.active
-                  ? "border-pink bg-pink text-burgundy"
-                  : "border-pink/20 text-pink hover:border-pink/60 bg-transparent",
+                  ? "border-primary bg-primary text-primary-foreground"
+                  : "border-primary/25 text-primary hover:border-primary/60 bg-transparent",
               )}
             >
               {c.label}
               {c.count !== undefined ? (
-                <span className={cn("numeric", c.active ? "text-burgundy/70" : "text-pearl-muted")}>
+                <span className={cn("numeric", c.active ? "opacity-70" : "text-muted-foreground")}>
                   {c.count}
                 </span>
               ) : null}
