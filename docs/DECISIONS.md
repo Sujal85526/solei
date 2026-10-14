@@ -132,3 +132,17 @@ Open client questions are built as configurable defaults. Each row: what we chos
 - **T39 — Email links**: free-tier projects can't customise auth email templates without custom SMTP, so invites
   and password resets redirect to `/auth/callback`, which handles Supabase's default links (implicit `#tokens`
   and PKCE `?code`). The branded templates (`/auth/confirm` + token_hash) apply once Resend SMTP is configured.
+
+## Editorial redesign (client direction, 2026-10-14)
+- **T46 — Storefront is a dark, cinematic editorial theme** (client references): noir `#170510` / wine `#2A0A16`
+  base, blush-pink panels (`.on-blush`), pink headlines, pearl body text; scoped with `.theme-store` so the admin
+  keeps its bright working surfaces. Buttons use semantic `primary` (burgundy in admin, pink in store).
+  Contrast pairs added to `palette.test.ts`.
+- **T47 — Type**: Cormorant Garamond (light display, still a stand-in for "Nove") + Jost (letter-spaced labels,
+  navigation, body, admin). Change in `src/app/fonts.ts` only.
+- **T48 — Homepage**: hero slider (3 slides, pause/arrows/progress, Ken Burns, reduced-motion aware) →
+  "Signature Scents." product rail from the database with quick add → "Our story" blush split → "Different
+  places. Same feeling." band + destinations index → Plan your event → Passport → "More than a fragrance."
+  early-access sign-up. Slide copy/images in `src/content/home.ts`; photography from
+  `public/images/editorial/` (client originals) with brand fallbacks until delivered.
+- **T49 — Product images** come from the database (admin uploads); Blender renders are the default covers.
