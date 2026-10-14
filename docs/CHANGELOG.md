@@ -10,3 +10,4 @@ One line per merged PR (newest first).
 - 2026-10-14 — #8 feat: catalog & inventory admin
 - 2026-10-14 — #7 feat: storefront — shop, destinations, product pages and cart
 - 2026-10-14 — #13 redesign · #10 event calendar · #14 orders admin & notifications · #15 customers CRM · #16 event booking
+- 2026-10-14 — #17 manual orders & payment links · #18 event reports · #20 event POS · #19 Solei Passport loyalty
