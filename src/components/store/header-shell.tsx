@@ -1,15 +1,13 @@
 "use client";
 
-import { usePathname } from "next/navigation";
 import { useEffect, useState, type ReactNode } from "react";
-import { cn } from "@/lib/utils";
 
 /**
- * Over the home hero the header is transparent and floats; once the page scrolls (or on any other
- * page) it becomes a solid wine-black bar. Scroll state is read with a passive listener + rAF.
+ * Over a page hero (`[data-hero]`, e.g. the home slider) the header floats transparently; once the
+ * page scrolls — or on pages without a hero — it is a solid wine-black bar. Hero detection is pure
+ * CSS (`:has()` in globals.css), so no URL access is needed during prerendering.
  */
 export function HeaderShell({ children }: { children: ReactNode }) {
-  const overlay = usePathname() === "/";
   const [scrolled, setScrolled] = useState(false);
 
   useEffect(() => {
@@ -29,17 +27,10 @@ export function HeaderShell({ children }: { children: ReactNode }) {
     };
   }, []);
 
-  const solid = !overlay || scrolled;
   return (
     <header
-      data-solid={solid || undefined}
-      className={cn(
-        "text-pearl inset-x-0 top-0 z-40 transition-[background-color,border-color,backdrop-filter] duration-500 ease-(--ease-soft)",
-        overlay ? "fixed" : "sticky",
-        solid
-          ? "border-pink/10 bg-noir/85 supports-[backdrop-filter]:bg-noir/70 border-b backdrop-blur-md"
-          : "from-noir/50 border-b border-transparent bg-gradient-to-b to-transparent",
-      )}
+      data-scrolled={scrolled || undefined}
+      className="site-header text-pearl inset-x-0 top-0 z-40"
     >
       {children}
     </header>

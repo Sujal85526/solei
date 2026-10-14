@@ -38,6 +38,7 @@ export function HeroSlider({ slides }: { slides: HeroSlide[] }) {
 
   return (
     <section
+      data-hero
       aria-roledescription="carousel"
       aria-label="Solei"
       className="bg-noir relative isolate h-[100svh] min-h-[560px] overflow-hidden"
