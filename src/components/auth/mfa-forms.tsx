@@ -1,16 +1,18 @@
 "use client";
 
-import { useActionState, useEffect, useState } from "react";
+import { useFormAction } from "@/hooks/use-form-action";
+
+import { useEffect, useState } from "react";
 import { fieldAria, Field } from "@/components/admin/field";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { startTotpEnrollment, verifyTotpAction, type FormState } from "@/modules/auth/actions";
 
 function CodeForm({ factorId, cta }: { factorId: string; cta: string }) {
-  const [state, action, pending] = useActionState<FormState, FormData>(verifyTotpAction, {});
+  const [state, action, pending] = useFormAction<FormState>(verifyTotpAction, {});
   const err = state.fieldErrors?.code ?? state.error;
   return (
-    <form action={action} className="flex flex-col gap-5" noValidate>
+    <form {...action} className="flex flex-col gap-5" noValidate>
       <input type="hidden" name="factorId" value={factorId} />
       <Field label="6-digit code" htmlFor="code" error={err}>
         <Input

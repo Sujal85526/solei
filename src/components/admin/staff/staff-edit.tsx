@@ -1,6 +1,8 @@
 "use client";
 
-import { useActionState, useTransition } from "react";
+import { useFormAction } from "@/hooks/use-form-action";
+
+import { useTransition } from "react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import {
@@ -41,10 +43,10 @@ export function StaffEditForm({
   roles: RoleOption[];
   isSelf: boolean;
 }) {
-  const [state, action, pending] = useActionState(updateStaffAction, null);
+  const [state, action, pending] = useFormAction(updateStaffAction, null);
   const errors = useActionToast(state);
   return (
-    <form action={action} className="flex flex-col gap-6" noValidate>
+    <form {...action} className="flex flex-col gap-6" noValidate>
       <input type="hidden" name="userId" value={staff.user_id} />
       <StaffFormFields
         roles={roles}

@@ -1,17 +1,19 @@
 "use client";
 
+import { useFormAction } from "@/hooks/use-form-action";
+
 import Link from "next/link";
-import { useActionState } from "react";
+
 import { fieldAria, Field } from "@/components/admin/field";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { loginAction, type FormState } from "@/modules/auth/actions";
 
 export function LoginForm({ next, notice }: { next?: string; notice?: string }) {
-  const [state, action, pending] = useActionState<FormState, FormData>(loginAction, {});
+  const [state, action, pending] = useFormAction<FormState>(loginAction, {});
   const fe = state.fieldErrors ?? {};
   return (
-    <form action={action} className="flex flex-col gap-5" noValidate>
+    <form {...action} className="flex flex-col gap-5" noValidate>
       {notice || state.error ? (
         <p
           role="alert"

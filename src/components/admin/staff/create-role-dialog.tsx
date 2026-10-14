@@ -1,6 +1,8 @@
 "use client";
 
-import { useActionState, useCallback, useState } from "react";
+import { useFormAction } from "@/hooks/use-form-action";
+
+import { useCallback, useState } from "react";
 import { Plus } from "lucide-react";
 import { Field } from "@/components/admin/field";
 import { Button } from "@/components/ui/button";
@@ -19,7 +21,7 @@ import { createRoleAction } from "@/modules/staff/actions";
 
 export function CreateRoleDialog({ roles }: { roles: { id: string; name: string }[] }) {
   const [open, setOpen] = useState(false);
-  const [state, action, pending] = useActionState(createRoleAction, null);
+  const [state, action, pending] = useFormAction(createRoleAction, null);
   const errors = useActionToast(
     state,
     useCallback(() => setOpen(false), []),
@@ -33,7 +35,7 @@ export function CreateRoleDialog({ roles }: { roles: { id: string; name: string 
         <DialogHeader>
           <DialogTitle>New role</DialogTitle>
         </DialogHeader>
-        <form action={action} className="flex flex-col gap-4" noValidate>
+        <form {...action} className="flex flex-col gap-4" noValidate>
           <Field label="Name" htmlFor="name" error={errors.name} required>
             <Input id="name" name="name" placeholder="e.g. Event lead" className="h-11" />
           </Field>
