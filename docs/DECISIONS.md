@@ -103,3 +103,16 @@ Open client questions are built as configurable defaults. Each row: what we chos
 - **T27 — Product gallery** uses whatever `product_images` the admin uploads (first image leads). Seeded images
   are low-resolution profile crops (see T9) and look soft at gallery size until client photography arrives.
 - `next.config.ts` allows `next/image` to load from the Supabase Storage public bucket (admin uploads).
+
+## Checkout & payments (milestone 7)
+- **T32 — Payment flow**: `create_web_order` (status `pending_payment`, prices re-checked in SQL, cost
+  snapshots) → hosted checkout → **verified webhook** → `confirm_payment` (row-locked, idempotent) →
+  `after_order_paid` (stock deduction once; loyalty extends it). Webhook deliveries are deduplicated in
+  `payment_events` by provider event id; processing failures return 5xx so the provider retries.
+- **T33 — Mock provider** (`PAYMENT_PROVIDER=mock`, default without Stripe keys): `/pay/mock/[ref]` approves or
+  declines and sends an HMAC-signed webhook through the same endpoint as Stripe. Refused in production builds
+  unless `ALLOW_MOCK_PAYMENTS=1` (CI only). ❓ Stripe **test** keys needed from the client's Stripe account.
+- **T34 — Stock is deducted on payment, not at order creation** (abandoned checkouts don't hold stock).
+  Availability is re-checked at checkout; a rare race between two simultaneous final units can oversell —
+  visible as negative stock in admin.
+- **T35 — Guest order links** are `/order/<number>?t=<HMAC>`; tracking without the link needs number + phone.
