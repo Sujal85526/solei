@@ -32,3 +32,6 @@ screenshots/
 .DS_Store
 *.log
 .vercel
+
+# agent worktrees / local tooling
+.claude/worktrees/
