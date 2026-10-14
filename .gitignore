@@ -1,0 +1,34 @@
+# deps
+node_modules/
+.pnpm-store/
+
+# next
+.next/
+out/
+next-env.d.ts
+*.tsbuildinfo
+
+# env — never commit secrets
+.env*
+!.env.example
+
+# supabase
+supabase/.temp/
+supabase/.branches/
+
+# tests
+playwright-report/
+test-results/
+blob-report/
+playwright/.cache/
+coverage/
+
+# large / local-only assets
+docs/brand/company-profile.pdf
+screenshots/
+**/screenshots/
+
+# misc
+.DS_Store
+*.log
+.vercel
