@@ -40,7 +40,7 @@ export function HeroSlider({ slides }: { slides: HeroSlide[] }) {
       data-hero
       aria-roledescription="carousel"
       aria-label="Solei"
-      className="relative isolate h-[100svh] min-h-[560px] overflow-hidden bg-[#2a0610]"
+      className="hero-pinned sticky top-0 isolate h-[100svh] min-h-[560px] overflow-hidden bg-[#2a0610]"
     >
       {slides.map((slide, i) => {
         const active = i === index;
