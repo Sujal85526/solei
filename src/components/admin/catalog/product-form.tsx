@@ -1,7 +1,9 @@
 "use client";
 
+import { useFormAction } from "@/hooks/use-form-action";
+
 import { useRouter } from "next/navigation";
-import { useActionState, useCallback } from "react";
+import { useCallback } from "react";
 import { Field } from "@/components/admin/field";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -36,7 +38,7 @@ export function ProductForm({
   destinations: Option[];
 }) {
   const router = useRouter();
-  const [state, action, pending] = useActionState(saveProductAction, null);
+  const [state, action, pending] = useFormAction(saveProductAction, null);
   const onSaved = useCallback(
     (data: { id: string }) => {
       if (!product?.id) router.push(`/admin/products/${data.id}`);
@@ -46,7 +48,7 @@ export function ProductForm({
   const e = useActionToast(state, onSaved);
 
   return (
-    <form action={action} className="flex flex-col gap-5" noValidate>
+    <form {...action} className="flex flex-col gap-5" noValidate>
       {product?.id ? <input type="hidden" name="id" value={product.id} /> : null}
       <div className="grid gap-4 sm:grid-cols-2">
         <Field

@@ -26,6 +26,12 @@ describe("catalog schema", () => {
     expect(p.active).toBe(true);
     expect(p.featured).toBe(false);
     expect(p.destinationId).toBeUndefined();
+    expect(
+      productSchema.parse({ name: "X Perfume", categoryId: uuid, slug: "" }).slug,
+    ).toBeUndefined();
+    expect(
+      productSchema.safeParse({ name: "X", categoryId: uuid, slug: "Bad Slug!" }).success,
+    ).toBe(false);
   });
 
   it("validates variants", () => {

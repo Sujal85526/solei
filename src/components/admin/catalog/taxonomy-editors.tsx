@@ -1,6 +1,8 @@
 "use client";
 
-import { useActionState, useCallback, useState } from "react";
+import { useFormAction } from "@/hooks/use-form-action";
+
+import { useCallback, useState } from "react";
 import { Pencil, Plus } from "lucide-react";
 import { Field } from "@/components/admin/field";
 import { Badge } from "@/components/ui/badge";
@@ -84,7 +86,7 @@ export function CategoriesEditor({ categories }: { categories: Category[] }) {
 }
 
 function CategoryDialog({ category, onClose }: { category?: Category; onClose: () => void }) {
-  const [state, action, pending] = useActionState(saveCategoryAction, null);
+  const [state, action, pending] = useFormAction(saveCategoryAction, null);
   const e = useActionToast(state, onClose);
   return (
     <Dialog open onOpenChange={(o) => !o && onClose()}>
@@ -92,7 +94,7 @@ function CategoryDialog({ category, onClose }: { category?: Category; onClose: (
         <DialogHeader>
           <DialogTitle>{category ? `Edit ${category.name}` : "New category"}</DialogTitle>
         </DialogHeader>
-        <form action={action} className="flex flex-col gap-4" noValidate>
+        <form {...action} className="flex flex-col gap-4" noValidate>
           {category ? <input type="hidden" name="id" value={category.id} /> : null}
           <Field label="Name" htmlFor="name" error={e.name} required>
             <Input id="name" name="name" defaultValue={category?.name} className="h-11" />
@@ -200,7 +202,7 @@ function DestinationDialog({
   destination?: Destination;
   onClose: () => void;
 }) {
-  const [state, action, pending] = useActionState(saveDestinationAction, null);
+  const [state, action, pending] = useFormAction(saveDestinationAction, null);
   const e = useActionToast(state, onClose);
   return (
     <Dialog open onOpenChange={(o) => !o && onClose()}>
@@ -208,7 +210,7 @@ function DestinationDialog({
         <DialogHeader>
           <DialogTitle>{d ? `Edit ${d.name}` : "New destination"}</DialogTitle>
         </DialogHeader>
-        <form action={action} className="grid gap-4 sm:grid-cols-2" noValidate>
+        <form {...action} className="grid gap-4 sm:grid-cols-2" noValidate>
           {d ? <input type="hidden" name="id" value={d.id} /> : null}
           {d ? <input type="hidden" name="slug" value={d.slug} /> : null}
           <Field label="Name" htmlFor="name" error={e.name} required>

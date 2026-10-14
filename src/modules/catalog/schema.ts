@@ -19,12 +19,17 @@ const text = (max = 200) =>
     .nullable()
     .optional();
 
-const slug = z
-  .string()
-  .trim()
-  .toLowerCase()
-  .regex(/^[a-z0-9-]+$/, "Use lowercase letters, numbers and dashes")
-  .max(80);
+/** Optional URL slug: empty means "generate from the name". */
+const slug = z.preprocess(
+  (v) => (typeof v === "string" && v.trim() === "" ? undefined : v),
+  z
+    .string()
+    .trim()
+    .toLowerCase()
+    .regex(/^[a-z0-9_-]+$/, "Use lowercase letters, numbers and dashes")
+    .max(80)
+    .optional(),
+);
 
 /** Comma/newline separated list → trimmed array. */
 const list = z

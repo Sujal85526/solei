@@ -1,6 +1,8 @@
 "use client";
 
-import { useActionState, useCallback, useState } from "react";
+import { useFormAction } from "@/hooks/use-form-action";
+
+import { useCallback, useState } from "react";
 import { Pencil, Plus, Trash2 } from "lucide-react";
 import Link from "next/link";
 import { ConfirmButton } from "@/components/admin/confirm-button";
@@ -128,7 +130,7 @@ function VariantDialog({
   canSeeCost: boolean;
   onClose: () => void;
 }) {
-  const [state, action, pending] = useActionState(saveVariantAction, null);
+  const [state, action, pending] = useFormAction(saveVariantAction, null);
   const e = useActionToast(
     state,
     useCallback(() => onClose(), [onClose]),
@@ -139,7 +141,7 @@ function VariantDialog({
         <DialogHeader>
           <DialogTitle>{variant ? `Edit ${variant.sku}` : "New variant"}</DialogTitle>
         </DialogHeader>
-        <form action={action} className="grid gap-4 sm:grid-cols-2" noValidate>
+        <form {...action} className="grid gap-4 sm:grid-cols-2" noValidate>
           <input type="hidden" name="productId" value={productId} />
           {variant ? <input type="hidden" name="id" value={variant.id} /> : null}
           <Field label="Size (ml)" htmlFor="sizeMl" error={e.sizeMl}>
