@@ -1,6 +1,5 @@
 import { IntroLoader } from "@/components/motion/intro-loader";
 import { ParallaxFallback } from "@/components/motion/parallax-fallback";
-import { DestinationTicker } from "@/components/store/home/destination-ticker";
 import { DestinationsBand } from "@/components/store/home/destinations-band";
 import { Experience } from "@/components/store/home/experience";
 import { HeroSlider } from "@/components/store/home/hero-slider";
@@ -21,14 +20,16 @@ export default async function HomePage() {
     <>
       <IntroLoader />
       <HeroSlider slides={heroSlides()} />
-      <StorySplit image={images.soho} />
-      <DestinationsBand image={images.window} />
-      <DestinationTicker destinations={content.destinations} />
-      <SignatureScents products={featured} />
-      <PopupGallery />
-      <Experience image={images.bag} />
-      <PlanYourEvent eventTypes={content.eventTypes} image={images.booth} />
-      <PassportBand passport={content.passport} destinations={content.destinations} />
+      {/* The hero stays pinned; everything after it scrolls up over it like a curtain. */}
+      <div className="bg-background relative z-10 shadow-[0_-40px_80px_-20px_rgb(0_0_0/0.65)]">
+        <StorySplit image={images.soho} />
+        <DestinationsBand image={images.window} />
+        <SignatureScents products={featured} />
+        <PopupGallery />
+        <Experience image={images.bag} />
+        <PlanYourEvent eventTypes={content.eventTypes} image={images.booth} />
+        <PassportBand passport={content.passport} destinations={content.destinations} />
+      </div>
       <ParallaxFallback />
     </>
   );

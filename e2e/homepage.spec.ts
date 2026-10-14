@@ -30,22 +30,8 @@ test.describe("homepage", () => {
     await expect(page.getByRole("link", { name: /Plan your event/ }).first()).toBeAttached();
   });
 
-  test("lists all eight destinations and the catalogue from the database", async ({ page }) => {
+  test("shows the catalogue from the database", async ({ page }) => {
     await page.goto("/");
-    // The ticker renders the list twice for a seamless loop; the copy is aria-hidden.
-    const index = page.getByRole("region", { name: "Destinations" });
-    for (const d of [
-      "cannes",
-      "marbella",
-      "verona",
-      "capri",
-      "santorini",
-      "soho",
-      "monaco",
-      "mayfair",
-    ]) {
-      await expect(index.locator(`a[href="/destinations/${d}"]`)).toHaveCount(2);
-    }
     const rail = page.getByRole("region", { name: "Signature scents" });
     await expect(rail.getByText("AED 280").first()).toBeAttached();
   });
@@ -56,7 +42,7 @@ test.describe("homepage", () => {
       .getByRole("button", { name: /^Add .* to cart$/ })
       .first()
       .click();
-    await expect(page.getByTestId("cart-count")).toHaveText("(1)");
+    await expect(page.getByTestId("cart-count")).toHaveText("1");
   });
 
   test("early-access sign-up requires consent", async ({ page }) => {

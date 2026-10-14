@@ -4,7 +4,7 @@ import { Parallax } from "@/components/motion/parallax";
 import { Reveal } from "@/components/motion/reveal";
 import { ShimmerImage } from "@/components/motion/shimmer-image";
 
-/** "Different places. Same feeling." — cinematic band (the destination ticker follows it). */
+/** "Different places. Same feeling." — cinematic band. */
 export function DestinationsBand({ image }: { image: string }) {
   return (
     <section

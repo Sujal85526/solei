@@ -541,7 +541,7 @@ body:has([data-hero]) .site-header:not([data-scrolled]) {
   backdrop-filter: none;
 }
 
-/* Luxury layer: film grain on the hero, curtain unveil for photos, light sweep, slow ticker. */
+/* Luxury layer: film grain on the hero, curtain unveil for photos, light sweep. */
 .film-grain {
   background-image: url(/images/brand/grain.svg);
   background-size: 180px;
@@ -587,13 +587,6 @@ body:has([data-hero]) .site-header:not([data-scrolled]) {
     animation: solei-sweep 7s var(--ease-soft) infinite;
     mix-blend-mode: soft-light;
   }
-
-  .ticker-track {
-    animation: solei-ticker 60s linear infinite;
-  }
-  .ticker:hover .ticker-track {
-    animation-play-state: paused;
-  }
 }
 @keyframes solei-grain {
   0% {
@@ -624,8 +617,20 @@ body:has([data-hero]) .site-header:not([data-scrolled]) {
     background-position: -50% 0;
   }
 }
-@keyframes solei-ticker {
+
+/* Pinned hero: as the page scrolls over it, it settles back (slight zoom-out and dim). */
+@supports (animation-timeline: scroll()) {
+  @media (prefers-reduced-motion: no-preference) {
+    .hero-pinned > * {
+      animation: solei-hero-recede linear both;
+      animation-timeline: scroll(root);
+      animation-range: 0 100svh;
+    }
+  }
+}
+@keyframes solei-hero-recede {
   to {
-    translate: -50% 0;
+    scale: 0.94;
+    filter: brightness(0.55);
   }
 }
