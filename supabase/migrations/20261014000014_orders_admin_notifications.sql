@@ -36,11 +36,15 @@ create table public.notification_log (
   provider text,
   provider_id text,
   error text,
+  -- Suppresses repeats (e.g. one low-stock alert per SKU per day); see the notifications service.
+  dedupe_key text,
   created_at timestamptz not null default now()
 );
 
 create index notification_log_created_idx on public.notification_log (created_at desc);
 create index notification_log_order_idx on public.notification_log (order_id) where order_id is not null;
+create index notification_log_dedupe_idx on public.notification_log (template_key, dedupe_key, created_at desc)
+  where dedupe_key is not null;
 
 create trigger notification_templates_updated_at before update on public.notification_templates
   for each row execute function public.set_updated_at();
@@ -136,10 +140,13 @@ join public.order_payment_summary s on s.order_id = o.id
 left join public.events e on e.id = o.event_id;
 
 -- ---------------------------------------------------------------------------
--- Order actions (permission-checked, audited)
+-- Order actions (permission-checked, audited). Staff change orders only through these
+-- functions, so the status rules can't be bypassed with a direct table update.
 -- ---------------------------------------------------------------------------
+drop policy "orders.update writes orders" on public.orders;
 
--- Allowed manual status moves. pending_payment → new happens on payment; cancel has its own RPC.
+-- Allowed manual status moves (mirrored in src/modules/orders/status.ts).
+-- pending_payment → new happens on payment; cancelling has its own function.
 create or replace function public.order_status_allowed(p_from public.order_status, p_to public.order_status)
 returns boolean
 language sql
@@ -186,16 +193,37 @@ begin
 
   -- Attach the note to the history row the trigger just wrote.
   if nullif(trim(p_note), '') is not null then
-    update order_status_history set note = trim(p_note)
+    update order_status_history set note = left(trim(p_note), 500)
      where id = (select max(id) from order_status_history where order_id = p_order_id);
   end if;
+
+  perform public.write_audit('order.status', 'orders', p_order_id::text,
+    jsonb_build_object('status', v_order.status),
+    jsonb_build_object('status', p_status, 'tracking_number', nullif(trim(p_tracking_number), ''),
+                       'courier', nullif(trim(p_courier), '')));
   return p_status;
+end;
+$$;
+
+-- Staff-only notes (never shown to the customer).
+create or replace function public.update_order_notes(p_order_id uuid, p_internal_notes text)
+returns void
+language plpgsql
+security definer
+set search_path = public
+as $$
+begin
+  perform public.require_permission('orders.update');
+  update orders set internal_notes = nullif(left(trim(coalesce(p_internal_notes, '')), 2000), '')
+   where id = p_order_id;
+  if not found then raise exception 'order not found' using errcode = 'P0002'; end if;
 end;
 $$;
 
 /*
   Record an offline / manual payment (cash, card terminal, soft POS, bank transfer…).
-  If it completes payment of a pending order, the order is confirmed and stock deducted.
+  Online methods only ever come from a verified webhook (confirm_payment).
+  If it completes payment of an order awaiting payment, the order is confirmed and stock deducted once.
 */
 create or replace function public.record_payment(
   p_order_id uuid,
@@ -218,13 +246,16 @@ begin
   if p_amount_fils is null or p_amount_fils <= 0 then
     raise exception 'amount must be positive' using errcode = '22023';
   end if;
+  if p_method in ('online_card', 'apple_pay', 'payment_link') then
+    raise exception 'online payments are recorded automatically' using errcode = '22023';
+  end if;
   select * into v_order from orders where id = p_order_id for update;
   if not found then raise exception 'order not found' using errcode = 'P0002'; end if;
   if v_order.status = 'cancelled' then raise exception 'order is cancelled' using errcode = 'P0001'; end if;
 
   select s.outstanding_fils into v_outstanding from order_payment_summary s where s.order_id = p_order_id;
   if p_amount_fils > v_outstanding then
-    raise exception 'amount is more than the outstanding %', v_outstanding using errcode = 'P0001';
+    raise exception 'amount is more than the outstanding balance (% fils)', v_outstanding using errcode = 'P0001';
   end if;
 
   insert into payments (order_id, kind, amount_fils, method, status, reference, note, received_by, received_at)
@@ -233,8 +264,15 @@ begin
   returning id into v_payment_id;
 
   v_outstanding := v_outstanding - p_amount_fils;
+  perform public.write_audit('payment.recorded', 'payments', v_payment_id::text, null,
+    jsonb_build_object('order', v_order.number, 'amount_fils', p_amount_fils, 'method', p_method,
+                       'outstanding_fils', v_outstanding));
+
   if v_outstanding <= 0 and v_order.status = 'pending_payment' then
-    update orders set status = 'new' where id = p_order_id;
+    -- Paid offline: older online attempts can no longer complete it.
+    update payments set status = 'cancelled', note = 'Paid offline'
+     where order_id = p_order_id and status = 'pending' and kind = 'payment';
+    update orders set status = 'new', placed_at = now() where id = p_order_id;
     perform public.after_order_paid(p_order_id);
     return query select v_payment_id, true, v_outstanding;
     return;
@@ -256,6 +294,7 @@ security definer
 set search_path = public
 as $$
 declare
+  v_order public.orders;
   v_paid int;
   v_refunded int;
   v_id uuid;
@@ -264,13 +303,20 @@ begin
   if length(trim(coalesce(p_reason, ''))) < 3 then
     raise exception 'a reason is required' using errcode = '22023';
   end if;
-  select s.paid_fils, s.refunded_fils into v_paid, v_refunded from order_payment_summary s where s.order_id = p_order_id;
-  if p_amount_fils <= 0 or p_amount_fils > v_paid - v_refunded then
-    raise exception 'refund must be between 0 and the amount paid (%)', v_paid - v_refunded using errcode = 'P0001';
+  select * into v_order from orders where id = p_order_id for update;
+  if not found then raise exception 'order not found' using errcode = 'P0002'; end if;
+  select s.paid_fils, s.refunded_fils into v_paid, v_refunded
+    from order_payment_summary s where s.order_id = p_order_id;
+  if p_amount_fils is null or p_amount_fils <= 0 or p_amount_fils > v_paid - v_refunded then
+    raise exception 'refund must be more than 0 and at most the amount paid (% fils)', v_paid - v_refunded
+      using errcode = 'P0001';
   end if;
   insert into payments (order_id, kind, amount_fils, method, status, note, received_by, received_at)
-  values (p_order_id, 'refund', p_amount_fils, p_method, 'succeeded', trim(p_reason), auth.uid(), now())
+  values (p_order_id, 'refund', p_amount_fils, p_method, 'succeeded', left(trim(p_reason), 500), auth.uid(), now())
   returning id into v_id;
+  perform public.write_audit('order.refund', 'orders', p_order_id::text, null,
+    jsonb_build_object('order', v_order.number, 'amount_fils', p_amount_fils, 'method', p_method,
+                       'reason', trim(p_reason)));
   return v_id;
 end;
 $$;
@@ -288,17 +334,19 @@ end;
 $$;
 
 /*
-  Cancel an order. Stock that was deducted is returned to the location it left from
+  Cancel an order. Stock that was deducted goes back to the location it left from, once
   (p_restock = false keeps it out, e.g. goods damaged). Refunds are recorded separately.
+  Returns the number of restock movements written.
 */
 create or replace function public.cancel_order(p_order_id uuid, p_reason text, p_restock boolean default true)
-returns void
+returns int
 language plpgsql
 security definer
 set search_path = public
 as $$
 declare
   v_order public.orders;
+  v_restocked int := 0;
 begin
   perform public.require_permission('orders.cancel');
   if length(trim(coalesce(p_reason, ''))) < 3 then
@@ -306,11 +354,14 @@ begin
   end if;
   select * into v_order from orders where id = p_order_id for update;
   if not found then raise exception 'order not found' using errcode = 'P0002'; end if;
-  if v_order.status = 'cancelled' then return; end if;
+  if v_order.status = 'cancelled' then return 0; end if;
 
-  update orders set status = 'cancelled', cancelled_at = now(), cancel_reason = trim(p_reason) where id = p_order_id;
+  update orders set status = 'cancelled', cancelled_at = now(), cancel_reason = left(trim(p_reason), 500)
+   where id = p_order_id;
+  update order_status_history set note = left(trim(p_reason), 500)
+   where id = (select max(id) from order_status_history where order_id = p_order_id);
 
-  if p_restock then
+  if coalesce(p_restock, true) then
     insert into stock_movements (variant_id, location_id, qty, type, reason, order_line_id, event_id, created_by)
     select m.variant_id, m.location_id, -m.qty, 'refund_return', 'Cancelled ' || v_order.number, m.order_line_id,
            m.event_id, auth.uid()
@@ -321,6 +372,7 @@ begin
          select 1 from stock_movements r
           where r.order_line_id = m.order_line_id and r.type = 'refund_return'
        );
+    get diagnostics v_restocked = row_count;
   end if;
 
   -- Pending online payments can no longer complete this order.
@@ -330,18 +382,50 @@ begin
   perform public.after_order_cancelled(p_order_id);
   perform public.write_audit('order.cancel', 'orders', p_order_id::text,
     jsonb_build_object('status', v_order.status),
-    jsonb_build_object('status', 'cancelled', 'reason', trim(p_reason), 'restock', p_restock));
+    jsonb_build_object('status', 'cancelled', 'reason', trim(p_reason), 'restock', coalesce(p_restock, true)));
+  return v_restocked;
 end;
 $$;
 
--- Internal notes are editable by orders.update (RLS already allows the update).
+/*
+  Stock alert data for variants: units on hand outside event locations (the same total as the
+  admin stock matrix) and the alert level (variant override, else the business default).
+  Used by trusted server code after stock-reducing actions to email the owner.
+*/
+create or replace function public.variant_stock_alerts(p_variant_ids uuid[])
+returns table (
+  variant_id uuid, sku text, product_name text, variant_label text, on_hand int, threshold int, is_low boolean
+)
+language sql
+stable
+security definer
+set search_path = public
+as $$
+  with base as (
+    select v.id, v.sku, p.name, v.label,
+      coalesce((
+        select sum(m.qty) from stock_movements m
+          join stock_locations l on l.id = m.location_id
+         where m.variant_id = v.id and l.kind <> 'event'
+      ), 0)::int as on_hand,
+      coalesce(v.low_stock_threshold,
+               (select ps.low_stock_default from private_settings ps where ps.id = 1), 5)::int as threshold
+    from product_variants v
+    join products p on p.id = v.product_id
+    where v.id = any(p_variant_ids) and v.active and p.active
+  )
+  select b.id, b.sku, b.name, b.label, b.on_hand, b.threshold, b.on_hand <= b.threshold from base b;
+$$;
 
 revoke execute on function public.update_order_status(uuid, public.order_status, text, text, text) from public, anon;
+revoke execute on function public.update_order_notes(uuid, text) from public, anon;
 revoke execute on function public.record_payment(uuid, int, public.payment_method, text, text) from public, anon;
 revoke execute on function public.record_refund(uuid, int, public.payment_method, text) from public, anon;
 revoke execute on function public.cancel_order(uuid, text, boolean) from public, anon;
 revoke execute on function public.after_order_cancelled(uuid) from public, anon, authenticated;
+revoke execute on function public.variant_stock_alerts(uuid[]) from public, anon, authenticated;
 grant execute on function public.update_order_status(uuid, public.order_status, text, text, text) to authenticated;
+grant execute on function public.update_order_notes(uuid, text) to authenticated;
 grant execute on function public.record_payment(uuid, int, public.payment_method, text, text) to authenticated;
 grant execute on function public.record_refund(uuid, int, public.payment_method, text) to authenticated;
 grant execute on function public.cancel_order(uuid, text, boolean) to authenticated;
