@@ -30,7 +30,7 @@ export function signMockPayload(body: string) {
 export class MockProvider implements PaymentProvider {
   readonly name = "mock";
 
-  async createCheckout(input: CreateCheckoutInput) {
+  async createCheckout(_input: CreateCheckoutInput) {
     const ref = `mock_cs_${randomUUID()}`;
     return { providerRef: ref, url: `${publicEnv.NEXT_PUBLIC_SITE_URL}/pay/mock/${ref}` };
   }
