@@ -1,4 +1,5 @@
 import type { Metadata, Viewport } from "next";
+import { motionScript } from "@/components/motion/motion-script";
 import { fontVariables } from "./fonts";
 import "./globals.css";
 
@@ -19,7 +20,16 @@ export const viewport: Viewport = {
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
-    <html lang="en" dir="ltr" className={`${fontVariables} h-full antialiased`}>
+    // suppressHydrationWarning: the inline motion script may add `data-intro` before hydration.
+    <html
+      lang="en"
+      dir="ltr"
+      className={`${fontVariables} h-full antialiased`}
+      suppressHydrationWarning
+    >
+      <head>
+        <script dangerouslySetInnerHTML={{ __html: motionScript }} />
+      </head>
       <body className="flex min-h-full flex-col">{children}</body>
     </html>
   );
