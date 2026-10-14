@@ -89,10 +89,7 @@ export function CartView({
         {notices.length ? (
           <ul className="mb-8 flex flex-col gap-2" aria-live="polite">
             {notices.map((n) => (
-              <li
-                key={n}
-                className="bg-pink-wash text-burgundy flex items-start gap-3 px-4 py-3 text-sm"
-              >
+              <li key={n} className="bg-pink/10 text-pink flex items-start gap-3 px-4 py-3 text-sm">
                 <Info className="mt-0.5 size-4 shrink-0" strokeWidth={1.5} />
                 <span className="flex-1">{n}</span>
                 <button
@@ -108,7 +105,7 @@ export function CartView({
           </ul>
         ) : null}
         {error ? (
-          <div className="bg-pink-wash text-burgundy mb-8 flex items-center justify-between gap-4 px-4 py-3 text-sm">
+          <div className="bg-pink/10 text-pink mb-8 flex items-center justify-between gap-4 px-4 py-3 text-sm">
             <span>{t.cart.error}</span>
             <button
               type="button"
@@ -119,7 +116,7 @@ export function CartView({
             </button>
           </div>
         ) : null}
-        <ul className="border-burgundy/15 divide-burgundy/10 divide-y border-y">
+        <ul className="border-pink/15 divide-pink/10 divide-y border-y">
           {state.lines.map((line) => (
             <CartLineRow
               key={line.variantId}
@@ -130,7 +127,7 @@ export function CartView({
         </ul>
         <Link
           href="/shop"
-          className="eyebrow text-burgundy mt-8 inline-flex items-center gap-2 text-[0.7rem] hover:opacity-70"
+          className="eyebrow text-pink mt-8 inline-flex items-center gap-2 text-[0.7rem] hover:opacity-70"
         >
           <ArrowLeft className="size-3.5 rtl:rotate-180" strokeWidth={1.5} />
           {t.cart.continueShopping}
@@ -147,7 +144,7 @@ export function CartView({
         <OrnamentDivider className="my-6" />
 
         <label className="flex flex-col gap-2">
-          <span className="eyebrow text-gold-ink text-[0.65rem]">{t.cart.deliveryTo}</span>
+          <span className="eyebrow text-pink/70 text-[0.65rem]">{t.cart.deliveryTo}</span>
           <NativeSelect
             value={state.emirate ?? ""}
             onChange={(e) => {
@@ -169,7 +166,7 @@ export function CartView({
         {threshold !== null && pricing ? (
           <div className="mt-6 flex flex-col gap-2" data-testid="free-delivery">
             <div
-              className="bg-sand h-1 w-full overflow-hidden rounded-full"
+              className="bg-wine h-1 w-full overflow-hidden rounded-full"
               role="progressbar"
               aria-valuemin={0}
               aria-valuemax={100}
@@ -181,7 +178,7 @@ export function CartView({
                 style={{ width: `${freeDeliveryProgress(subtotal, threshold) * 100}%` }}
               />
             </div>
-            <p className="text-ink-muted text-sm">
+            <p className="text-pearl-muted text-sm">
               {pricing.amountToFreeDeliveryFils !== null
                 ? t.cart.awayFromFree(formatAED(pricing.amountToFreeDeliveryFils))
                 : t.cart.freeDeliveryUnlocked}
@@ -204,9 +201,9 @@ export function CartView({
             {!pricing ? (
               "—"
             ) : pricing.deliveryFeeFils === null ? (
-              <span className="text-ink-muted text-xs">{t.cart.chooseEmirateHint}</span>
+              <span className="text-pearl-muted text-xs">{t.cart.chooseEmirateHint}</span>
             ) : pricing.deliveryFeeFils === 0 ? (
-              <span className="eyebrow text-gold-ink text-[0.65rem]">{t.cart.free}</span>
+              <span className="eyebrow text-pink/70 text-[0.65rem]">{t.cart.free}</span>
             ) : (
               formatAED(pricing.deliveryFeeFils)
             )}
@@ -214,14 +211,14 @@ export function CartView({
           {pricing && !pricing.vatIncluded ? (
             <Row label={t.cart.vat}>{formatAED(pricing.vatFils)}</Row>
           ) : null}
-          <div className="border-burgundy/15 mt-3 flex items-baseline justify-between gap-4 border-t pt-5">
-            <dt className="eyebrow text-burgundy">{t.cart.total}</dt>
-            <dd className="numeric font-display text-burgundy text-3xl" data-testid="summary-total">
+          <div className="border-pink/15 mt-3 flex items-baseline justify-between gap-4 border-t pt-5">
+            <dt className="eyebrow text-pink">{t.cart.total}</dt>
+            <dd className="numeric font-display text-pink text-3xl" data-testid="summary-total">
               {pricing ? formatAED(pricing.totalFils) : "—"}
             </dd>
           </div>
           {pricing?.vatIncluded && pricing.vatFils > 0 ? (
-            <p className="text-ink-muted text-end text-xs" data-testid="summary-vat">
+            <p className="text-pearl-muted text-end text-xs" data-testid="summary-vat">
               {t.cart.vatIncluded(formatAED(pricing.vatFils, { alwaysShowFils: true }))}
             </p>
           ) : null}
@@ -238,7 +235,7 @@ export function CartView({
         >
           {t.cart.checkout}
         </Link>
-        <p className="text-ink-muted mt-4 flex items-center justify-center gap-2 text-xs">
+        <p className="text-pearl-muted mt-4 flex items-center justify-center gap-2 text-xs">
           <Lock className="size-3.5" strokeWidth={1.5} />
           {t.cart.secureNote}
         </p>
@@ -258,8 +255,8 @@ function Row({
 }) {
   return (
     <div className="flex items-baseline justify-between gap-4">
-      <dt className="text-ink-muted">{label}</dt>
-      <dd className="numeric text-ink text-end" data-testid={testId}>
+      <dt className="text-pearl-muted">{label}</dt>
+      <dd className="numeric text-pearl text-end" data-testid={testId}>
         {children}
       </dd>
     </div>
@@ -270,10 +267,10 @@ function CartLineRow({ qty, detail }: { qty: number; detail: CartDetailLine | un
   if (!detail?.product) {
     return (
       <li className="flex gap-5 py-6" aria-busy>
-        <div className="bg-sand aspect-[4/5] w-24 shrink-0 animate-pulse sm:w-28" />
+        <div className="bg-wine aspect-[4/5] w-24 shrink-0 animate-pulse sm:w-28" />
         <div className="flex flex-1 flex-col gap-3 pt-1">
-          <div className="bg-sand h-3 w-20 animate-pulse" />
-          <div className="bg-sand h-5 w-40 animate-pulse" />
+          <div className="bg-wine h-3 w-20 animate-pulse" />
+          <div className="bg-wine h-5 w-40 animate-pulse" />
         </div>
       </li>
     );
@@ -284,7 +281,7 @@ function CartLineRow({ qty, detail }: { qty: number; detail: CartDetailLine | un
     <li className="flex gap-5 py-6 sm:gap-6" data-testid="cart-line">
       <Link
         href={`/products/${p.slug}`}
-        className="bg-sand relative aspect-[4/5] w-24 shrink-0 overflow-hidden sm:w-28"
+        className="bg-wine relative aspect-[4/5] w-24 shrink-0 overflow-hidden sm:w-28"
         tabIndex={-1}
         aria-hidden
       >
@@ -294,15 +291,15 @@ function CartLineRow({ qty, detail }: { qty: number; detail: CartDetailLine | un
         <div className="flex items-start justify-between gap-4">
           <div className="flex min-w-0 flex-col gap-1">
             {p.destinationName ? (
-              <p className="eyebrow text-gold-ink text-[0.6rem]">{p.destinationName}</p>
+              <p className="eyebrow text-pink/70 text-[0.6rem]">{p.destinationName}</p>
             ) : null}
             <Link
               href={`/products/${p.slug}`}
-              className="font-display text-burgundy text-lg leading-snug hover:opacity-80 sm:text-xl"
+              className="font-display text-pink text-lg leading-snug hover:opacity-80 sm:text-xl"
             >
               {p.name}
             </Link>
-            <p className="text-ink-muted text-sm">
+            <p className="text-pearl-muted text-sm">
               {[
                 detail.variantLabel,
                 qty > 1 ? `${formatAED(detail.unitPriceFils)} ${t.cart.each}` : "",
@@ -311,7 +308,7 @@ function CartLineRow({ qty, detail }: { qty: number; detail: CartDetailLine | un
                 .join(" · ")}
             </p>
           </div>
-          <p className="numeric text-burgundy shrink-0 font-medium" data-testid="line-total">
+          <p className="numeric text-pink shrink-0 font-medium" data-testid="line-total">
             {formatAED(detail.unitPriceFils * qty)}
           </p>
         </div>
@@ -326,7 +323,7 @@ function CartLineRow({ qty, detail }: { qty: number; detail: CartDetailLine | un
           <button
             type="button"
             onClick={() => cart.remove(detail.variantId)}
-            className="text-ink-muted hover:text-burgundy -me-2 inline-flex h-11 items-center px-2 text-xs tracking-[0.18em] uppercase underline-offset-4 hover:underline"
+            className="text-pearl-muted hover:text-pink -me-2 inline-flex h-11 items-center px-2 text-xs tracking-[0.18em] uppercase underline-offset-4 hover:underline"
             aria-label={t.cart.removeItem(p.name)}
           >
             {t.cart.remove}
@@ -353,14 +350,14 @@ function EmptyCart({ notices }: { notices: string[] }) {
       data-testid="cart-empty"
     >
       {notices.map((n) => (
-        <p key={n} className="bg-pink-wash text-burgundy px-4 py-3 text-sm">
+        <p key={n} className="bg-pink/10 text-pink px-4 py-3 text-sm">
           {n}
         </p>
       ))}
       <ArchPalm className="h-40" />
       <Eyebrow lines>{t.cart.eyebrow}</Eyebrow>
       <h2 className="text-4xl sm:text-5xl">{t.cart.empty}</h2>
-      <p className="font-display text-ink/80 max-w-md text-lg italic">{t.cart.emptyLede}</p>
+      <p className="font-display text-pearl/80 max-w-md text-lg italic">{t.cart.emptyLede}</p>
       <div className="mt-2 flex flex-col gap-3 sm:flex-row">
         <Link href="/shop" className={buttonVariants({ size: "cta" })}>
           {t.cart.emptyCta}
@@ -379,10 +376,10 @@ function CartSkeleton() {
       <div className="flex flex-col gap-6 lg:col-span-7">
         {[0, 1].map((i) => (
           <div key={i} className="flex gap-5">
-            <div className="bg-sand aspect-[4/5] w-24 animate-pulse sm:w-28" />
+            <div className="bg-wine aspect-[4/5] w-24 animate-pulse sm:w-28" />
             <div className="flex flex-1 flex-col gap-3 pt-1">
-              <div className="bg-sand h-3 w-20 animate-pulse" />
-              <div className="bg-sand h-5 w-40 animate-pulse" />
+              <div className="bg-wine h-3 w-20 animate-pulse" />
+              <div className="bg-wine h-5 w-40 animate-pulse" />
             </div>
           </div>
         ))}

@@ -25,7 +25,7 @@ export function QtyStepper({
   className?: string;
 }) {
   const btn = cn(
-    "text-burgundy hover:bg-burgundy/5 inline-flex items-center justify-center transition-colors disabled:pointer-events-none disabled:opacity-30",
+    "text-pink hover:bg-burgundy/5 inline-flex items-center justify-center transition-colors disabled:pointer-events-none disabled:opacity-30",
     size === "lg" ? "size-12" : "size-11",
   );
   return (
@@ -33,7 +33,7 @@ export function QtyStepper({
       role="group"
       aria-label={label}
       className={cn(
-        "border-burgundy/25 inline-flex items-center rounded-full border",
+        "border-pink/25 inline-flex items-center rounded-full border",
         disabled && "opacity-50",
         className,
       )}
@@ -51,7 +51,7 @@ export function QtyStepper({
         aria-live="polite"
         aria-label={label}
         className={cn(
-          "numeric text-burgundy text-center font-medium",
+          "numeric text-pink text-center font-medium",
           size === "lg" ? "w-10 text-base" : "w-8 text-sm",
         )}
       >

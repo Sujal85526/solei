@@ -32,7 +32,7 @@ export function TrackForm({ defaultNumber }: { defaultNumber?: string }) {
             name="number"
             defaultValue={defaultNumber}
             placeholder="SOL-001234"
-            className="bg-cream h-12 uppercase"
+            className="bg-noir h-12 uppercase"
           />
         </Field>
         <Field label={t.track.phone} htmlFor="phone">
@@ -42,7 +42,7 @@ export function TrackForm({ defaultNumber }: { defaultNumber?: string }) {
             type="tel"
             inputMode="tel"
             placeholder="050 123 4567"
-            className="bg-cream h-12"
+            className="bg-noir h-12"
           />
         </Field>
         <Button type="submit" size="cta" disabled={pending}>
@@ -50,7 +50,7 @@ export function TrackForm({ defaultNumber }: { defaultNumber?: string }) {
         </Button>
       </form>
       {state.status === "not_found" ? (
-        <p role="alert" className="bg-pink-wash text-burgundy px-4 py-3 text-sm">
+        <p role="alert" className="bg-pink/10 text-pink px-4 py-3 text-sm">
           {t.track.notFound}
         </p>
       ) : null}
@@ -68,13 +68,13 @@ function Timeline({ order }: { order: Extract<TrackResult, { status: "found" }>[
     <section aria-label={`Order ${order.number}`} className="flex flex-col gap-8">
       <div className="flex flex-wrap items-baseline justify-between gap-2">
         <h2 className="text-3xl">{order.number}</h2>
-        <p className="numeric text-ink-muted text-sm">
+        <p className="numeric text-pearl-muted text-sm">
           {formatAED(order.totalFils)} ·{" "}
           {order.paymentStatus === "paid" ? "Paid" : "Awaiting payment"}
         </p>
       </div>
       {order.status === "cancelled" ? (
-        <p className="text-burgundy">This order was cancelled.</p>
+        <p className="text-pink">This order was cancelled.</p>
       ) : (
         <ol className="grid gap-6 sm:grid-cols-4">
           {STEPS.map((step, i) => {
@@ -85,9 +85,7 @@ function Timeline({ order }: { order: Extract<TrackResult, { status: "found" }>[
                 <span
                   className={cn(
                     "flex size-9 items-center justify-center rounded-full border",
-                    done
-                      ? "border-burgundy bg-burgundy text-pink"
-                      : "border-burgundy/25 text-burgundy/40",
+                    done ? "border-pink bg-pink text-pink" : "border-pink/25 text-pink/40",
                   )}
                 >
                   {done ? <Check className="size-4" /> : i + 1}
@@ -96,13 +94,13 @@ function Timeline({ order }: { order: Extract<TrackResult, { status: "found" }>[
                   <span
                     className={cn(
                       "font-display block text-lg",
-                      done ? "text-burgundy" : "text-ink-muted",
+                      done ? "text-pink" : "text-pearl-muted",
                     )}
                   >
                     {t.track.steps[step]}
                   </span>
                   {at ? (
-                    <span className="numeric text-ink-muted text-xs">
+                    <span className="numeric text-pearl-muted text-xs">
                       {dateFmt.format(new Date(at))}
                     </span>
                   ) : null}
@@ -118,7 +116,7 @@ function Timeline({ order }: { order: Extract<TrackResult, { status: "found" }>[
           {order.courier ? ` (${order.courier})` : ""}
         </p>
       ) : null}
-      <ul className="border-burgundy/15 text-ink-muted flex flex-col gap-1 border-t pt-4 text-sm">
+      <ul className="border-pink/15 text-pearl-muted flex flex-col gap-1 border-t pt-4 text-sm">
         {order.lines.map((l, i) => (
           <li key={i}>
             {l.name}

@@ -193,7 +193,7 @@ export function PostcardFrame({
   return (
     <div
       className={cn(
-        "relative bg-[#FBF6F2] p-2.5 shadow-[0_1px_2px_rgb(70_3_40/0.08),0_12px_32px_-12px_rgb(70_3_40/0.25)]",
+        "text-ink relative bg-[#FBF6F2] p-2.5 shadow-[0_1px_2px_rgb(70_3_40/0.08),0_12px_32px_-12px_rgb(70_3_40/0.25)] [--heading:var(--brand-burgundy)]",
         className,
       )}
       style={tilt ? { rotate: `${tilt}deg` } : undefined}
@@ -223,9 +223,9 @@ export function PassportStamp({
   compact?: boolean;
 }) {
   const styles = {
-    ink: "text-burgundy border-burgundy/70",
+    ink: "text-heading border-current/70",
     filled: "bg-burgundy text-pink border-burgundy",
-    empty: "text-ink-muted border-burgundy/25 border-dashed",
+    empty: "text-heading/45 border-current/40 border-dashed",
   }[variant];
   return (
     <div

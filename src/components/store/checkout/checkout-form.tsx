@@ -18,7 +18,7 @@ import { placeOrderAction } from "@/modules/checkout/actions";
 
 type Zone = { emirate: Emirate; name: string; feeFils: number };
 
-const inputCls = "h-12 bg-cream";
+const inputCls = "h-12 bg-noir";
 
 export function CheckoutForm({ zones }: { zones: Zone[] }) {
   const state = useCart();
@@ -43,12 +43,12 @@ export function CheckoutForm({ zones }: { zones: Zone[] }) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [key]);
 
-  if (!state) return <p className="text-ink-muted text-sm">Loading…</p>;
+  if (!state) return <p className="text-pearl-muted text-sm">Loading…</p>;
   if (!state.lines.length && !redirecting) {
     return (
       <div className="flex flex-col items-start gap-4">
-        <p className="font-display text-burgundy text-2xl">{t.checkout.empty}</p>
-        <Link href="/shop" className="eyebrow text-burgundy underline underline-offset-4">
+        <p className="font-display text-pink text-2xl">{t.checkout.empty}</p>
+        <Link href="/shop" className="eyebrow text-pink underline underline-offset-4">
           Shop the collection
         </Link>
       </div>
@@ -91,7 +91,7 @@ export function CheckoutForm({ zones }: { zones: Zone[] }) {
     <form onSubmit={onSubmit} noValidate className="grid gap-12 lg:grid-cols-12 lg:gap-16">
       <div className="flex flex-col gap-10 lg:col-span-7">
         <fieldset className="grid gap-4 sm:grid-cols-2">
-          <legend className="eyebrow text-gold-ink mb-4">{t.checkout.contact}</legend>
+          <legend className="eyebrow text-pink/70 mb-4">{t.checkout.contact}</legend>
           <Field
             label={t.checkout.name}
             htmlFor="name"
@@ -124,7 +124,7 @@ export function CheckoutForm({ zones }: { zones: Zone[] }) {
         </fieldset>
 
         <fieldset className="grid gap-4 sm:grid-cols-2">
-          <legend className="eyebrow text-gold-ink mb-4">{t.checkout.delivery}</legend>
+          <legend className="eyebrow text-pink/70 mb-4">{t.checkout.delivery}</legend>
           <Field
             label={t.checkout.line1}
             htmlFor="line1"
@@ -160,7 +160,7 @@ export function CheckoutForm({ zones }: { zones: Zone[] }) {
               name="emirate"
               value={state.emirate ?? ""}
               onChange={(e) => cart.setEmirate((e.target.value || null) as Emirate | null)}
-              className="[&_select]:bg-cream [&_select]:h-12"
+              className="[&_select]:bg-noir [&_select]:h-12"
             >
               <option value="" disabled>
                 Choose…
@@ -178,23 +178,23 @@ export function CheckoutForm({ zones }: { zones: Zone[] }) {
             error={errors.notes}
             className="sm:col-span-2"
           >
-            <Textarea id="notes" name="notes" rows={3} className="bg-cream" />
+            <Textarea id="notes" name="notes" rows={3} className="bg-noir" />
           </Field>
         </fieldset>
 
-        <label className="text-ink-muted flex items-start gap-3 text-sm">
+        <label className="text-pearl-muted flex items-start gap-3 text-sm">
           <input
             type="checkbox"
             name="marketingConsent"
-            className="accent-burgundy mt-0.5 size-5 shrink-0"
+            className="accent-pink mt-0.5 size-5 shrink-0"
           />
           {t.checkout.consent}
         </label>
       </div>
 
       <aside className="lg:col-span-5">
-        <div className="bg-sand sticky top-28 flex flex-col gap-5 p-6 sm:p-8">
-          <h2 className="eyebrow text-burgundy">{t.checkout.summary}</h2>
+        <div className="bg-wine sticky top-28 flex flex-col gap-5 p-6 sm:p-8">
+          <h2 className="eyebrow text-pink">{t.checkout.summary}</h2>
           <ul className="flex flex-col gap-3 text-sm">
             {(details?.lines ?? [])
               .filter((l) => l.qty > 0)
@@ -203,13 +203,13 @@ export function CheckoutForm({ zones }: { zones: Zone[] }) {
                   <span>
                     {l.product?.name}
                     {l.hasVariants ? ` · ${l.variantLabel}` : ""}{" "}
-                    <span className="text-ink-muted">× {l.qty}</span>
+                    <span className="text-pearl-muted">× {l.qty}</span>
                   </span>
                   <span className="numeric">{formatAED(l.lineTotalFils)}</span>
                 </li>
               ))}
           </ul>
-          <dl className="numeric border-burgundy/15 flex flex-col gap-2 border-t pt-4 text-sm">
+          <dl className="numeric border-pink/15 flex flex-col gap-2 border-t pt-4 text-sm">
             <div className="flex justify-between">
               <dt>Subtotal</dt>
               <dd>{pricing ? formatAED(pricing.subtotalFils) : "—"}</dd>
@@ -225,20 +225,20 @@ export function CheckoutForm({ zones }: { zones: Zone[] }) {
               </dd>
             </div>
             {pricing ? (
-              <div className="text-ink-muted flex justify-between">
+              <div className="text-pearl-muted flex justify-between">
                 <dt>{pricing.vatIncluded ? "Includes VAT" : "VAT"}</dt>
                 <dd>{formatAED(pricing.vatFils)}</dd>
               </div>
             ) : null}
-            <div className="border-burgundy/15 mt-2 flex items-baseline justify-between border-t pt-4">
-              <dt className="font-display text-burgundy text-lg">Total</dt>
-              <dd className="font-display text-burgundy text-2xl">
+            <div className="border-pink/15 mt-2 flex items-baseline justify-between border-t pt-4">
+              <dt className="font-display text-pink text-lg">Total</dt>
+              <dd className="font-display text-pink text-2xl">
                 {pricing ? formatAED(pricing.totalFils) : "—"}
               </dd>
             </div>
           </dl>
           {formError ? (
-            <p role="alert" className="bg-pink-wash text-burgundy px-4 py-3 text-sm">
+            <p role="alert" className="bg-pink/10 text-pink px-4 py-3 text-sm">
               {formError}
             </p>
           ) : null}
@@ -248,10 +248,10 @@ export function CheckoutForm({ zones }: { zones: Zone[] }) {
               ? t.checkout.paying
               : t.checkout.pay(pricing ? formatAED(pricing.totalFils) : "")}
           </Button>
-          <p className="text-ink-muted text-xs">{t.checkout.secure}</p>
+          <p className="text-pearl-muted text-xs">{t.checkout.secure}</p>
           <Link
             href="/cart"
-            className="eyebrow text-burgundy inline-flex items-center gap-2 text-[0.65rem] hover:opacity-70"
+            className="eyebrow text-pink inline-flex items-center gap-2 text-[0.65rem] hover:opacity-70"
           >
             <ArrowLeft className="size-3.5 rtl:rotate-180" /> {t.checkout.backToCart}
           </Link>

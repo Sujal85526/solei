@@ -7,20 +7,19 @@ const buttonVariantsBase = cva(
   {
     variants: {
       variant: {
-        /** Burgundy — the main call to action. */
-        default: "bg-primary text-primary-foreground hover:bg-burgundy-deep",
+        /** Main call to action: burgundy in the admin, pink on the dark storefront. */
+        default: "bg-primary text-primary-foreground hover:bg-primary/85",
         /** Baby pink — secondary CTA on burgundy or cream. */
-        secondary:
-          "bg-secondary text-secondary-foreground hover:bg-[color-mix(in_oklab,var(--brand-pink),var(--brand-burgundy)_8%)]",
+        secondary: "bg-secondary text-secondary-foreground hover:bg-secondary/85",
         outline:
-          "border-burgundy/40 bg-transparent text-burgundy hover:border-burgundy hover:bg-burgundy/5 aria-expanded:bg-burgundy/5",
+          "border-primary/40 bg-transparent text-primary hover:border-primary hover:bg-primary/5 aria-expanded:bg-primary/5",
         /** Outline for dark (burgundy) backgrounds. */
         "outline-light":
           "border-pink/60 bg-transparent text-pink hover:border-pink hover:bg-pink/10",
-        ghost: "text-current hover:bg-burgundy/6 aria-expanded:bg-burgundy/6",
+        ghost: "text-current hover:bg-primary/6 aria-expanded:bg-primary/6",
         destructive:
           "bg-destructive text-white hover:bg-[color-mix(in_oklab,var(--destructive),black_12%)] focus-visible:ring-destructive/30",
-        link: "h-auto px-0 text-burgundy underline decoration-gold underline-offset-4 hover:decoration-burgundy",
+        link: "h-auto px-0 text-primary underline decoration-gold underline-offset-4 hover:decoration-primary",
       },
       size: {
         default: "h-10 px-4",

@@ -29,7 +29,7 @@ export function PageIntro({
         <Eyebrow>{eyebrow}</Eyebrow>
         <h1 className="max-w-3xl text-5xl leading-[1.02] sm:text-6xl lg:text-7xl">{title}</h1>
         {lede ? (
-          <p className="font-display text-ink/85 max-w-xl text-lg leading-relaxed italic sm:text-xl">
+          <p className="font-display text-pearl/85 max-w-xl text-lg leading-relaxed italic sm:text-xl">
             {lede}
           </p>
         ) : null}
@@ -45,7 +45,7 @@ export type Crumb = { href?: string; label: string };
 export function Breadcrumbs({ items, className }: { items: Crumb[]; className?: string }) {
   return (
     <nav aria-label={t.shop.breadcrumb} className={className}>
-      <ol className="text-ink-muted flex flex-wrap items-center gap-x-2 gap-y-1 text-xs tracking-[0.18em] uppercase">
+      <ol className="text-pearl-muted flex flex-wrap items-center gap-x-2 gap-y-1 text-xs tracking-[0.18em] uppercase">
         {items.map((c, i) => (
           <li key={`${c.label}-${i}`} className="flex items-center gap-2">
             {i > 0 ? (
@@ -54,11 +54,11 @@ export function Breadcrumbs({ items, className }: { items: Crumb[]; className?: 
               </span>
             ) : null}
             {c.href ? (
-              <Link href={c.href} className="hover:text-burgundy transition-colors">
+              <Link href={c.href} className="hover:text-pink transition-colors">
                 {c.label}
               </Link>
             ) : (
-              <span aria-current="page" className="text-burgundy">
+              <span aria-current="page" className="text-pink">
                 {c.label}
               </span>
             )}

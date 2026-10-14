@@ -93,20 +93,20 @@ async function ShopResults({ searchParams }: Pick<PageProps<"/shop">, "searchPar
       <div
         role="group"
         aria-label={t.shop.filters}
-        className="border-burgundy/15 flex flex-col gap-5 border-y py-6"
+        className="border-pink/15 flex flex-col gap-5 border-y py-6"
       >
         <FilterChips label={t.shop.category} chips={categoryChips} />
         <FilterChips label={t.shop.destination} chips={destinationChips} />
       </div>
       <div className="flex items-baseline justify-between gap-4 pt-8 pb-10">
-        <p className="eyebrow text-ink-muted text-[0.65rem]" aria-live="polite">
+        <p className="eyebrow text-pearl-muted text-[0.65rem]" aria-live="polite">
           {t.shop.results(results.length)}
         </p>
         {filtered ? (
           <Link
             href="/shop"
             scroll={false}
-            className="text-burgundy decoration-gold hover:decoration-burgundy text-sm underline underline-offset-4"
+            className="text-pink decoration-gold hover:decoration-pink text-sm underline underline-offset-4"
           >
             {t.shop.clearFilters}
           </Link>
@@ -116,8 +116,8 @@ async function ShopResults({ searchParams }: Pick<PageProps<"/shop">, "searchPar
         <ProductGrid products={results} />
       ) : (
         <div className="flex flex-col items-center gap-6 py-20 text-center">
-          <p className="font-display text-burgundy text-2xl italic">{t.shop.noResults}</p>
-          <Link href="/shop" className="eyebrow text-burgundy underline underline-offset-8">
+          <p className="font-display text-pink text-2xl italic">{t.shop.noResults}</p>
+          <Link href="/shop" className="eyebrow text-pink underline underline-offset-8">
             {t.shop.viewAll}
           </Link>
         </div>
@@ -129,11 +129,11 @@ async function ShopResults({ searchParams }: Pick<PageProps<"/shop">, "searchPar
 function ShopSkeleton() {
   return (
     <div aria-busy>
-      <div className="border-burgundy/15 flex flex-col gap-5 border-y py-6">
-        <div className="bg-sand h-11 w-full max-w-md animate-pulse rounded-full" />
-        <div className="bg-sand h-11 w-full max-w-2xl animate-pulse rounded-full" />
+      <div className="border-pink/15 flex flex-col gap-5 border-y py-6">
+        <div className="bg-wine h-11 w-full max-w-md animate-pulse rounded-full" />
+        <div className="bg-wine h-11 w-full max-w-2xl animate-pulse rounded-full" />
       </div>
-      <div className="bg-sand mt-8 mb-10 h-3 w-24 animate-pulse" />
+      <div className="bg-wine mt-8 mb-10 h-3 w-24 animate-pulse" />
       <ProductGridSkeleton count={8} />
     </div>
   );

@@ -45,7 +45,7 @@ export default async function DestinationsPage() {
               />
             ))}
           </div>
-          <p className="font-display text-burgundy text-2xl leading-snug italic sm:text-3xl">
+          <p className="font-display text-pink text-2xl leading-snug italic sm:text-3xl">
             {t.brand.collect}
           </p>
         </div>

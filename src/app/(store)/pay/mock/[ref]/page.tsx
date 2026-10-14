@@ -38,11 +38,11 @@ async function MockPayment({ params }: { params: PageProps<"/pay/mock/[ref]">["p
         <div className="flex flex-col items-center gap-5 p-8 text-center">
           <Eyebrow>Test payment · no real card</Eyebrow>
           <h1 className="text-3xl">Order {payment.orders?.number}</h1>
-          <p className="numeric font-display text-burgundy text-4xl">
+          <p className="numeric font-display text-pink text-4xl">
             {formatAED(payment.amount_fils)}
           </p>
           {payment.status !== "pending" ? (
-            <p className="text-ink-muted text-sm">This payment is already {payment.status}.</p>
+            <p className="text-pearl-muted text-sm">This payment is already {payment.status}.</p>
           ) : (
             <div className="flex w-full flex-col gap-3">
               <form action={completeMockPayment.bind(null, ref, "succeeded", "online_card")}>
@@ -62,7 +62,7 @@ async function MockPayment({ params }: { params: PageProps<"/pay/mock/[ref]">["p
               </form>
             </div>
           )}
-          <p className="text-ink-muted text-xs">
+          <p className="text-pearl-muted text-xs">
             Shown in development and tests instead of Stripe Checkout. Production uses the real
             hosted page.
           </p>

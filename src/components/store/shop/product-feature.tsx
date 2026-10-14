@@ -25,7 +25,7 @@ export async function ProductFeatures({ products }: { products: StoreProduct[] }
           <li key={p.id} className="grid items-center gap-8 md:grid-cols-12 md:gap-12">
             <Link
               href={`/products/${p.slug}`}
-              className={`group bg-sand relative block aspect-[4/5] overflow-hidden md:col-span-6 lg:col-span-5 ${i % 2 ? "md:order-2" : ""}`}
+              className={`group bg-wine relative block aspect-[4/5] overflow-hidden md:col-span-6 lg:col-span-5 ${i % 2 ? "md:order-2" : ""}`}
               tabIndex={-1}
               aria-hidden
             >
@@ -41,23 +41,21 @@ export async function ProductFeatures({ products }: { products: StoreProduct[] }
             <div className="flex flex-col gap-5 md:col-span-6 lg:col-span-6 lg:col-start-7">
               <Eyebrow>{p.category.name}</Eyebrow>
               <h3 className="text-4xl leading-tight sm:text-5xl">
-                <Link href={`/products/${p.slug}`} className="hover:text-burgundy/80">
+                <Link href={`/products/${p.slug}`} className="hover:text-pink/80">
                   {p.name}
                 </Link>
               </h3>
               {p.description ? (
-                <p className="text-ink/80 max-w-md text-base leading-relaxed">{p.description}</p>
+                <p className="text-pearl/80 max-w-md text-base leading-relaxed">{p.description}</p>
               ) : null}
               <OrnamentDivider className="max-w-56" />
               <p className="flex items-baseline gap-4">
-                <span className="numeric font-display text-burgundy text-3xl">
-                  {formatAED(from)}
-                </span>
-                <span className="text-ink-muted text-sm">
+                <span className="numeric font-display text-pink text-3xl">{formatAED(from)}</span>
+                <span className="text-pearl-muted text-sm">
                   {p.variants.map((v) => v.label).join(" · ")}
                 </span>
                 {available === 0 ? (
-                  <span className="eyebrow text-burgundy border-burgundy/30 border px-2.5 py-1 text-[0.6rem]">
+                  <span className="eyebrow text-pink border-pink/30 border px-2.5 py-1 text-[0.6rem]">
                     {t.shop.soldOut}
                   </span>
                 ) : null}

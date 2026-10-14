@@ -70,15 +70,15 @@ export function PurchasePanel({
   return (
     <div className="flex flex-col gap-6" data-testid="purchase-panel">
       <div className="flex flex-col gap-1">
-        <p className="numeric font-display text-burgundy text-3xl" data-testid="product-price">
+        <p className="numeric font-display text-pink text-3xl" data-testid="product-price">
           {formatAED(variant.priceFils)}
         </p>
-        <p className="text-ink-muted text-xs tracking-[0.12em]">{vatNote}</p>
+        <p className="text-pearl-muted text-xs tracking-[0.12em]">{vatNote}</p>
       </div>
 
       {variants.length > 1 ? (
         <fieldset className="flex flex-col gap-3">
-          <legend className="eyebrow text-gold-ink mb-3 text-[0.65rem]">{t.product.size}</legend>
+          <legend className="eyebrow text-pink/70 mb-3 text-[0.65rem]">{t.product.size}</legend>
           <div className="flex flex-wrap gap-2">
             {variants.map((v) => {
               const out = known && (availability?.[v.id] ?? 0) === 0;
@@ -86,10 +86,10 @@ export function PurchasePanel({
                 <label
                   key={v.id}
                   className={cn(
-                    "has-[:focus-visible]:ring-burgundy/30 inline-flex h-12 cursor-pointer items-center gap-2 rounded-full border px-5 text-sm transition-colors has-[:focus-visible]:ring-3",
+                    "has-[:focus-visible]:ring-pink/30 inline-flex h-12 cursor-pointer items-center gap-2 rounded-full border px-5 text-sm transition-colors has-[:focus-visible]:ring-3",
                     v.id === variant.id
-                      ? "border-burgundy bg-burgundy text-cream"
-                      : "border-burgundy/25 text-burgundy hover:border-burgundy/60",
+                      ? "border-pink bg-pink text-pink"
+                      : "border-pink/25 text-pink hover:border-pink/60",
                     out && "line-through decoration-1 opacity-60",
                   )}
                 >
@@ -112,8 +112,8 @@ export function PurchasePanel({
           </div>
         </fieldset>
       ) : variant.label ? (
-        <p className="text-ink-muted text-sm">
-          <span className="eyebrow text-gold-ink me-3 text-[0.65rem]">{t.product.size}</span>
+        <p className="text-pearl-muted text-sm">
+          <span className="eyebrow text-pink/70 me-3 text-[0.65rem]">{t.product.size}</span>
           {variant.label}
         </p>
       ) : null}

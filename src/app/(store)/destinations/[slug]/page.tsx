@@ -55,7 +55,7 @@ export default async function DestinationPage({ params }: PageProps<"/destinatio
   return (
     <article style={{ "--accent": accent } as CSSProperties}>
       {/* Hero: postcard + story opener, tinted with the destination's postcard colour */}
-      <section aria-labelledby="destination-title" className="bg-sand relative overflow-hidden">
+      <section aria-labelledby="destination-title" className="bg-wine relative overflow-hidden">
         <div aria-hidden className="h-1.5 bg-(--accent)" />
         <Container
           size="wide"
@@ -74,7 +74,7 @@ export default async function DestinationPage({ params }: PageProps<"/destinatio
             >
               {d.name}
             </h1>
-            <p className="font-display text-ink/85 max-w-md text-xl leading-relaxed italic sm:text-2xl">
+            <p className="font-display text-pearl/85 max-w-md text-xl leading-relaxed italic sm:text-2xl">
               {d.mood}
             </p>
             <div className="flex items-center gap-4 pt-2">
@@ -83,8 +83,8 @@ export default async function DestinationPage({ params }: PageProps<"/destinatio
                 className="ring-cream size-9 rounded-full bg-(--accent) shadow-sm ring-4"
               />
               <div className="flex flex-col">
-                <span className="eyebrow text-gold-ink text-[0.6rem]">{t.destinations.accent}</span>
-                <span className="text-ink-muted numeric text-xs tracking-[0.18em] uppercase">
+                <span className="eyebrow text-pink/70 text-[0.6rem]">{t.destinations.accent}</span>
+                <span className="text-pearl-muted numeric text-xs tracking-[0.18em] uppercase">
                   {accent}
                 </span>
               </div>
@@ -109,10 +109,10 @@ export default async function DestinationPage({ params }: PageProps<"/destinatio
                 />
               </div>
               <div className="flex items-end justify-between gap-4 px-1 pt-4 pb-1">
-                <p className="font-display text-burgundy text-lg tracking-[0.25em] uppercase sm:text-2xl">
+                <p className="font-display text-pink text-lg tracking-[0.25em] uppercase sm:text-2xl">
                   {d.name}
                 </p>
-                <p className="text-ink-muted text-[0.65rem] tracking-[0.2em] uppercase">
+                <p className="text-pearl-muted text-[0.65rem] tracking-[0.2em] uppercase">
                   {t.brand.tagline}
                 </p>
               </div>
@@ -122,7 +122,7 @@ export default async function DestinationPage({ params }: PageProps<"/destinatio
                 label={d.name}
                 sublabel={d.region}
                 tilt={10}
-                className="bg-cream/90 size-24 border-(--accent) text-(--accent) sm:size-32"
+                className="bg-noir/90 size-24 border-(--accent) text-(--accent) sm:size-32"
               />
             </div>
           </div>
@@ -135,7 +135,7 @@ export default async function DestinationPage({ params }: PageProps<"/destinatio
           <Eyebrow lines>
             <span id="story-title">{t.destinations.story}</span>
           </Eyebrow>
-          <p className="font-display text-burgundy text-3xl leading-snug italic sm:text-4xl">
+          <p className="font-display text-pink text-3xl leading-snug italic sm:text-4xl">
             {d.story}
           </p>
           <OrnamentDivider className="w-full max-w-xs" />
@@ -156,7 +156,7 @@ export default async function DestinationPage({ params }: PageProps<"/destinatio
               <ProductFeatures products={products} />
             </Suspense>
           ) : (
-            <p className="font-display text-ink-muted text-xl italic">
+            <p className="font-display text-pearl-muted text-xl italic">
               {t.destinations.noProducts}
             </p>
           )}
@@ -164,17 +164,17 @@ export default async function DestinationPage({ params }: PageProps<"/destinatio
       </section>
 
       {/* Onward */}
-      <nav aria-label={t.destinations.title} className="border-burgundy/15 border-t">
+      <nav aria-label={t.destinations.title} className="border-pink/15 border-t">
         <Container size="wide" className="grid grid-cols-2 items-stretch">
           <Link
             href={`/destinations/${prev.slug}`}
-            className="group border-burgundy/15 flex flex-col gap-2 border-e py-10 pe-4 sm:py-14"
+            className="group border-pink/15 flex flex-col gap-2 border-e py-10 pe-4 sm:py-14"
           >
-            <span className="eyebrow text-gold-ink flex items-center gap-2 text-[0.6rem]">
+            <span className="eyebrow text-pink/70 flex items-center gap-2 text-[0.6rem]">
               <ArrowLeft className="size-3.5 rtl:rotate-180" strokeWidth={1.5} />
               <span className="sr-only sm:not-sr-only">{t.destinations.previous}</span>
             </span>
-            <span className="font-display text-burgundy text-2xl tracking-[0.15em] uppercase transition-opacity group-hover:opacity-70 sm:text-3xl">
+            <span className="font-display text-pink text-2xl tracking-[0.15em] uppercase transition-opacity group-hover:opacity-70 sm:text-3xl">
               {prev.name}
             </span>
           </Link>
@@ -182,17 +182,17 @@ export default async function DestinationPage({ params }: PageProps<"/destinatio
             href={`/destinations/${next.slug}`}
             className="group flex flex-col items-end gap-2 py-10 ps-4 text-end sm:py-14"
           >
-            <span className="eyebrow text-gold-ink flex items-center gap-2 text-[0.6rem]">
+            <span className="eyebrow text-pink/70 flex items-center gap-2 text-[0.6rem]">
               <span className="sr-only sm:not-sr-only">{t.destinations.next}</span>
               <ArrowRight className="size-3.5 rtl:rotate-180" strokeWidth={1.5} />
             </span>
-            <span className="font-display text-burgundy text-2xl tracking-[0.15em] uppercase transition-opacity group-hover:opacity-70 sm:text-3xl">
+            <span className="font-display text-pink text-2xl tracking-[0.15em] uppercase transition-opacity group-hover:opacity-70 sm:text-3xl">
               {next.name}
             </span>
           </Link>
         </Container>
-        <div className="border-burgundy/15 border-t py-8 text-center">
-          <Link href="/destinations" className="eyebrow text-burgundy hover:opacity-70">
+        <div className="border-pink/15 border-t py-8 text-center">
+          <Link href="/destinations" className="eyebrow text-pink hover:opacity-70">
             {t.destinations.allDestinations}
           </Link>
         </div>
