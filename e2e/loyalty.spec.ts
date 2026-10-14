@@ -21,6 +21,11 @@ async function seedCustomerWithOrder(tag: string) {
     .select("id, sku, label, price_fils, products(name, category_id, destination_id)")
     .eq("sku", "SOL-P-CAP-50")
     .single();
+  const product = variant!.products as unknown as {
+    name: string;
+    category_id: string;
+    destination_id: string;
+  };
   const { data: order, error: e2 } = await admin
     .from("orders")
     .insert({
@@ -37,11 +42,11 @@ async function seedCustomerWithOrder(tag: string) {
   const { error: e3 } = await admin.from("order_lines").insert({
     order_id: order.id,
     variant_id: variant!.id,
-    product_name: variant!.products!.name,
+    product_name: product.name,
     variant_label: variant!.label,
     sku: variant!.sku,
-    category_id: variant!.products!.category_id,
-    destination_id: variant!.products!.destination_id,
+    category_id: product.category_id,
+    destination_id: product.destination_id,
     qty: 1,
     list_price_fils: variant!.price_fils,
     unit_price_fils: variant!.price_fils,
