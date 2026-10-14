@@ -116,3 +116,14 @@ Open client questions are built as configurable defaults. Each row: what we chos
   Availability is re-checked at checkout; a rare race between two simultaneous final units can oversell —
   visible as negative stock in admin.
 - **T35 — Guest order links** are `/order/<number>?t=<HMAC>`; tracking without the link needs number + phone.
+
+## Hosted Supabase (dev)
+- **T38 — Dev database is hosted**: Supabase project `solei` (ref `ljjpyjzkbexucaqmxbas`) in a separate
+  **"Solei" organisation** (transferable to the client), region **ap-south-1 Mumbai** — the closest Supabase
+  region to the UAE (~30–40 ms; there is no Gulf region). Local Docker Supabase is no longer required for
+  development; CI still runs an ephemeral local Supabase for pgTAP + e2e.
+- Hosted DB has the catalogue seed only (`pnpm exec tsx scripts/generate-seed.ts --catalog-only <file>`),
+  **never** the dev logins (their passwords/TOTP secret are public in the repo).
+- **T39 — Email links**: free-tier projects can't customise auth email templates without custom SMTP, so invites
+  and password resets redirect to `/auth/callback`, which handles Supabase's default links (implicit `#tokens`
+  and PKCE `?code`). The branded templates (`/auth/confirm` + token_hash) apply once Resend SMTP is configured.
