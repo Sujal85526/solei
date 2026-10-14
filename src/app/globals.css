@@ -626,11 +626,63 @@ body:has([data-hero]) .site-header:not([data-scrolled]) {
       animation-timeline: scroll(root);
       animation-range: 0 100svh;
     }
+    .hero-pinned::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      z-index: 30;
+      pointer-events: none;
+      background: var(--brand-noir);
+      opacity: 0;
+      animation: solei-hero-dim linear both;
+      animation-timeline: scroll(root);
+      animation-range: 0 100svh;
+    }
   }
 }
 @keyframes solei-hero-recede {
   to {
     scale: 0.94;
-    filter: brightness(0.55);
+  }
+}
+@keyframes solei-hero-dim {
+  to {
+    opacity: 0.5;
+  }
+}
+
+/* Split heading: words rise out of a mask in sequence (SplitHeading). */
+.split-word {
+  display: inline-block;
+  overflow: hidden;
+  padding-bottom: 0.08em;
+  margin-bottom: -0.08em;
+  vertical-align: top;
+}
+.split-word > span {
+  display: inline-block;
+}
+@media (prefers-reduced-motion: no-preference) {
+  [data-reveal="ready"][data-split]:not([data-revealed]) {
+    opacity: 1;
+    translate: none;
+  }
+  [data-reveal="ready"][data-split] .split-word > span {
+    transition: translate 1s var(--ease-soft);
+    transition-delay: calc(var(--reveal-delay, 0ms) + var(--i, 0) * 70ms);
+  }
+  [data-reveal="ready"][data-split]:not([data-revealed]) .split-word > span {
+    translate: 0 110%;
+  }
+}
+
+/* Every clickable control shows the hand cursor (Tailwind v4 resets buttons to default). */
+@layer base {
+  button:not(:disabled),
+  [role="button"]:not([aria-disabled="true"]),
+  label[for],
+  summary,
+  select {
+    cursor: pointer;
   }
 }

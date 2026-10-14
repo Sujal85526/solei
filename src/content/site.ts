@@ -10,9 +10,11 @@ export const siteDefaults = {
   country: "UAE",
 } as const;
 
+/** The header shows the first three; the menu and footer show all. */
 export const storeNav = [
-  { href: "/shop", key: "shop" },
-  { href: "/destinations", key: "destinations" },
+  { href: "/", key: "home" },
+  { href: "/shop", key: "collections" },
   { href: "/events", key: "events" },
+  { href: "/destinations", key: "destinations" },
   { href: "/passport", key: "passport" },
 ] as const;

@@ -5,7 +5,8 @@ import { formatAED } from "@/lib/money";
 import { cn } from "@/lib/utils";
 import type { StoreProduct } from "@/modules/storefront/types";
 
-/** Editorial product card: photograph, destination eyebrow, name, size and price. */
+/** Editorial product card: photograph, destination eyebrow, name, size and price. Colours follow
+ * the surrounding theme (dark store or blush panel). */
 export function ProductCard({
   product,
   available,
@@ -58,18 +59,20 @@ export function ProductCard({
       </div>
       <div className="flex flex-col gap-1.5 pt-4">
         {product.destination ? (
-          <p className="eyebrow text-pink/70 text-[0.65rem]">
+          <p className="eyebrow text-primary/70 text-[0.65rem]">
             {product.destination.name}
-            <span className="text-pearl-muted/70 hidden xl:inline">
+            <span className="text-muted-foreground/70 hidden xl:inline">
               {" "}
               · {product.destination.region}
             </span>
           </p>
         ) : null}
-        <h3 className="font-display text-pink text-lg leading-snug sm:text-xl">{product.name}</h3>
+        <h3 className="font-display text-primary text-lg leading-snug sm:text-xl">
+          {product.name}
+        </h3>
         <p className="flex items-baseline justify-between gap-3 text-sm">
-          <span className="text-pearl-muted">{sizeLabel || product.category.name}</span>
-          <span className="numeric text-pink font-medium">
+          <span className="text-muted-foreground">{sizeLabel || product.category.name}</span>
+          <span className="numeric text-primary font-medium">
             {varies ? `${t.shop.from} ` : ""}
             {formatAED(from)}
           </span>
