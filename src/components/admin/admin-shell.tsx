@@ -8,6 +8,7 @@ import { Logo } from "@/components/brand";
 import { Sheet, SheetContent, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { cn } from "@/lib/utils";
 import { t } from "@/content/en";
+import { signOutAction } from "@/modules/auth/actions";
 import { adminNav, isActive, type AdminNavItem } from "./nav-config";
 
 export type AdminUser = { name: string; role: string; permissions?: string[] | "all" };
@@ -54,7 +55,7 @@ export function AdminShell({ user, children }: { user: AdminUser; children: Reac
             >
               <ExternalLink className="size-3.5" /> {t.admin.nav.viewStore}
             </Link>
-            <form action="/admin/sign-out" method="post">
+            <form action={signOutAction}>
               <button className="text-sidebar-foreground/80 hover:bg-sidebar-accent inline-flex items-center gap-1.5 rounded px-2 py-1.5 text-xs">
                 <LogOut className="size-3.5" /> {t.admin.nav.signOut}
               </button>
@@ -188,6 +189,19 @@ function MoreSheet({ items, pathname }: { items: AdminNavItem[]; pathname: strin
             );
           })}
         </ul>
+        <div className="mt-2 flex gap-2 border-t pt-4">
+          <Link
+            href="/"
+            className="inline-flex h-11 flex-1 items-center justify-center gap-2 rounded-md border text-sm"
+          >
+            <ExternalLink className="size-4" /> {t.admin.nav.viewStore}
+          </Link>
+          <form action={signOutAction} className="flex-1">
+            <button className="inline-flex h-11 w-full items-center justify-center gap-2 rounded-md border text-sm">
+              <LogOut className="size-4" /> {t.admin.nav.signOut}
+            </button>
+          </form>
+        </div>
       </SheetContent>
     </Sheet>
   );

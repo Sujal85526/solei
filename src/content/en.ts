@@ -52,6 +52,7 @@ export const en = {
       reports: "Reports",
       staff: "Staff",
       settings: "Settings",
+      activity: "Activity",
       more: "More",
       viewStore: "View store",
       signOut: "Sign out",
