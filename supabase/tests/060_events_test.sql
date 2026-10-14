@@ -1,6 +1,6 @@
 begin;
 \ir helpers/setup.psql
-select plan(26);
+select plan(28);
 
 select tests.create_staff('owner@test60.solei', 'owner') as owner_id \gset
 select tests.create_staff('manager@test60.solei', 'manager') as manager_id \gset
@@ -71,9 +71,12 @@ select is((select count(*)::int from public.event_expenses where event_id = :'ex
 
 -- ── Allocation → sale → close-out ──
 select tests.login_as(:'owner_id');
-select lives_ok(
-  format($$ select public.transfer_stock(%L, %L, %L, 20, 'Allocate') $$, :'variant', :'main', :'event_loc'),
-  'allocate 20 to the event');
+select throws_ok(
+  format($$ select public.allocate_event_stock(%L, '[{"variant_id": "%s", "qty": 999999}]'::jsonb) $$, :'expo', :'variant'),
+  'P0001', null, 'cannot allocate more than main stock holds');
+select is(
+  public.allocate_event_stock(:'expo', format('[{"variant_id": "%s", "qty": 12}, {"variant_id": "%s", "qty": 8}]', :'variant', :'variant')::jsonb),
+  20, 'allocate 20 to the event from main stock');
 select tests.logout();
 insert into public.stock_movements (variant_id, location_id, qty, type, event_id)
 values (:'variant', :'event_loc', -6, 'sale', :'expo'), (:'variant', :'event_loc', 1, 'refund_return', :'expo');
@@ -115,6 +118,9 @@ select tests.login_as(:'owner_id');
 select throws_ok(
   format($$ select public.close_event_stock(%L, '[]'::jsonb) $$, :'expo'),
   'P0001', 'this event is already closed', 'an event closes only once');
+select throws_ok(
+  format($$ select public.allocate_event_stock(%L, '[{"variant_id": "%s", "qty": 1}]'::jsonb) $$, :'expo', :'variant'),
+  'P0001', null, 'no allocation to a closed event');
 
 select * from finish();
 rollback;
