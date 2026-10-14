@@ -1,28 +1,30 @@
 import { IntroLoader } from "@/components/motion/intro-loader";
 import { ParallaxFallback } from "@/components/motion/parallax-fallback";
-import { Collection } from "@/components/store/home/collection";
-import { ShopByDestination } from "@/components/store/home/destinations";
-import { Hero } from "@/components/store/home/hero";
-import { InstagramStrip } from "@/components/store/home/instagram";
-import { OptIn } from "@/components/store/home/opt-in";
+import { DestinationsBand } from "@/components/store/home/destinations-band";
+import { Experience } from "@/components/store/home/experience";
+import { HeroSlider } from "@/components/store/home/hero-slider";
 import { PassportBand } from "@/components/store/home/passport";
 import { PlanYourEvent } from "@/components/store/home/plan-event";
-import { BrandStory } from "@/components/store/home/story";
+import { SignatureScents } from "@/components/store/home/signature-scents";
+import { StorySplit } from "@/components/store/home/story-split";
+import { heroSlides, homeImages } from "@/content/home";
 import { getHomeContent } from "@/modules/content/queries";
+import { listProducts } from "@/modules/storefront/queries";
 
 export default async function HomePage() {
-  const content = await getHomeContent();
+  const [content, products] = await Promise.all([getHomeContent(), listProducts()]);
+  const images = homeImages();
+  const featured = [...products].sort((a, b) => Number(b.featured) - Number(a.featured));
   return (
     <>
       <IntroLoader />
-      <Hero />
-      <ShopByDestination destinations={content.destinations} />
-      <Collection collection={content.collection} />
-      <PlanYourEvent eventTypes={content.eventTypes} />
+      <HeroSlider slides={heroSlides()} />
+      <SignatureScents products={featured} />
+      <StorySplit image={images.soho} />
+      <DestinationsBand image={images.window} destinations={content.destinations} />
+      <PlanYourEvent eventTypes={content.eventTypes} image={images.booth} />
       <PassportBand passport={content.passport} destinations={content.destinations} />
-      <BrandStory />
-      <InstagramStrip handle={content.instagram.handle} url={content.instagram.url} />
-      <OptIn />
+      <Experience />
       <ParallaxFallback />
     </>
   );

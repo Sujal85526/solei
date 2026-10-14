@@ -24,7 +24,7 @@ export function DestinationPostcard({
     >
       <PostcardFrame
         tilt={tilts[index % tilts.length]}
-        className="group-focus-visible:ring-burgundy transition-transform duration-500 ease-(--ease-soft) group-hover:-translate-y-1 group-hover:!rotate-0 group-focus-visible:ring-2"
+        className="group-focus-visible:ring-pink transition-transform duration-500 ease-(--ease-soft) group-hover:-translate-y-1 group-hover:!rotate-0 group-focus-visible:ring-2"
       >
         <div className="relative aspect-[4/3] overflow-hidden">
           <Image
@@ -46,7 +46,7 @@ export function DestinationPostcard({
         </div>
       </PostcardFrame>
       {showMood && destination.mood ? (
-        <p className="text-ink-muted mt-5 text-sm leading-relaxed">{destination.mood}</p>
+        <p className="text-pearl-muted mt-5 text-sm leading-relaxed">{destination.mood}</p>
       ) : null}
     </Link>
   );

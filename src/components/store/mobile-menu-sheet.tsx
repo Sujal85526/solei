@@ -16,9 +16,12 @@ export default function MobileMenuSheet({
 }) {
   return (
     <Sheet open={open} onOpenChange={setOpen}>
-      <SheetContent side="left" className="bg-cream text-burgundy w-[86vw] max-w-sm p-8">
+      <SheetContent
+        side="left"
+        className="theme-store border-pink/10 bg-noir text-pearl w-[86vw] max-w-sm p-8"
+      >
         <SheetTitle className="sr-only">{t.nav.menu}</SheetTitle>
-        <Logo className="h-8 self-start" />
+        <Logo className="text-pink h-8 self-start" />
         <OrnamentDivider className="my-6" />
         <nav aria-label="Mobile">
           <ul className="flex flex-col gap-1">
@@ -27,7 +30,7 @@ export default function MobileMenuSheet({
                 <Link
                   href={item.href}
                   onClick={() => setOpen(false)}
-                  className="font-display block py-3 text-3xl"
+                  className="font-display text-pink block py-3 text-4xl font-light"
                 >
                   {t.nav[item.key]}
                 </Link>
@@ -37,14 +40,14 @@ export default function MobileMenuSheet({
               <Link
                 href="/track"
                 onClick={() => setOpen(false)}
-                className="eyebrow text-gold-ink block py-3"
+                className="eyebrow text-pearl/70 block py-3"
               >
                 {t.nav.trackOrder}
               </Link>
             </li>
           </ul>
         </nav>
-        <p className="font-display mt-auto text-lg italic">{t.brand.tagline}</p>
+        <p className="font-display text-pink/80 mt-auto text-xl italic">{t.brand.tagline}</p>
       </SheetContent>
     </Sheet>
   );

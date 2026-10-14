@@ -20,7 +20,9 @@ export const metadata: Metadata = { title: "Your order", robots: { index: false 
 export default function OrderPage(props: PageProps<"/order/[number]">) {
   return (
     <Suspense
-      fallback={<Container className="text-ink-muted py-24 text-sm">Loading your order…</Container>}
+      fallback={
+        <Container className="text-pearl-muted py-24 text-sm">Loading your order…</Container>
+      }
     >
       <OrderView {...props} />
     </Suspense>
@@ -72,21 +74,21 @@ async function OrderView({ params, searchParams }: PageProps<"/order/[number]">)
           <h1 className="text-4xl">{t.order.cancelled}</h1>
         ) : paid ? (
           <>
-            <span className="bg-burgundy text-pink flex size-14 items-center justify-center rounded-full">
+            <span className="bg-pink text-pink flex size-14 items-center justify-center rounded-full">
               <Check className="size-7" strokeWidth={1.5} />
             </span>
             <h1 className="text-5xl">{t.order.paidTitle}</h1>
-            <p className="font-display text-burgundy max-w-md text-xl italic">{t.order.paidLede}</p>
+            <p className="font-display text-pink max-w-md text-xl italic">{t.order.paidLede}</p>
           </>
         ) : justReturned && !failed ? (
           <>
-            <Clock className="text-burgundy size-10 animate-pulse" strokeWidth={1.2} />
+            <Clock className="text-pink size-10 animate-pulse" strokeWidth={1.2} />
             <h1 className="text-4xl">{t.order.confirming}</h1>
           </>
         ) : (
           <>
             <h1 className="text-4xl">{t.order.pendingTitle}</h1>
-            <p className="text-ink-muted max-w-md">
+            <p className="text-pearl-muted max-w-md">
               {failed ? t.order.failedLede : t.order.pendingLede}
             </p>
             <form action={retryPaymentAction.bind(null, order.number, token)}>
@@ -120,41 +122,41 @@ async function OrderView({ params, searchParams }: PageProps<"/order/[number]">)
             <span>
               {l.product_name}
               {l.variant_label ? ` · ${l.variant_label}` : ""}{" "}
-              <span className="text-ink-muted">× {l.qty}</span>
+              <span className="text-pearl-muted">× {l.qty}</span>
             </span>
             <span className="numeric">{formatAED(l.line_total_fils)}</span>
           </li>
         ))}
       </ul>
-      <dl className="numeric border-burgundy/15 mt-6 flex flex-col gap-2 border-t pt-4 text-sm">
+      <dl className="numeric border-pink/15 mt-6 flex flex-col gap-2 border-t pt-4 text-sm">
         <div className="flex justify-between">
           <dt>Delivery</dt>
           <dd>{order.delivery_fee_fils ? formatAED(order.delivery_fee_fils) : "Free"}</dd>
         </div>
-        <div className="text-ink-muted flex justify-between">
+        <div className="text-pearl-muted flex justify-between">
           <dt>{order.prices_include_vat ? "Includes VAT" : "VAT"}</dt>
           <dd>{formatAED(order.vat_fils)}</dd>
         </div>
-        <div className="font-display text-burgundy flex justify-between text-xl">
+        <div className="font-display text-pink flex justify-between text-xl">
           <dt>Total</dt>
           <dd>{formatAED(order.total_fils)}</dd>
         </div>
       </dl>
       <div className="mt-10 grid gap-6 text-sm sm:grid-cols-2">
         <div>
-          <p className="eyebrow text-gold-ink mb-2">Delivering to</p>
+          <p className="eyebrow text-pink/70 mb-2">Delivering to</p>
           <p>{order.contact_name}</p>
-          <p className="text-ink-muted">
+          <p className="text-pearl-muted">
             {[address.line1, address.line2, address.area, address.city].filter(Boolean).join(", ")}
           </p>
           {order.contact_phone ? (
-            <p className="text-ink-muted">{formatPhone(order.contact_phone)}</p>
+            <p className="text-pearl-muted">{formatPhone(order.contact_phone)}</p>
           ) : null}
         </div>
         <div className="sm:text-end">
           <Link
             href={`/track?number=${order.number}`}
-            className="eyebrow text-burgundy underline underline-offset-4"
+            className="eyebrow text-pink underline underline-offset-4"
           >
             {t.order.track}
           </Link>

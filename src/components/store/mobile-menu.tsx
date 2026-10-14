@@ -22,7 +22,7 @@ export function MobileMenu() {
         aria-expanded={open}
         className="-ms-2 inline-flex size-11 items-center justify-center rounded-full hover:bg-current/10"
       >
-        <Menu className="size-5" strokeWidth={1.5} />
+        <Menu className="text-pearl size-5" strokeWidth={1.25} />
       </button>
       {loaded ? <MobileMenuSheet open={open} setOpen={setOpen} /> : null}
     </>

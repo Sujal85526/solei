@@ -91,14 +91,14 @@ export default async function ProductPage({ params }: PageProps<"/products/[slug
               {product.destination ? (
                 <Link
                   href={`/destinations/${product.destination.slug}`}
-                  className="eyebrow text-gold-ink self-start hover:opacity-70"
+                  className="eyebrow text-pink/70 self-start hover:opacity-70"
                 >
                   {product.destination.name} · {product.destination.region}
                 </Link>
               ) : null}
               <h1 className="text-5xl leading-[1.02] sm:text-6xl">{product.name}</h1>
               {product.destination?.mood ? (
-                <p className="font-display text-ink/80 text-xl leading-relaxed italic">
+                <p className="font-display text-pearl/80 text-xl leading-relaxed italic">
                   {product.destination.mood}
                 </p>
               ) : null}
@@ -111,19 +111,19 @@ export default async function ProductPage({ params }: PageProps<"/products/[slug
             <OrnamentDivider />
 
             {product.description ? (
-              <p className="text-ink/85 text-base leading-relaxed">{product.description}</p>
+              <p className="text-pearl/85 text-base leading-relaxed">{product.description}</p>
             ) : null}
 
             {notes.length ? (
               <section aria-labelledby="notes-title" className="flex flex-col gap-4">
-                <h2 id="notes-title" className="eyebrow text-gold-ink font-display text-xs">
+                <h2 id="notes-title" className="eyebrow text-pink/70 font-display text-xs">
                   {t.product.notes}
                 </h2>
-                <dl className="divide-burgundy/10 border-burgundy/10 divide-y border-y">
+                <dl className="divide-pink/10 border-pink/10 divide-y border-y">
                   {notes.map(([label, list]) => (
                     <div key={label} className="grid grid-cols-[6rem_1fr] gap-4 py-3 text-sm">
-                      <dt className="text-ink-muted tracking-[0.18em] uppercase">{label}</dt>
-                      <dd className="text-ink">{list.join(", ")}</dd>
+                      <dt className="text-pearl-muted tracking-[0.18em] uppercase">{label}</dt>
+                      <dd className="text-pearl">{list.join(", ")}</dd>
                     </div>
                   ))}
                 </dl>
@@ -131,38 +131,38 @@ export default async function ProductPage({ params }: PageProps<"/products/[slug
             ) : null}
 
             {product.destination ? (
-              <aside className="bg-pink-wash flex items-center gap-5 p-5 sm:p-6">
+              <aside className="bg-pink/10 flex items-center gap-5 p-5 sm:p-6">
                 <div aria-hidden className="shrink-0">
                   <PassportStamp
                     label={product.destination.name}
                     tilt={-8}
-                    className="bg-cream/70 size-20"
+                    className="bg-noir/70 size-20"
                     compact
                   />
                 </div>
                 <div className="flex flex-col gap-1.5">
-                  <p className="eyebrow text-burgundy text-[0.65rem]">{t.product.stampTitle}</p>
-                  <p className="text-ink/85 text-sm leading-relaxed">
+                  <p className="eyebrow text-pink text-[0.65rem]">{t.product.stampTitle}</p>
+                  <p className="text-pearl/85 text-sm leading-relaxed">
                     {t.product.stampNote(product.destination.name)}
                   </p>
                 </div>
               </aside>
             ) : null}
 
-            <dl className="text-ink-muted grid grid-cols-2 gap-4 text-sm">
+            <dl className="text-pearl-muted grid grid-cols-2 gap-4 text-sm">
               <div className="flex flex-col gap-1">
-                <dt className="eyebrow text-gold-ink text-[0.6rem]">{t.product.category}</dt>
+                <dt className="eyebrow text-pink/70 text-[0.6rem]">{t.product.category}</dt>
                 <dd>
                   <Link
                     href={`/shop/${product.category.slug}`}
-                    className="text-burgundy decoration-gold underline underline-offset-4"
+                    className="text-pink decoration-gold underline underline-offset-4"
                   >
                     {category?.name ?? product.category.name}
                   </Link>
                 </dd>
               </div>
               <div className="flex flex-col gap-1">
-                <dt className="eyebrow text-gold-ink text-[0.6rem]">{t.product.size}</dt>
+                <dt className="eyebrow text-pink/70 text-[0.6rem]">{t.product.size}</dt>
                 <dd>{product.variants.map((v) => v.label).join(" · ")}</dd>
               </div>
             </dl>
@@ -170,7 +170,7 @@ export default async function ProductPage({ params }: PageProps<"/products/[slug
         </div>
       </Container>
 
-      <section aria-labelledby="related-title" className="bg-sand py-20 sm:py-28">
+      <section aria-labelledby="related-title" className="bg-wine py-20 sm:py-28">
         <Container size="wide">
           <div className="mb-12 flex flex-col justify-between gap-4 sm:flex-row sm:items-end">
             <div className="flex flex-col gap-3">
@@ -179,7 +179,7 @@ export default async function ProductPage({ params }: PageProps<"/products/[slug
                 {t.product.related}
               </h2>
             </div>
-            <Link href="/shop" className="eyebrow text-burgundy shrink-0 hover:opacity-70">
+            <Link href="/shop" className="eyebrow text-pink shrink-0 hover:opacity-70">
               {t.shop.viewAll}
             </Link>
           </div>

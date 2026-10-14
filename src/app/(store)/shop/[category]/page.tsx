@@ -44,7 +44,7 @@ export default async function CategoryPage({ params }: PageProps<"/shop/[categor
     <>
       <section
         aria-labelledby="category-title"
-        className="bg-burgundy text-cream relative isolate overflow-hidden"
+        className="bg-pink text-pink relative isolate overflow-hidden"
       >
         <div className="mx-auto grid max-w-[90rem] lg:grid-cols-12">
           <div className="relative aspect-[4/3] sm:aspect-[16/9] lg:order-2 lg:col-span-7 lg:aspect-auto lg:min-h-[32rem]">
@@ -106,7 +106,7 @@ export default async function CategoryPage({ params }: PageProps<"/shop/[categor
         ) : (
           <div className="flex flex-col items-center gap-6 py-12 text-center">
             <Eyebrow lines>{t.shop.comingSoon}</Eyebrow>
-            <p className="font-display text-burgundy max-w-md text-2xl leading-snug italic">
+            <p className="font-display text-pink max-w-md text-2xl leading-snug italic">
               {t.shop.comingSoonLede}
             </p>
           </div>
@@ -114,7 +114,7 @@ export default async function CategoryPage({ params }: PageProps<"/shop/[categor
         <div className="mt-20 flex justify-center">
           <Link
             href="/shop"
-            className="eyebrow text-burgundy hover:text-burgundy/70 inline-flex items-center gap-3"
+            className="eyebrow text-pink hover:text-pink/70 inline-flex items-center gap-3"
           >
             <ArrowLeft className="size-4 rtl:rotate-180" strokeWidth={1.5} />
             {t.shop.viewAll}

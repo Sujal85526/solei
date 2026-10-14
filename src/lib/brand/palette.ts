@@ -25,6 +25,14 @@ export const palette = {
   /** Darker gold usable for small text on cream (AA). */
   goldInk: "#7A5A2B",
   white: "#FFFFFF",
+  /** Darkest wine-black — storefront base. */
+  noir: "#170510",
+  /** Deep wine — alternating dark sections and cards. */
+  wine: "#2A0A16",
+  /** Body text on dark. */
+  pearl: "#F1E4DE",
+  /** Secondary text on dark. */
+  pearlMuted: "#C9AFB2",
   /** Error/destructive. */
   danger: "#A3172D",
   /** Success. */
@@ -49,6 +57,13 @@ export const contrastPairs: { fg: PaletteKey; bg: PaletteKey; min: number; use: 
   { fg: "goldInk", bg: "cream", min: 4.5, use: "small gold labels" },
   { fg: "gold", bg: "burgundy", min: 3, use: "large gold display on burgundy" },
   { fg: "ink", bg: "white", min: 4.5, use: "admin surfaces" },
+  { fg: "pink", bg: "noir", min: 4.5, use: "storefront headlines on noir" },
+  { fg: "pink", bg: "wine", min: 4.5, use: "headlines on wine sections" },
+  { fg: "pearl", bg: "noir", min: 4.5, use: "storefront body on noir" },
+  { fg: "pearlMuted", bg: "noir", min: 4.5, use: "secondary text on noir" },
+  { fg: "pearlMuted", bg: "wine", min: 4.5, use: "secondary text on wine" },
+  { fg: "pearl", bg: "burgundy", min: 4.5, use: "body on burgundy" },
+  { fg: "burgundy", bg: "pink", min: 4.5, use: "text on blush panels" },
   { fg: "danger", bg: "cream", min: 4.5, use: "error text" },
   { fg: "danger", bg: "white", min: 4.5, use: "error text in admin" },
   { fg: "success", bg: "white", min: 4.5, use: "success text in admin" },

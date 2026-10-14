@@ -46,7 +46,7 @@ export function ProductGallery({ images, name }: { images: StoreImage[]; name: s
           onScroll={many ? onScroll : undefined}
           tabIndex={many ? 0 : undefined}
           aria-roledescription={many ? "carousel" : undefined}
-          className="bg-sand flex snap-x snap-mandatory [scrollbar-width:none] overflow-x-auto overscroll-x-contain [&::-webkit-scrollbar]:hidden"
+          className="bg-wine flex snap-x snap-mandatory [scrollbar-width:none] overflow-x-auto overscroll-x-contain [&::-webkit-scrollbar]:hidden"
         >
           {images.map((img, i) => (
             <div
@@ -84,7 +84,7 @@ export function ProductGallery({ images, name }: { images: StoreImage[]; name: s
                 <span
                   className={cn(
                     "block h-1.5 rounded-full transition-all duration-300",
-                    i === active ? "bg-cream w-5" : "bg-cream/60 w-1.5",
+                    i === active ? "bg-noir w-5" : "bg-noir/60 w-1.5",
                   )}
                 />
               </button>
@@ -102,9 +102,9 @@ export function ProductGallery({ images, name }: { images: StoreImage[]; name: s
                 aria-label={t.product.showImage(i + 1)}
                 aria-current={i === active ? "true" : undefined}
                 className={cn(
-                  "bg-sand relative block aspect-[4/5] w-full overflow-hidden transition-all duration-300",
+                  "bg-wine relative block aspect-[4/5] w-full overflow-hidden transition-all duration-300",
                   i === active
-                    ? "ring-burgundy ring-offset-cream ring-1 ring-offset-2"
+                    ? "ring-pink ring-offset-cream ring-1 ring-offset-2"
                     : "opacity-60 hover:opacity-100",
                 )}
               >

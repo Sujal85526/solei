@@ -18,10 +18,10 @@ export function SiteFooter({ contact = {} }: { contact?: FooterContact }) {
   const igHandle = contact.instagramHandle ?? siteDefaults.instagram.handle;
   const igUrl = contact.instagramUrl ?? siteDefaults.instagram.url;
   return (
-    <footer className="bg-burgundy-deep text-cream">
+    <footer className="border-pink/10 bg-noir text-pearl border-t">
       <div className="mx-auto grid max-w-[90rem] gap-12 px-5 py-16 sm:px-8 md:grid-cols-12 lg:px-12">
         <div className="flex flex-col gap-5 md:col-span-4">
-          <Logo className="text-pink h-9" />
+          <Logo className="text-pink h-9 w-[5.45rem] self-start" />
           <p className="font-display text-xl italic">{t.brand.tagline}</p>
           <PostmarkWaves className="text-pink/40 w-32" />
         </div>

@@ -34,7 +34,7 @@ export function ProductCard({
       className="group block focus-visible:outline-none"
       data-testid="product-card"
     >
-      <div className="bg-sand group-focus-visible:ring-burgundy relative aspect-[4/5] overflow-hidden group-focus-visible:ring-2 group-focus-visible:ring-offset-2">
+      <div className="bg-wine group-focus-visible:ring-pink relative aspect-[4/5] overflow-hidden group-focus-visible:ring-2 group-focus-visible:ring-offset-2">
         <Image
           src={image.url}
           alt={image.alt}
@@ -51,27 +51,25 @@ export function ProductCard({
           className="outline-cream/60 pointer-events-none absolute inset-2.5 outline outline-1"
         />
         {soldOut ? (
-          <span className="bg-cream/95 text-burgundy eyebrow absolute start-4 top-4 px-3 py-1.5 text-[0.6rem]">
+          <span className="bg-noir/95 text-pink eyebrow absolute start-4 top-4 px-3 py-1.5 text-[0.6rem]">
             {t.shop.soldOut}
           </span>
         ) : null}
       </div>
       <div className="flex flex-col gap-1.5 pt-4">
         {product.destination ? (
-          <p className="eyebrow text-gold-ink text-[0.65rem]">
+          <p className="eyebrow text-pink/70 text-[0.65rem]">
             {product.destination.name}
-            <span className="text-ink-muted/70 hidden xl:inline">
+            <span className="text-pearl-muted/70 hidden xl:inline">
               {" "}
               · {product.destination.region}
             </span>
           </p>
         ) : null}
-        <h3 className="font-display text-burgundy text-lg leading-snug sm:text-xl">
-          {product.name}
-        </h3>
+        <h3 className="font-display text-pink text-lg leading-snug sm:text-xl">{product.name}</h3>
         <p className="flex items-baseline justify-between gap-3 text-sm">
-          <span className="text-ink-muted">{sizeLabel || product.category.name}</span>
-          <span className="numeric text-burgundy font-medium">
+          <span className="text-pearl-muted">{sizeLabel || product.category.name}</span>
+          <span className="numeric text-pink font-medium">
             {varies ? `${t.shop.from} ` : ""}
             {formatAED(from)}
           </span>
@@ -84,10 +82,10 @@ export function ProductCard({
 export function ProductCardSkeleton() {
   return (
     <div aria-hidden className="animate-pulse">
-      <div className="bg-sand aspect-[4/5]" />
-      <div className="bg-sand mt-4 h-3 w-1/3" />
-      <div className="bg-sand mt-3 h-5 w-2/3" />
-      <div className="bg-sand mt-3 h-3 w-1/2" />
+      <div className="bg-wine aspect-[4/5]" />
+      <div className="bg-wine mt-4 h-3 w-1/3" />
+      <div className="bg-wine mt-3 h-5 w-2/3" />
+      <div className="bg-wine mt-3 h-3 w-1/2" />
     </div>
   );
 }
