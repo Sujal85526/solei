@@ -64,6 +64,8 @@ jobs:
             echo "NEXT_PUBLIC_SUPABASE_URL=$API_URL"
             echo "NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=$PUBLISHABLE_KEY"
             echo "SUPABASE_SECRET_KEY=$SECRET_KEY"
+            echo "PAYMENT_PROVIDER=mock"
+            echo "ALLOW_MOCK_PAYMENTS=1"
           } > .env.local
       - run: pnpm exec playwright install --with-deps chromium webkit
       - run: pnpm build
