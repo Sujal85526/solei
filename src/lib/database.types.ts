@@ -2726,6 +2726,7 @@ export type Database = {
           isSetofReturn: false
         }
       }
+      dashboard_summary: { Args: never; Returns: Json }
       event_report_data: { Args: { p_event_ids: string[] }; Returns: Json }
       event_staff_options: {
         Args: never
@@ -2736,6 +2737,9 @@ export type Database = {
           user_id: string
         }[]
       }
+      export_orders: { Args: { p_from: string; p_to: string }; Returns: Json }
+      export_payments: { Args: { p_from: string; p_to: string }; Returns: Json }
+      export_stock_levels: { Args: never; Returns: Json }
       fail_payment: {
         Args: { p_provider: string; p_provider_ref: string; p_reason: string }
         Returns: string
