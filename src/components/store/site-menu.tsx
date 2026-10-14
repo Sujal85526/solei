@@ -10,8 +10,15 @@ import { t } from "@/content/en";
 const item =
   "text-pearl/80 hover:text-pink hover:bg-pink/5 block rounded-sm px-3 py-2.5 text-[0.65rem] tracking-[0.28em] uppercase transition-colors";
 
-/** Header menu: a compact dropdown under the icon with every store page (all screen sizes). */
-export function SiteMenu({ className }: { className?: string }) {
+/** Header menu: a compact dropdown under the icon with every store page. */
+export function SiteMenu({
+  className,
+  align = "end",
+}: {
+  className?: string;
+  /** Which edge of the icon the dropdown lines up with. */
+  align?: "start" | "end";
+}) {
   const [open, setOpen] = useState(false);
   const close = () => setOpen(false);
   return (
@@ -20,9 +27,9 @@ export function SiteMenu({ className }: { className?: string }) {
         <MenuIcon className="size-[1.3rem]" />
       </PopoverTrigger>
       <PopoverContent
-        align="end"
+        align={align}
         sideOffset={10}
-        className="theme-store bg-noir/95 border-pink/15 w-60 gap-0 rounded-sm border p-2 shadow-2xl ring-0 shadow-black/50 backdrop-blur-md"
+        className="theme-store bg-noir border-pink/15 w-60 gap-0 rounded-sm border p-2 shadow-2xl ring-0 shadow-black/50"
       >
         <nav aria-label="Menu">
           <ul>

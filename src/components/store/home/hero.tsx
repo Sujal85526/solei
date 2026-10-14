@@ -15,7 +15,7 @@ export function Hero({ hero }: { hero: HeroContent }) {
     >
       {/* Phones: the landscape photo sits in the lower part and fades into the wall colour, so the
           bottle stays whole under the copy. */}
-      <div className="absolute inset-x-0 top-[30%] bottom-0 sm:top-0">
+      <div className="absolute inset-x-0 top-[30%] bottom-0 overflow-hidden sm:top-0">
         <Image
           src={hero.image}
           alt={hero.alt}
@@ -28,7 +28,7 @@ export function Hero({ hero }: { hero: HeroContent }) {
         />
         <div
           aria-hidden
-          className="absolute inset-x-0 top-0 h-1/3 bg-gradient-to-b from-[#2a0610] to-transparent sm:hidden"
+          className="absolute inset-x-0 -top-px h-2/5 bg-gradient-to-b from-[#2a0610] via-[#2a0610]/60 to-transparent sm:hidden"
         />
       </div>
       <div
