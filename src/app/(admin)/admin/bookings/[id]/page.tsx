@@ -189,6 +189,14 @@ export default async function BookingPage({ params }: PageProps<"/admin/bookings
               </dd>
             </div>
           </dl>
+          {booking.customer_id && can(staff.permissions, "customers.view") ? (
+            <Link
+              href={`/admin/customers/${booking.customer_id}`}
+              className={buttonVariants({ variant: "outline", size: "sm", className: "me-2 mt-4" })}
+            >
+              Customer profile
+            </Link>
+          ) : null}
           <a
             href={waLink(
               booking.contact_phone,
