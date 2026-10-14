@@ -31,8 +31,9 @@ export function PassportBand({
           </h2>
           <p className="max-w-md text-base leading-relaxed">
             Every Solei piece you buy earns a destination stamp — online, at our pop-ups and events.
-            Your passport arrives after {passport.issueAfterPurchases} purchases, or simply ask for
-            one.
+            {passport.issueAfterPurchases
+              ? ` Your passport arrives after ${passport.issueAfterPurchases} purchases, or simply ask for one.`
+              : " Simply ask for your passport at any of our pop-ups."}
           </p>
           <p className="font-display text-2xl leading-snug sm:text-3xl">
             <span className="numeric">{total}</span> stamps = {passport.rewardLabel}.
