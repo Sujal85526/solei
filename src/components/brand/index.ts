@@ -1,5 +1,5 @@
 export { Logo } from "./logo";
-export { BagIcon, InstagramIcon, WhatsAppIcon } from "./icons";
+export { BagIcon, InstagramIcon, MenuIcon, WhatsAppIcon } from "./icons";
 export {
   ArchPalm,
   Eyebrow,

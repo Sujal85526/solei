@@ -28,13 +28,19 @@ export function SectionCopy({
       <Reveal as="p" className="eyebrow text-primary/70">
         {eyebrow}
       </Reveal>
-      <SplitHeading id={id} lines={title} className="mt-5 text-5xl sm:text-6xl" />
+      <SplitHeading
+        id={id}
+        lines={title}
+        className="mt-4 text-4xl sm:mt-5 sm:text-5xl lg:text-6xl"
+      />
       <Reveal delay={250}>
-        <span aria-hidden className="bg-primary/40 mt-8 block h-px w-12" />
+        <span aria-hidden className="bg-primary/40 mt-6 block h-px w-12 sm:mt-8" />
         {children ? (
-          <div className="text-foreground/80 mt-8 text-[0.95rem] leading-relaxed">{children}</div>
+          <div className="text-foreground/80 mt-6 text-sm leading-relaxed sm:mt-8 sm:text-[0.95rem]">
+            {children}
+          </div>
         ) : null}
-        {action ? <div className="mt-10">{action}</div> : null}
+        {action ? <div className="mt-8 sm:mt-10">{action}</div> : null}
       </Reveal>
     </div>
   );

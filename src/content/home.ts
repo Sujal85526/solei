@@ -13,13 +13,13 @@ function editorial(file: string, fallback: string) {
     : fallback;
 }
 
-export type HeroSlide = {
+export type HeroContent = {
   image: string;
   alt: string;
   eyebrow: string;
   title: [string, string];
   cta: { label: string; href: string };
-  /** object-position for the photo (keep the product clear of the copy). */
+  /** object-position for the photo (keep the bottle clear of the copy). */
   focus: string;
 };
 
@@ -28,61 +28,27 @@ export function homeImages() {
     heroBottle: editorial("hero-cannes.jpg", "/images/brand/hero-sprays-arch.jpg"),
     soho: editorial("soho-portrait.jpg", "/images/products/sprays-stone.jpg"),
     window: editorial("sunset-window.jpg", "/images/destinations/monaco.jpg"),
-    booth: editorial("event-booth.jpg", "/images/events/booth-florals.jpg"),
     bag: editorial("solei-bag.jpg", "/images/brand/hero-sprays-arch.jpg"),
   };
 }
 
-/** "More than a fragrance." sequence: moments from our pop-ups and the Solei bag. */
-export function experienceImages() {
-  return [
-    {
-      src: "/images/events/booth-table.jpg",
-      alt: "Solei perfumes, destination cards and passports on a floral pop-up table",
-    },
-    { src: "/images/products/sprays-stone.jpg", alt: "Three Solei all-over sprays on warm stone" },
-    {
-      src: homeImages().bag,
-      alt: "A burgundy Solei gift bag with a satin ribbon in late-afternoon light",
-      position: "35% 50%",
-    },
-    {
-      src: "/images/products/perfumes-trio.jpg",
-      alt: "Cannes, Marbella and Verona perfumes in front of their destination cards",
-    },
-    {
-      src: "/images/events/booth-passport.jpg",
-      alt: "Solei passports and perfumes beneath pink and burgundy flowers",
-    },
-  ];
-}
+/**
+ * Signature Scents shelf: three bottles cut from one photograph, so side by side they read as the
+ * original shelf while each opens its own product page.
+ */
+export const featuredShelf = [
+  { slug: "capri-perfume", image: "/images/editorial/shelf-capri.jpg" },
+  { slug: "marbella-perfume", image: "/images/editorial/shelf-marbella.jpg" },
+  { slug: "verona-perfume", image: "/images/editorial/shelf-verona.jpg" },
+] as const;
 
-export function heroSlides(): HeroSlide[] {
-  const img = homeImages();
-  return [
-    {
-      image: img.heroBottle,
-      alt: "Solei Cannes perfume on a travertine ledge in late-afternoon light",
-      eyebrow: "Made to remain.",
-      title: ["A destination", "in every scent."],
-      cta: { label: "Shop now", href: "/shop" },
-      focus: "24% 70%",
-    },
-    {
-      image: img.window,
-      alt: "Sunset over the sea through an open window with linen curtains",
-      eyebrow: "Private events",
-      title: ["Bring Solei", "to your celebration."],
-      cta: { label: "Enquire", href: "/events" },
-      focus: "70% 60%",
-    },
-    {
-      image: img.bag,
-      alt: "A burgundy Solei gift bag with a satin ribbon on a travertine ledge, palm shadows behind",
-      eyebrow: "The art of gifting",
-      title: ["Wrapped in", "somewhere beautiful."],
-      cta: { label: "Gift now", href: "/shop" },
-      focus: "32% 70%",
-    },
-  ];
+export function heroContent(): HeroContent {
+  return {
+    image: homeImages().heroBottle,
+    alt: "Solei Cannes perfume on a travertine ledge in late-afternoon light",
+    eyebrow: "Made to remain.",
+    title: ["A destination", "in every scent."],
+    cta: { label: "Shop now", href: "/shop" },
+    focus: "24% 70%",
+  };
 }
