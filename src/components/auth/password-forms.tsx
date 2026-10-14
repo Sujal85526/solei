@@ -1,14 +1,16 @@
 "use client";
 
+import { useFormAction } from "@/hooks/use-form-action";
+
 import Link from "next/link";
-import { useActionState } from "react";
+
 import { fieldAria, Field } from "@/components/admin/field";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { forgotPasswordAction, setPasswordAction, type FormState } from "@/modules/auth/actions";
 
 export function ForgotPasswordForm() {
-  const [state, action, pending] = useActionState<FormState, FormData>(forgotPasswordAction, {});
+  const [state, action, pending] = useFormAction<FormState>(forgotPasswordAction, {});
   if (state.message) {
     return (
       <div className="flex flex-col gap-6">
@@ -26,7 +28,7 @@ export function ForgotPasswordForm() {
   }
   const err = state.fieldErrors?.email;
   return (
-    <form action={action} className="flex flex-col gap-5" noValidate>
+    <form {...action} className="flex flex-col gap-5" noValidate>
       <Field label="Email" htmlFor="email" error={err}>
         <Input {...fieldAria("email", err)} type="email" autoComplete="username" className="h-12" />
       </Field>
@@ -44,10 +46,10 @@ export function ForgotPasswordForm() {
 }
 
 export function SetPasswordForm() {
-  const [state, action, pending] = useActionState<FormState, FormData>(setPasswordAction, {});
+  const [state, action, pending] = useFormAction<FormState>(setPasswordAction, {});
   const fe = state.fieldErrors ?? {};
   return (
-    <form action={action} className="flex flex-col gap-5" noValidate>
+    <form {...action} className="flex flex-col gap-5" noValidate>
       {state.error ? (
         <p role="alert" className="text-destructive text-sm">
           {state.error}

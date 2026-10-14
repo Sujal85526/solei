@@ -71,3 +71,14 @@ Open client questions are built as configurable defaults. Each row: what we chos
 - **T21 — Login attempts** (success/failure, MFA failures, resets, logouts) are written to `audit_log` with IP.
 - **T22 — GoTrue revokes a user's other aal1 sessions after a successful MFA verify.** Expected security
   behaviour; e2e tests therefore create a dedicated owner per test.
+
+## Catalog & inventory admin (milestone 5)
+- **T28 — Product photos upload directly from the browser to Supabase Storage** (`products/<productId>/…`,
+  RLS `catalog.manage`, 5 MB, JPG/PNG/WebP/AVIF), then a server action records the row — avoids server-action
+  body limits. The first image is the cover; alt text is editable.
+- **T29 — Variants with stock or sales history can't be deleted** (ledger integrity) — deactivate instead.
+- **T30 — Adjustments**: damage (−) and count corrections (±) always need a reason; transfers lock the source
+  variant row and refuse to go negative; event locations are managed by events, not here.
+- **T31 — Admin forms keep their values after errors** (`useFormAction`): React 19 resets `<form action>`
+  forms after every submit; we dispatch inside a transition instead, while keeping the server-action POST as
+  the pre-hydration fallback (never a GET with field values in the URL).
