@@ -1,8 +1,8 @@
 import { Logo } from "@/components/brand";
 
 /**
- * First-visit intro: burgundy panel and the wordmark with a light sweep across it, then the panel
- * lifts away to reveal the hero (~1.8 s). Server-rendered and CSS-only: hidden unless
+ * Homepage intro: burgundy panel, the wordmark fading in with a light sweep across it, then the
+ * panel fades away to reveal the hero (~2.4 s). Server-rendered and CSS-only: hidden unless
  * the inline motion script set `data-intro` on <html>, so it costs no JavaScript, never blocks the
  * page underneath (which renders and paints normally) and ignores pointer events.
  */
