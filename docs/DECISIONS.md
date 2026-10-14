@@ -289,3 +289,14 @@ Open client questions are built as configurable defaults. Each row: what we chos
 - **T78 — Exports**: Excel (exceljs) with a burgundy brand header, AED / % / date number formats, a summary,
   breakdown sheets and one sheet per event day; CSV is a tidy one-row-per-day × product table (compare: one row
   per event). Both are permission-aware route handlers under `/admin/reports/events/…/export`.
+
+## Event POS (milestone 12)
+- **T79 — One idempotent RPC per sale** (`pos_complete_sale`, keyed by the device's client UUID): catalogue
+  prices, payments must equal the total (split allowed), stock leaves the event's own location (may go negative —
+  a booth sale is never blocked; close-out reconciles), `event_day` is the Asia/Dubai date of when the sale
+  happened on the device (offline sales land on the right day), order status `completed`, then `settle_if_paid`.
+- **T80 — Offline**: every sale is written to IndexedDB before sending; the queue replays on reconnect / every
+  30 s; rejected sales stay visible until dismissed. A service worker (registered only from the POS page) caches
+  the POS page + static assets so it reopens offline; the app is installable (manifest, apple-touch icon).
+- **T81 — Tap count**: tile, tile, Charge, Cash = 4 taps for a 2-perfume cash sale; customer phone is optional
+  on the payment sheet (creates/links the customer for passport stamps).

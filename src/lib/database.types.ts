@@ -848,6 +848,354 @@ export type Database = {
         }
         Relationships: []
       }
+      loyalty_programs: {
+        Row: {
+          created_at: string
+          enabled: boolean
+          id: number
+          name: string
+          updated_at: string
+          updated_by: string | null
+        }
+        Insert: {
+          created_at?: string
+          enabled?: boolean
+          id?: number
+          name?: string
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Update: {
+          created_at?: string
+          enabled?: boolean
+          id?: number
+          name?: string
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Relationships: []
+      }
+      loyalty_rewards: {
+        Row: {
+          created_at: string
+          customer_id: string
+          id: string
+          note: string | null
+          redeemed_at: string | null
+          redeemed_by: string | null
+          redeemed_order_id: string | null
+          redeemed_order_line_id: string | null
+          revoked_at: string | null
+          reward_config: Json
+          reward_label: string
+          reward_type: Database["public"]["Enums"]["loyalty_reward_type"]
+          rule_version_id: string
+          source_order_id: string | null
+          stamps_cost: number
+          status: Database["public"]["Enums"]["loyalty_reward_status"]
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          customer_id: string
+          id?: string
+          note?: string | null
+          redeemed_at?: string | null
+          redeemed_by?: string | null
+          redeemed_order_id?: string | null
+          redeemed_order_line_id?: string | null
+          revoked_at?: string | null
+          reward_config?: Json
+          reward_label: string
+          reward_type: Database["public"]["Enums"]["loyalty_reward_type"]
+          rule_version_id: string
+          source_order_id?: string | null
+          stamps_cost: number
+          status?: Database["public"]["Enums"]["loyalty_reward_status"]
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          customer_id?: string
+          id?: string
+          note?: string | null
+          redeemed_at?: string | null
+          redeemed_by?: string | null
+          redeemed_order_id?: string | null
+          redeemed_order_line_id?: string | null
+          revoked_at?: string | null
+          reward_config?: Json
+          reward_label?: string
+          reward_type?: Database["public"]["Enums"]["loyalty_reward_type"]
+          rule_version_id?: string
+          source_order_id?: string | null
+          stamps_cost?: number
+          status?: Database["public"]["Enums"]["loyalty_reward_status"]
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "loyalty_rewards_customer_id_fkey"
+            columns: ["customer_id"]
+            isOneToOne: false
+            referencedRelation: "customer_summary"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "loyalty_rewards_customer_id_fkey"
+            columns: ["customer_id"]
+            isOneToOne: false
+            referencedRelation: "customers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "loyalty_rewards_redeemed_order_id_fkey"
+            columns: ["redeemed_order_id"]
+            isOneToOne: false
+            referencedRelation: "admin_orders"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "loyalty_rewards_redeemed_order_id_fkey"
+            columns: ["redeemed_order_id"]
+            isOneToOne: false
+            referencedRelation: "order_payment_summary"
+            referencedColumns: ["order_id"]
+          },
+          {
+            foreignKeyName: "loyalty_rewards_redeemed_order_id_fkey"
+            columns: ["redeemed_order_id"]
+            isOneToOne: false
+            referencedRelation: "orders"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "loyalty_rewards_redeemed_order_line_id_fkey"
+            columns: ["redeemed_order_line_id"]
+            isOneToOne: false
+            referencedRelation: "order_lines"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "loyalty_rewards_rule_version_id_fkey"
+            columns: ["rule_version_id"]
+            isOneToOne: false
+            referencedRelation: "loyalty_rule_versions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "loyalty_rewards_source_order_id_fkey"
+            columns: ["source_order_id"]
+            isOneToOne: false
+            referencedRelation: "admin_orders"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "loyalty_rewards_source_order_id_fkey"
+            columns: ["source_order_id"]
+            isOneToOne: false
+            referencedRelation: "order_payment_summary"
+            referencedColumns: ["order_id"]
+          },
+          {
+            foreignKeyName: "loyalty_rewards_source_order_id_fkey"
+            columns: ["source_order_id"]
+            isOneToOne: false
+            referencedRelation: "orders"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      loyalty_rule_versions: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          effective_from: string
+          expiry_months: number | null
+          id: string
+          issue_passport_after_purchases: number | null
+          note: string | null
+          program_id: number
+          qualifying_category_ids: string[]
+          qualifying_product_ids: string[]
+          reward_config: Json
+          reward_items_earn_stamps: boolean
+          reward_label: string
+          reward_type: Database["public"]["Enums"]["loyalty_reward_type"]
+          stamps_for_reward: number
+          stamps_per_item: number
+          version: number
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          effective_from?: string
+          expiry_months?: number | null
+          id?: string
+          issue_passport_after_purchases?: number | null
+          note?: string | null
+          program_id?: number
+          qualifying_category_ids?: string[]
+          qualifying_product_ids?: string[]
+          reward_config?: Json
+          reward_items_earn_stamps?: boolean
+          reward_label: string
+          reward_type: Database["public"]["Enums"]["loyalty_reward_type"]
+          stamps_for_reward: number
+          stamps_per_item: number
+          version: number
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          effective_from?: string
+          expiry_months?: number | null
+          id?: string
+          issue_passport_after_purchases?: number | null
+          note?: string | null
+          program_id?: number
+          qualifying_category_ids?: string[]
+          qualifying_product_ids?: string[]
+          reward_config?: Json
+          reward_items_earn_stamps?: boolean
+          reward_label?: string
+          reward_type?: Database["public"]["Enums"]["loyalty_reward_type"]
+          stamps_for_reward?: number
+          stamps_per_item?: number
+          version?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "loyalty_rule_versions_program_id_fkey"
+            columns: ["program_id"]
+            isOneToOne: false
+            referencedRelation: "loyalty_programs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      loyalty_stamps: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          customer_id: string
+          destination_id: string | null
+          expires_at: string | null
+          id: string
+          kind: Database["public"]["Enums"]["loyalty_stamp_kind"]
+          order_id: string | null
+          order_line_id: string | null
+          reason: string | null
+          reverses_id: string | null
+          reward_id: string | null
+          rule_version_id: string | null
+          stamps: number
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          customer_id: string
+          destination_id?: string | null
+          expires_at?: string | null
+          id?: string
+          kind: Database["public"]["Enums"]["loyalty_stamp_kind"]
+          order_id?: string | null
+          order_line_id?: string | null
+          reason?: string | null
+          reverses_id?: string | null
+          reward_id?: string | null
+          rule_version_id?: string | null
+          stamps: number
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          customer_id?: string
+          destination_id?: string | null
+          expires_at?: string | null
+          id?: string
+          kind?: Database["public"]["Enums"]["loyalty_stamp_kind"]
+          order_id?: string | null
+          order_line_id?: string | null
+          reason?: string | null
+          reverses_id?: string | null
+          reward_id?: string | null
+          rule_version_id?: string | null
+          stamps?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "loyalty_stamps_customer_id_fkey"
+            columns: ["customer_id"]
+            isOneToOne: false
+            referencedRelation: "customer_summary"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "loyalty_stamps_customer_id_fkey"
+            columns: ["customer_id"]
+            isOneToOne: false
+            referencedRelation: "customers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "loyalty_stamps_destination_id_fkey"
+            columns: ["destination_id"]
+            isOneToOne: false
+            referencedRelation: "destinations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "loyalty_stamps_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "admin_orders"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "loyalty_stamps_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "order_payment_summary"
+            referencedColumns: ["order_id"]
+          },
+          {
+            foreignKeyName: "loyalty_stamps_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "orders"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "loyalty_stamps_order_line_id_fkey"
+            columns: ["order_line_id"]
+            isOneToOne: false
+            referencedRelation: "order_lines"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "loyalty_stamps_reverses_id_fkey"
+            columns: ["reverses_id"]
+            isOneToOne: false
+            referencedRelation: "loyalty_stamps"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "loyalty_stamps_reward_id_fkey"
+            columns: ["reward_id"]
+            isOneToOne: false
+            referencedRelation: "loyalty_rewards"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "loyalty_stamps_rule_version_id_fkey"
+            columns: ["rule_version_id"]
+            isOneToOne: false
+            referencedRelation: "loyalty_rule_versions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       notification_log: {
         Row: {
           booking_id: string | null
@@ -1305,6 +1653,72 @@ export type Database = {
             columns: ["event_id"]
             isOneToOne: false
             referencedRelation: "events"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      passports: {
+        Row: {
+          customer_id: string
+          how: Database["public"]["Enums"]["passport_issue_how"]
+          id: string
+          issued_at: string
+          issued_by: string | null
+          number: string
+          order_id: string | null
+        }
+        Insert: {
+          customer_id: string
+          how: Database["public"]["Enums"]["passport_issue_how"]
+          id?: string
+          issued_at?: string
+          issued_by?: string | null
+          number?: string
+          order_id?: string | null
+        }
+        Update: {
+          customer_id?: string
+          how?: Database["public"]["Enums"]["passport_issue_how"]
+          id?: string
+          issued_at?: string
+          issued_by?: string | null
+          number?: string
+          order_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "passports_customer_id_fkey"
+            columns: ["customer_id"]
+            isOneToOne: true
+            referencedRelation: "customer_summary"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "passports_customer_id_fkey"
+            columns: ["customer_id"]
+            isOneToOne: true
+            referencedRelation: "customers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "passports_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "admin_orders"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "passports_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "order_payment_summary"
+            referencedColumns: ["order_id"]
+          },
+          {
+            foreignKeyName: "passports_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "orders"
             referencedColumns: ["id"]
           },
         ]
@@ -2150,6 +2564,30 @@ export type Database = {
           },
         ]
       }
+      loyalty_balances: {
+        Row: {
+          balance: number | null
+          collected: number | null
+          customer_id: string | null
+          last_stamp_at: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "loyalty_stamps_customer_id_fkey"
+            columns: ["customer_id"]
+            isOneToOne: false
+            referencedRelation: "customer_summary"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "loyalty_stamps_customer_id_fkey"
+            columns: ["customer_id"]
+            isOneToOne: false
+            referencedRelation: "customers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       order_payment_summary: {
         Row: {
           order_id: string | null
@@ -2304,8 +2742,118 @@ export type Database = {
       }
       get_booking_quote: { Args: { p_token: string }; Returns: Json }
       has_permission: { Args: { p_key: string }; Returns: boolean }
+      is_own_customer: { Args: { p_customer_id: string }; Returns: boolean }
       is_own_order: { Args: { p_order_id: string }; Returns: boolean }
       is_staff: { Args: never; Returns: boolean }
+      link_customer_account: { Args: never; Returns: string }
+      loyalty_active_rule: {
+        Args: { p_at?: string }
+        Returns: {
+          created_at: string
+          created_by: string | null
+          effective_from: string
+          expiry_months: number | null
+          id: string
+          issue_passport_after_purchases: number | null
+          note: string | null
+          program_id: number
+          qualifying_category_ids: string[]
+          qualifying_product_ids: string[]
+          reward_config: Json
+          reward_items_earn_stamps: boolean
+          reward_label: string
+          reward_type: Database["public"]["Enums"]["loyalty_reward_type"]
+          stamps_for_reward: number
+          stamps_per_item: number
+          version: number
+        }
+        SetofOptions: {
+          from: "*"
+          to: "loyalty_rule_versions"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
+      loyalty_adjust_stamps: {
+        Args: {
+          p_customer_id: string
+          p_destination_id?: string
+          p_reason: string
+          p_stamps: number
+        }
+        Returns: number
+      }
+      loyalty_award_order: { Args: { p_order_id: string }; Returns: number }
+      loyalty_expire_stamps: {
+        Args: { p_customer_id: string }
+        Returns: number
+      }
+      loyalty_issue_passport: {
+        Args: {
+          p_customer_id: string
+          p_how?: Database["public"]["Enums"]["passport_issue_how"]
+        }
+        Returns: string
+      }
+      loyalty_line_qualifies: {
+        Args: {
+          p_category_id: string
+          p_is_reward: boolean
+          p_product_id: string
+          r: Database["public"]["Tables"]["loyalty_rule_versions"]["Row"]
+        }
+        Returns: boolean
+      }
+      loyalty_overview: {
+        Args: never
+        Returns: {
+          members: number
+          passports_issued: number
+          rewards_available: number
+          rewards_redeemed: number
+          stamps_30d: number
+          stamps_collected: number
+          stamps_on_cards: number
+        }[]
+      }
+      loyalty_redeem_reward: {
+        Args: {
+          p_location_id?: string
+          p_note?: string
+          p_order_id?: string
+          p_reward_id: string
+          p_variant_id?: string
+        }
+        Returns: {
+          order_id: string
+          order_number: string
+        }[]
+      }
+      loyalty_reverse_order: {
+        Args: {
+          p_order_id: string
+          p_reason: string
+          p_restore_rewards?: boolean
+        }
+        Returns: number
+      }
+      loyalty_reward_options: {
+        Args: { p_reward_id: string }
+        Returns: {
+          destination_name: string
+          on_hand: number
+          price_fils: number
+          product_name: string
+          sku: string
+          variant_id: string
+          variant_label: string
+        }[]
+      }
+      loyalty_save_rules: { Args: { p: Json }; Returns: string }
+      loyalty_settle: {
+        Args: { p_customer_id: string; p_order_id?: string }
+        Returns: number
+      }
       marketing_opt_in: {
         Args: { p_channel: string; p_email?: string; p_phone?: string }
         Returns: undefined
@@ -2348,6 +2896,19 @@ export type Database = {
           status: Database["public"]["Enums"]["event_status"]
           type: Database["public"]["Enums"]["event_type"]
         }[]
+      }
+      pos_complete_sale: {
+        Args: { p: Json }
+        Returns: {
+          existing: boolean
+          order_id: string
+          order_number: string
+          total_fils: number
+        }[]
+      }
+      pos_day_summary: {
+        Args: { p_day?: string; p_event_id: string }
+        Returns: Json
       }
       quote_payment_order: {
         Args: { p_kind: string; p_token: string }
@@ -2569,6 +3130,18 @@ export type Database = {
         | "not_applicable"
       fulfilment_type: "delivery" | "pickup" | "handed_over"
       location_kind: "warehouse" | "event" | "other"
+      loyalty_reward_status: "available" | "redeemed" | "expired" | "revoked"
+      loyalty_reward_type:
+        | "choose_from_category"
+        | "specific_products"
+        | "fixed_amount"
+        | "percent"
+      loyalty_stamp_kind:
+        | "earned"
+        | "manual"
+        | "reversed"
+        | "redeemed"
+        | "expired"
       notification_audience: "customer" | "owner"
       notification_channel: "email" | "whatsapp"
       notification_status: "sent" | "failed" | "skipped"
@@ -2587,6 +3160,7 @@ export type Database = {
         | "delivered"
         | "completed"
         | "cancelled"
+      passport_issue_how: "auto" | "request" | "manual"
       payment_kind: "payment" | "refund"
       payment_link_status: "active" | "paid" | "expired" | "cancelled"
       payment_method:
@@ -2793,6 +3367,20 @@ export const Constants = {
       ],
       fulfilment_type: ["delivery", "pickup", "handed_over"],
       location_kind: ["warehouse", "event", "other"],
+      loyalty_reward_status: ["available", "redeemed", "expired", "revoked"],
+      loyalty_reward_type: [
+        "choose_from_category",
+        "specific_products",
+        "fixed_amount",
+        "percent",
+      ],
+      loyalty_stamp_kind: [
+        "earned",
+        "manual",
+        "reversed",
+        "redeemed",
+        "expired",
+      ],
       notification_audience: ["customer", "owner"],
       notification_channel: ["email", "whatsapp"],
       notification_status: ["sent", "failed", "skipped"],
@@ -2813,6 +3401,7 @@ export const Constants = {
         "completed",
         "cancelled",
       ],
+      passport_issue_how: ["auto", "request", "manual"],
       payment_kind: ["payment", "refund"],
       payment_link_status: ["active", "paid", "expired", "cancelled"],
       payment_method: [

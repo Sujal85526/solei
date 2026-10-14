@@ -10,6 +10,8 @@ export const metadata: Metadata = {
   description:
     "Solei is a destination-led fragrance house from Abu Dhabi. Perfumes and all-over sprays inspired by Cannes, Capri, Santorini and more. Made to remain.",
   openGraph: { siteName: "Solei", locale: "en_AE", type: "website" },
+  appleWebApp: { capable: true, title: "Solei POS", statusBarStyle: "black-translucent" },
+  icons: { apple: "/icons/apple-touch-icon.png" },
 };
 
 export const viewport: Viewport = {
