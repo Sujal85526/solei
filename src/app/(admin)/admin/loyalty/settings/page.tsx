@@ -66,10 +66,16 @@ export default async function LoyaltySettingsPage() {
           )}
         </AdminSection>
 
-        <AdminSection title="Rule history" description="Newest first. Stamps keep the version they were earned under.">
+        <AdminSection
+          title="Rule history"
+          description="Newest first. Stamps keep the version they were earned under."
+        >
           <ol className="flex flex-col gap-4" aria-label="Rule versions">
             {programme.versions.map((v) => (
-              <li key={v.id} className="flex flex-col gap-1.5 border-b pb-4 last:border-0 last:pb-0">
+              <li
+                key={v.id}
+                className="flex flex-col gap-1.5 border-b pb-4 last:border-0 last:pb-0"
+              >
                 <div className="flex items-center justify-between gap-2">
                   <span className="text-sm font-semibold">Version {v.version}</span>
                   {v.id === rule?.id ? <Badge variant="success">In force</Badge> : null}

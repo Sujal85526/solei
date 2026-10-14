@@ -93,10 +93,7 @@ export async function getProgrammeAdmin() {
   const supabase = await createClient();
   const [programme, versions, categories, products] = await Promise.all([
     supabase.from("loyalty_programs").select("enabled, updated_at").eq("id", 1).single(),
-    supabase
-      .from("loyalty_rule_versions")
-      .select("*")
-      .order("version", { ascending: false }),
+    supabase.from("loyalty_rule_versions").select("*").order("version", { ascending: false }),
     supabase.from("categories").select("id, name").order("sort"),
     supabase.from("products").select("id, name, category_id, active").order("sort"),
   ]);
@@ -105,7 +102,10 @@ export async function getProgrammeAdmin() {
   return {
     enabled: must(programme, "loyalty programme").enabled,
     active: activeVersion(rules),
-    versions: rules.map((r) => ({ ...r, createdByName: r.createdBy ? names.get(r.createdBy) : null })),
+    versions: rules.map((r) => ({
+      ...r,
+      createdByName: r.createdBy ? names.get(r.createdBy) : null,
+    })),
     categories: must(categories, "categories"),
     products: must(products, "products"),
   };
@@ -264,6 +264,35 @@ export async function getCustomerLoyalty(
     })),
     ledger: entries,
     ledgerTotal: ledger.count ?? entries.length,
+  };
+}
+
+export type MyPassport =
+  | { status: "signed_out" }
+  | { status: "no_customer"; email: string }
+  | { status: "ok"; name: string; card: CustomerLoyalty };
+
+/**
+ * The signed-in customer's passport (request-time: reads the session). Links the auth user to
+ * the customer with the same email on first visit; never creates a customer.
+ */
+export async function getMyPassport(): Promise<MyPassport> {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) return { status: "signed_out" };
+  const { data: customerId, error } = await supabase.rpc("link_customer_account");
+  if (error) throw new Error(`passport link failed: ${error.message}`);
+  if (!customerId) return { status: "no_customer", email: user.email ?? "" };
+  const [{ data: customer }, card] = await Promise.all([
+    supabase.from("customers").select("name").eq("id", customerId).maybeSingle(),
+    getCustomerLoyalty(customerId, { ledgerLimit: 200 }),
+  ]);
+  return {
+    status: "ok",
+    name: customer?.name?.trim().split(/\s+/)[0] || "traveller",
+    card,
   };
 }
 

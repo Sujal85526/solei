@@ -7,14 +7,13 @@ import { signedStamps } from "@/modules/loyalty/format";
 import type { LedgerEntry } from "@/modules/loyalty/queries";
 import { rewardStatusLabels, stampKindLabels } from "@/modules/loyalty/schema";
 
-const kindVariant: Record<StampKind, "success" | "secondary" | "destructive" | "pink" | "muted"> =
-  {
-    earned: "success",
-    manual: "secondary",
-    reversed: "destructive",
-    redeemed: "pink",
-    expired: "muted",
-  };
+const kindVariant: Record<StampKind, "success" | "secondary" | "destructive" | "pink" | "muted"> = {
+  earned: "success",
+  manual: "secondary",
+  reversed: "destructive",
+  redeemed: "pink",
+  expired: "muted",
+};
 
 export function StampKindBadge({ kind }: { kind: StampKind }) {
   return <Badge variant={kindVariant[kind]}>{stampKindLabels[kind]}</Badge>;

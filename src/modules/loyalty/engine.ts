@@ -68,7 +68,12 @@ export type Card = {
   paidPurchases: number;
 };
 
-export const emptyCard = (): Card => ({ entries: [], rewards: [], passport: null, paidPurchases: 0 });
+export const emptyCard = (): Card => ({
+  entries: [],
+  rewards: [],
+  passport: null,
+  paidPurchases: 0,
+});
 
 let seq = 0;
 const nextId = (prefix: string) => `${prefix}-${++seq}`;

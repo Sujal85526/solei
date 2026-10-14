@@ -152,7 +152,13 @@ describe("loyalty engine", () => {
   it("applies a rule change going forward and keeps earned stamps", () => {
     let card = buy(emptyCard(), [3, 2]);
     expect(balanceOf(card.entries)).toBe(5);
-    const v2: LoyaltyRule = { ...launch, id: "v2", version: 2, stampsPerItem: 2, stampsForReward: 10 };
+    const v2: LoyaltyRule = {
+      ...launch,
+      id: "v2",
+      version: 2,
+      stampsPerItem: 2,
+      stampsForReward: 10,
+    };
     const r = awardOrder(card, v2, true, order(line(2)));
     card = r.card;
     // 5 old + 4 new = 9: not yet 10.

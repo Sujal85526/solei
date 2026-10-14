@@ -61,7 +61,10 @@ export default async function CustomerPassportPage({
         />
       </div>
       <div className="grid gap-6 lg:grid-cols-[1fr_22rem]">
-        <AdminSection title="Stamps" description="Newest first. Every change is also in the activity log.">
+        <AdminSection
+          title="Stamps"
+          description="Newest first. Every change is also in the activity log."
+        >
           <LedgerList entries={card.ledger} />
         </AdminSection>
         <AdminSection title="Rewards">
@@ -80,7 +83,10 @@ export default async function CustomerPassportPage({
                   {r.redeemedOrder ? (
                     <p className="text-xs">
                       Redeemed on{" "}
-                      <Link href={`/admin/orders/${r.redeemedOrder.id}`} className="font-mono underline">
+                      <Link
+                        href={`/admin/orders/${r.redeemedOrder.id}`}
+                        className="font-mono underline"
+                      >
                         {r.redeemedOrder.number}
                       </Link>
                       {r.redeemedAt ? ` · ${formatBusinessDate(r.redeemedAt)}` : ""}

@@ -21,7 +21,9 @@ export default async function LoyaltyPage() {
     getProgrammeAdmin(),
     recentActivity(25),
   ]);
-  const names = new Map([...programme.categories, ...programme.products].map((x) => [x.id, x.name]));
+  const names = new Map(
+    [...programme.categories, ...programme.products].map((x) => [x.id, x.name]),
+  );
   const rule = programme.active;
 
   return (

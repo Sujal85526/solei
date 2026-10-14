@@ -44,7 +44,14 @@ export function AuthCallback() {
       <div className="flex max-w-sm flex-col gap-3">
         <h1 className="text-3xl">Link expired</h1>
         <p className="text-ink-muted text-sm">{error}</p>
-        <a href="/admin/login" className="eyebrow text-burgundy underline underline-offset-4">
+        <a
+          href={
+            safeLocalPath(params.get("next"), "/admin").startsWith("/admin")
+              ? "/admin/login"
+              : "/passport?error=link"
+          }
+          className="eyebrow text-burgundy underline underline-offset-4"
+        >
           Back to sign in
         </a>
       </div>

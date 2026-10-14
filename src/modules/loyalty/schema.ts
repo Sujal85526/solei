@@ -77,8 +77,13 @@ export const loyaltySettingsSchema = z
     note: z.string().trim().max(300).optional().default(""),
   })
   .superRefine((v, ctx) => {
-    const issue = (path: string, message: string) => ctx.addIssue({ code: "custom", path: [path], message });
-    if (v.qualifying === "some" && !v.qualifyingCategoryIds.length && !v.qualifyingProductIds.length)
+    const issue = (path: string, message: string) =>
+      ctx.addIssue({ code: "custom", path: [path], message });
+    if (
+      v.qualifying === "some" &&
+      !v.qualifyingCategoryIds.length &&
+      !v.qualifyingProductIds.length
+    )
       issue("qualifyingCategoryIds", "Choose at least one category or product");
     if (v.rewardType === "choose_from_category" && !v.rewardCategoryId)
       issue("rewardCategoryId", "Choose the category");
