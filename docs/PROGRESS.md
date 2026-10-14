@@ -12,18 +12,19 @@ Phase 1 milestones (one branch + PR each, in order). See `docs/BUILD_PROMPT.md` 
 | 5 | `feat/admin-catalog-inventory` | ✅ merged | [#8](https://github.com/Sujal85526/solei/pull/8) |
 | 6 | `feat/storefront-shop-cart` | ✅ merged | [#7](https://github.com/Sujal85526/solei/pull/7) |
 | 7 | `feat/checkout-payments` | 🔄 in review | |
-| 8 | `feat/orders-admin-notifications` | 🔄 in review | |
-| 9 | `feat/manual-orders-payment-links` | ⬜ | |
-| 10 | `feat/customers` | 🔄 in review | [#15](https://github.com/Sujal85526/solei/pull/15) |
-| 11 | `feat/event-calendar` | 🔄 in review | [#10](https://github.com/Sujal85526/solei/pull/10) |
+| 8 | `feat/orders-admin-notifications` | ✅ merged | [#14](https://github.com/Sujal85526/solei/pull/14) |
+| 9 | `feat/manual-orders-payment-links` | 🔄 in review |  |
+| 10 | `feat/customers` | ✅ merged | [#15](https://github.com/Sujal85526/solei/pull/15) |
+| 11 | `feat/event-calendar` | ✅ merged | [#10](https://github.com/Sujal85526/solei/pull/10) |
 | 12 | `feat/event-pos` | ⬜ | |
 | 13 | `feat/event-reports` | ⬜ | |
-| 14 | `feat/event-booking` | 🔄 in review | [#16](https://github.com/Sujal85526/solei/pull/16) |
+| 14 | `feat/event-booking` | ✅ merged | [#16](https://github.com/Sujal85526/solei/pull/16) |
 | 15 | `feat/loyalty-passport` | ⬜ | |
 | 16 | `feat/dashboard-exports` | ⬜ | |
 | 17 | `chore/hardening` | ⬜ | |
 
 ## Current notes
+- **CI is paused** (manual-only workflow) at the user's request — merge after local checks; re-enable in M17.
 - **Dev DB is hosted** (see DECISIONS T38): `.env.local` points at `https://ljjpyjzkbexucaqmxbas.supabase.co`.
   Push new migrations with `SUPABASE_ACCESS_TOKEN=… SUPABASE_DB_PASSWORD=… pnpm exec supabase db push`
   (both in the macOS Keychain: `supabase-access-token`, `supabase-solei-db-password`). Run e2e in CI (or start
