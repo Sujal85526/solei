@@ -1,5 +1,6 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { createAdminClient } from "@/lib/supabase/server";
+import { onBookingOrderPaid } from "@/modules/bookings/events";
 import { onOrderPaid, onPaymentFailed } from "@/modules/orders/events";
 import { providerByName } from "@/providers/payment";
 import { WebhookSignatureError } from "@/providers/payment/types";
@@ -55,7 +56,10 @@ export async function POST(
         })
         .single();
       if (error) throw new Error(error.message);
-      if (data.newly_paid) await onOrderPaid({ id: data.order_id, number: data.order_number });
+      if (data.newly_paid) {
+        await onOrderPaid({ id: data.order_id, number: data.order_number });
+        await onBookingOrderPaid(data.order_id);
+      }
     } else if (event.kind === "failed") {
       const { data: failedOrderId, error } = await admin.rpc("fail_payment", {
         p_provider: provider.name,
