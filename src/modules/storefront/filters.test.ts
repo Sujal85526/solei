@@ -36,7 +36,7 @@ describe("shop filters", () => {
     );
   });
 
-  it("sorts by price and name", () => {
+  it("sorts by price", () => {
     const prices = (sort: "price-asc" | "price-desc") =>
       filterProducts(products, { category: null, destination: null, sort }).map((p) =>
         Math.min(...p.variants.map((v) => v.priceFils)),
@@ -44,15 +44,13 @@ describe("shop filters", () => {
     const asc = prices("price-asc");
     expect(asc).toEqual(asc.toSorted((a, b) => a - b));
     expect(prices("price-desc")).toEqual(asc.toReversed());
-    const names = filterProducts(products, { category: null, destination: null, sort: "name" }).map(
-      (p) => p.name,
-    );
-    expect(names).toEqual(names.toSorted((a, b) => a.localeCompare(b)));
   });
 
   it("builds canonical hrefs", () => {
     expect(shopHref({ category: null, destination: null, sort: "featured" })).toBe("/shop");
-    expect(shopHref({ category: null, destination: null, sort: "name" })).toBe("/shop?sort=name");
+    expect(shopHref({ category: null, destination: null, sort: "price-asc" })).toBe(
+      "/shop?sort=price-asc",
+    );
     expect(shopHref({ category: null, destination: null })).toBe("/shop");
     expect(shopHref({ category: "perfume", destination: "capri" })).toBe(
       "/shop?category=perfume&destination=capri",

@@ -11,14 +11,20 @@ test.describe("storefront — browse and cart", () => {
     ).toBeVisible();
     await expect(page.getByRole("link", { name: /Mayfair All-over spray/ })).toBeVisible();
 
-    // Filter by destination (plain links — URL search params).
-    await page.getByText("Filter + Sort").click();
-    const destinations = page.getByRole("list", { name: "Destination" });
-    await destinations.getByRole("link", { name: "Cannes" }).click();
-    await expect(page).toHaveURL(/destination=cannes/);
+    // Filter by category, then sort by price (plain links — URL search params).
+    // Phones open a side drawer from an icon; wider screens open the inline panel.
+    const drawerToggle = page.getByRole("button", { name: "Filter & sort" });
+    if (await drawerToggle.isVisible()) await drawerToggle.click();
+    else await page.getByText("Filter", { exact: true }).click();
+    const categories = page.getByRole("list", { name: "Category" });
+    await categories.getByRole("link", { name: "Perfumes" }).click();
+    await expect(page).toHaveURL(/category=perfume/);
     // Other suites may add throwaway products, so check membership rather than exact counts.
     await expect(page.getByRole("link", { name: /Cannes Perfume/ })).toBeVisible();
-    await expect(page.getByRole("link", { name: /Capri Perfume/ })).toHaveCount(0);
+    await expect(page.getByRole("link", { name: /Mayfair All-over spray/ })).toHaveCount(0);
+    if (await drawerToggle.isVisible()) await drawerToggle.click();
+    await page.getByRole("link", { name: "Low to high" }).click();
+    await expect(page).toHaveURL(/sort=price-asc/);
     await expect(page.getByRole("link", { name: "Clear filters" })).toBeVisible();
 
     // Product page.

@@ -8,10 +8,10 @@ import { t } from "@/content/en";
 import {
   filterProducts,
   parseShopFilters,
-  SHOP_SORTS,
+  PRICE_SORTS,
   shopHref,
 } from "@/modules/storefront/filters";
-import { listCategories, listDestinations, listProducts } from "@/modules/storefront/queries";
+import { listCategories, listProducts } from "@/modules/storefront/queries";
 
 export const metadata: Metadata = {
   title: t.shop.title,
@@ -40,22 +40,15 @@ export default function ShopPage({ searchParams }: PageProps<"/shop">) {
 }
 
 async function ShopResults({ searchParams }: Pick<PageProps<"/shop">, "searchParams">) {
-  const [params, products, categories, destinations] = await Promise.all([
+  const [params, products, categories] = await Promise.all([
     searchParams,
     listProducts(),
     listCategories(),
-    listDestinations(),
   ]);
   const filters = parseShopFilters(params);
   const results = filterProducts(products, filters);
 
-  const inCategory = filterProducts(products, { category: filters.category, destination: null });
-  const destinationHas = (slug: string, category: string | null) =>
-    products.some(
-      (p) => p.destination?.slug === slug && (!category || p.category.slug === category),
-    );
-
-  const categoryChips = [
+  const categoryOptions = [
     {
       label: t.shop.all,
       href: shopHref({ ...filters, category: null }),
@@ -65,34 +58,14 @@ async function ShopResults({ searchParams }: Pick<PageProps<"/shop">, "searchPar
       .filter((c) => c.productCount > 0)
       .map((c) => ({
         label: c.name,
-        href: shopHref({
-          ...filters,
-          category: c.slug,
-          destination:
-            filters.destination && destinationHas(filters.destination, c.slug)
-              ? filters.destination
-              : null,
-        }),
+        href: shopHref({ ...filters, category: c.slug }),
         active: filters.category === c.slug,
       })),
   ];
-  const destinationChips = [
-    {
-      label: t.shop.all,
-      href: shopHref({ ...filters, destination: null }),
-      active: !filters.destination,
-    },
-    ...destinations
-      .filter((d) => inCategory.some((p) => p.destination?.slug === d.slug))
-      .map((d) => ({
-        label: d.name,
-        href: shopHref({ ...filters, destination: d.slug }),
-        active: filters.destination === d.slug,
-      })),
-  ];
-  const sortChips = SHOP_SORTS.map((sort) => ({
+  // Choosing the active sort again switches it off (back to the catalogue order).
+  const sortOptions = PRICE_SORTS.map((sort) => ({
     label: t.shop.sorts[sort],
-    href: shopHref({ ...filters, sort }),
+    href: shopHref({ ...filters, sort: filters.sort === sort ? "featured" : sort }),
     active: filters.sort === sort,
   }));
   const filtered = Boolean(filters.category || filters.destination || filters.sort !== "featured");
@@ -103,9 +76,8 @@ async function ShopResults({ searchParams }: Pick<PageProps<"/shop">, "searchPar
         count={results.length}
         filtered={filtered}
         groups={[
-          { label: t.shop.category, chips: categoryChips },
-          { label: t.shop.destination, chips: destinationChips },
-          { label: t.shop.sort, chips: sortChips },
+          { label: t.shop.category, options: categoryOptions },
+          { label: t.shop.sort, options: sortOptions },
         ]}
       />
       {results.length ? (

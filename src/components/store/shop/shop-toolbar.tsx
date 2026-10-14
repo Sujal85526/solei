@@ -1,12 +1,12 @@
 import Link from "next/link";
-import { SlidersHorizontal } from "lucide-react";
 import { t } from "@/content/en";
-import { FilterChips, type Chip } from "./filter-chips";
+import { FilterOptions, type FilterOption } from "./filter-options";
+import { ShopFilterDrawer } from "./shop-filter-drawer";
 
 /**
- * "All fragrances — 08" on the left, Filter + Sort on the right. The panel is a native
- * <details>, so it opens without JavaScript (and starts open while filters are active); the
- * choices are plain links (URL search params).
+ * Wide screens: "All fragrances — 08" on the left, one "Filter" toggle on the right that opens
+ * category and price sort together — a native <details> (starts open while a filter is active).
+ * Phones: just a filter icon on the right that opens the same choices in a side drawer.
  */
 export function ShopToolbar({
   count,
@@ -14,11 +14,30 @@ export function ShopToolbar({
   filtered,
 }: {
   count: number;
-  groups: { label: string; chips: Chip[] }[];
+  groups: { label: string; options: FilterOption[] }[];
   filtered: boolean;
 }) {
   return (
-    <details open={filtered} className="group/filters border-primary/15 border-b">
+    <>
+      <div className="border-primary/15 flex justify-end border-b py-2 sm:hidden">
+        <ShopFilterDrawer groups={groups} filtered={filtered} />
+      </div>
+      <Desktop count={count} groups={groups} filtered={filtered} />
+    </>
+  );
+}
+
+function Desktop({
+  count,
+  groups,
+  filtered,
+}: {
+  count: number;
+  groups: { label: string; options: FilterOption[] }[];
+  filtered: boolean;
+}) {
+  return (
+    <details open={filtered} className="group/filters border-primary/15 hidden border-b sm:block">
       <summary className="flex cursor-pointer list-none items-center justify-between gap-4 py-5 [&::-webkit-details-marker]:hidden">
         <span
           className="eyebrow text-primary text-[0.6rem] whitespace-nowrap sm:text-[0.65rem]"
@@ -27,26 +46,23 @@ export function ShopToolbar({
           {t.shop.allFragrances} <span className="text-primary/50">—</span>{" "}
           <span className="numeric">{String(count).padStart(2, "0")}</span>
         </span>
-        <span className="eyebrow text-primary inline-flex items-center gap-2 text-[0.6rem] whitespace-nowrap sm:text-[0.65rem]">
-          <SlidersHorizontal className="hidden size-3.5 sm:block" strokeWidth={1.25} aria-hidden />
-          {t.shop.filterSort}
-          <span
-            aria-hidden
-            className="inline-block transition-transform duration-300 group-open/filters:rotate-45"
-          >
-            +
+        <span className="eyebrow text-primary inline-flex items-center gap-3 text-[0.6rem] whitespace-nowrap sm:text-[0.65rem]">
+          {t.shop.filter}
+          <span aria-hidden className="relative block size-2.5">
+            <span className="bg-primary absolute inset-x-0 top-1/2 h-px -translate-y-1/2" />
+            <span className="bg-primary absolute inset-y-0 left-1/2 w-px -translate-x-1/2 transition-transform duration-300 group-open/filters:scale-y-0" />
           </span>
         </span>
       </summary>
-      <div className="flex flex-col gap-5 pb-6">
+      <div className="filter-panel grid gap-7 pt-2 pb-7 sm:grid-cols-[auto_auto_1fr] sm:items-end sm:gap-16">
         {groups.map((g) => (
-          <FilterChips key={g.label} label={g.label} chips={g.chips} />
+          <FilterOptions key={g.label} label={g.label} options={g.options} />
         ))}
         {filtered ? (
           <Link
             href="/shop"
             scroll={false}
-            className="text-primary self-start text-sm underline underline-offset-4"
+            className="eyebrow text-primary/55 hover:text-primary justify-self-start pb-1 text-[0.6rem] transition-colors sm:justify-self-end"
           >
             {t.shop.clearFilters}
           </Link>
