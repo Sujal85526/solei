@@ -69,6 +69,15 @@ cross join public.stock_locations l
 where l.is_default;
 `;
 
+/** `--catalog-only <file>`: catalogue + opening stock without dev logins (for hosted dev/staging DBs). */
+const catalogOnlyIndex = process.argv.indexOf("--catalog-only");
+if (catalogOnlyIndex > -1) {
+  const out = process.argv[catalogOnlyIndex + 1] ?? "seed.catalog.sql";
+  writeFileSync(out, sql);
+  console.log(`wrote ${out} (catalog only)`);
+  process.exit(0);
+}
+
 sql += `
 -- LOCAL DEV staff accounts (password: ${DEV_PASSWORD}). See scripts/dev-users.ts.
 `;
