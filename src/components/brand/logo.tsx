@@ -7,7 +7,7 @@ export function Logo({ className, title = "Solei" }: { className?: string; title
       viewBox="0 0 1942.746208 805.792786"
       role="img"
       aria-label={title}
-      className={cn("h-8 w-auto fill-current", className)}
+      className={cn("aspect-[1943/806] h-8 w-auto fill-current", className)}
     >
       <title>{title}</title>
       <path

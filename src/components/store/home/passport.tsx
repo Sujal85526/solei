@@ -22,7 +22,7 @@ export function PassportBand({
   const stamps = Array.from({ length: total }, (_, i) => destinations[i % destinations.length]);
 
   return (
-    <Section tone="pink" aria-labelledby="passport-title" className="overflow-hidden">
+    <Section tone="pink" aria-labelledby="passport-title" className="on-blush overflow-hidden">
       <Container size="wide" className="grid items-center gap-14 lg:grid-cols-12">
         <Stagger className="flex flex-col gap-6 lg:col-span-5">
           <Eyebrow className="text-burgundy/80">The Solei Passport</Eyebrow>

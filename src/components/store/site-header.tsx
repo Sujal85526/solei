@@ -1,66 +1,68 @@
 import Link from "next/link";
-import { ShoppingBag } from "lucide-react";
 import { Logo } from "@/components/brand";
-import { storeNav } from "@/content/site";
 import { t } from "@/content/en";
+import { storeNav } from "@/content/site";
 import { CartCount } from "./cart/cart-count";
+import { HeaderShell } from "./header-shell";
 import { MobileMenu } from "./mobile-menu";
 
-export function SiteHeader({ overlay = false }: { overlay?: boolean }) {
+const navLink = "eyebrow text-[0.65rem] text-pearl/85 transition-colors hover:text-pink";
+
+export function SiteHeader() {
   return (
-    <header
-      className={
-        overlay
-          ? "text-cream absolute inset-x-0 top-0 z-40"
-          : "border-border/60 bg-cream/90 text-burgundy supports-[backdrop-filter]:bg-cream/75 sticky top-0 z-40 border-b backdrop-blur"
-      }
-    >
+    <HeaderShell>
       <a
         href="#main"
-        className="focus:bg-burgundy focus:text-cream sr-only focus:not-sr-only focus:absolute focus:start-4 focus:top-4 focus:z-50 focus:rounded focus:px-4 focus:py-2"
+        className="focus:bg-pink focus:text-burgundy sr-only focus:not-sr-only focus:absolute focus:start-4 focus:top-4 focus:z-50 focus:rounded focus:px-4 focus:py-2"
       >
         {t.nav.skipToContent}
       </a>
-      <div className="mx-auto flex h-16 max-w-[90rem] items-center justify-between gap-6 px-5 sm:h-20 sm:px-8 lg:px-12">
-        <div className="flex flex-1 items-center lg:hidden">
-          <MobileMenu />
-        </div>
-        <nav aria-label="Primary" className="hidden flex-1 lg:block">
-          <ul className="flex items-center gap-8">
-            {storeNav.slice(0, 2).map((item) => (
-              <li key={item.href}>
-                <Link href={item.href} className="eyebrow transition-opacity hover:opacity-70">
-                  {t.nav[item.key]}
-                </Link>
-              </li>
-            ))}
-          </ul>
-        </nav>
-        <Link href="/" aria-label="Solei — home" className="shrink-0">
-          <Logo className="h-7 sm:h-8" />
-        </Link>
-        <div className="flex flex-1 items-center justify-end gap-8">
-          <nav aria-label="Secondary" className="hidden lg:block">
-            <ul className="flex items-center gap-8">
-              {storeNav.slice(2).map((item) => (
+      <div className="mx-auto grid h-16 max-w-[96rem] grid-cols-[1fr_auto_1fr] items-center gap-6 px-5 sm:h-20 sm:px-8 lg:px-14">
+        <div className="flex items-center">
+          <div className="lg:hidden">
+            <MobileMenu />
+          </div>
+          <nav aria-label="Primary" className="hidden lg:block">
+            <ul className="flex items-center gap-9">
+              {storeNav.slice(0, 3).map((item) => (
                 <li key={item.href}>
-                  <Link href={item.href} className="eyebrow transition-opacity hover:opacity-70">
+                  <Link href={item.href} className={navLink}>
                     {t.nav[item.key]}
                   </Link>
                 </li>
               ))}
             </ul>
           </nav>
+        </div>
+        <Link href="/" aria-label="Solei — home" className="justify-self-center">
+          <Logo className="text-pink h-7 sm:h-9" />
+        </Link>
+        <div className="flex items-center justify-end gap-9">
+          <nav aria-label="Secondary" className="hidden lg:block">
+            <ul className="flex items-center gap-9">
+              {storeNav.slice(3).map((item) => (
+                <li key={item.href}>
+                  <Link href={item.href} className={navLink}>
+                    {t.nav[item.key]}
+                  </Link>
+                </li>
+              ))}
+              <li>
+                <Link href="/track" className={navLink}>
+                  {t.nav.trackOrder}
+                </Link>
+              </li>
+            </ul>
+          </nav>
           <Link
             href="/cart"
-            className="relative -me-2 inline-flex size-11 items-center justify-center rounded-full transition-colors hover:bg-current/10"
+            className={`${navLink} relative inline-flex min-h-11 items-center gap-1.5`}
           >
-            <ShoppingBag aria-hidden className="size-5" strokeWidth={1.5} />
-            <span className="sr-only">{t.nav.cart}</span>
+            {t.nav.cart}
             <CartCount />
           </Link>
         </div>
       </div>
-    </header>
+    </HeaderShell>
   );
 }

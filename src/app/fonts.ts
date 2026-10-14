@@ -1,21 +1,23 @@
 /**
  * Brand fonts. This is the ONLY file to change when the licensed "Nove" web font arrives:
- * swap `display` for `next/font/local` pointing at the font files and keep the `--font-display` variable.
+ * swap `display` for `next/font/local` and keep the `--font-display` variable.
  * (See docs/DECISIONS.md D11.)
  */
-import { Bodoni_Moda, Inter } from "next/font/google";
+import { Cormorant_Garamond, Jost } from "next/font/google";
 
-/** High-contrast didone serif — headings, taglines (italic), letter-spaced labels. Stand-in for "Nove". */
-export const display = Bodoni_Moda({
+/** Light, high-contrast editorial serif — headlines, taglines (italic). Stand-in for "Nove". */
+export const display = Cormorant_Garamond({
   subsets: ["latin"],
+  weight: ["300", "400", "500", "600"],
   style: ["normal", "italic"],
   variable: "--font-display",
   display: "swap",
 });
 
-/** Clean sans for UI, forms, admin and numbers. */
-export const sans = Inter({
+/** Geometric sans — letter-spaced labels, navigation, body copy and admin UI. */
+export const sans = Jost({
   subsets: ["latin"],
+  weight: ["300", "400", "500", "600"],
   variable: "--font-sans-ui",
   display: "swap",
 });
