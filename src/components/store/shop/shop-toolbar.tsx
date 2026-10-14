@@ -1,12 +1,11 @@
 import Link from "next/link";
-import { SlidersHorizontal } from "lucide-react";
 import { t } from "@/content/en";
-import { FilterChips, type Chip } from "./filter-chips";
+import { FilterOptions, type FilterOption } from "./filter-options";
 
 /**
- * "All fragrances — 08" on the left, Filter + Sort on the right. The panel is a native
- * <details>, so it opens without JavaScript (and starts open while filters are active); the
- * choices are plain links (URL search params).
+ * "All fragrances — 08" on the left, one "Filter" toggle on the right that opens category and
+ * price sort together. A native <details> (opens without JavaScript, and starts open while a
+ * filter is active); the choices are plain links (URL search params).
  */
 export function ShopToolbar({
   count,
@@ -14,7 +13,7 @@ export function ShopToolbar({
   filtered,
 }: {
   count: number;
-  groups: { label: string; chips: Chip[] }[];
+  groups: { label: string; options: FilterOption[] }[];
   filtered: boolean;
 }) {
   return (
@@ -27,26 +26,23 @@ export function ShopToolbar({
           {t.shop.allFragrances} <span className="text-primary/50">—</span>{" "}
           <span className="numeric">{String(count).padStart(2, "0")}</span>
         </span>
-        <span className="eyebrow text-primary inline-flex items-center gap-2 text-[0.6rem] whitespace-nowrap sm:text-[0.65rem]">
-          <SlidersHorizontal className="hidden size-3.5 sm:block" strokeWidth={1.25} aria-hidden />
-          {t.shop.filterSort}
-          <span
-            aria-hidden
-            className="inline-block transition-transform duration-300 group-open/filters:rotate-45"
-          >
-            +
+        <span className="eyebrow text-primary inline-flex items-center gap-3 text-[0.6rem] whitespace-nowrap sm:text-[0.65rem]">
+          {t.shop.filter}
+          <span aria-hidden className="relative block size-2.5">
+            <span className="bg-primary absolute inset-x-0 top-1/2 h-px -translate-y-1/2" />
+            <span className="bg-primary absolute inset-y-0 left-1/2 w-px -translate-x-1/2 transition-transform duration-300 group-open/filters:scale-y-0" />
           </span>
         </span>
       </summary>
-      <div className="flex flex-col gap-5 pb-6">
+      <div className="filter-panel grid gap-7 pt-2 pb-7 sm:grid-cols-[auto_auto_1fr] sm:items-end sm:gap-16">
         {groups.map((g) => (
-          <FilterChips key={g.label} label={g.label} chips={g.chips} />
+          <FilterOptions key={g.label} label={g.label} options={g.options} />
         ))}
         {filtered ? (
           <Link
             href="/shop"
             scroll={false}
-            className="text-primary self-start text-sm underline underline-offset-4"
+            className="eyebrow text-primary/55 hover:text-primary justify-self-start pb-1 text-[0.6rem] transition-colors sm:justify-self-end"
           >
             {t.shop.clearFilters}
           </Link>

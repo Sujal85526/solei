@@ -605,3 +605,11 @@ body:has([data-hero]) .site-header:not([data-scrolled]) {
     translate: -14px 0;
   }
 }
+
+/* Shop filter panel: eases in when the toggle opens it. */
+@media (prefers-reduced-motion: no-preference) {
+  details[open] > .filter-panel {
+    animation: solei-rise 0.5s var(--ease-soft) both;
+    --rise: -6px;
+  }
+}

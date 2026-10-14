@@ -1,9 +1,11 @@
 import type { StoreProduct } from "./types";
 
-export const SHOP_SORTS = ["featured", "price-asc", "price-desc", "name"] as const;
+export const SHOP_SORTS = ["featured", "price-asc", "price-desc"] as const;
+/** The sorts offered in the shop's Filter panel ("featured" is the default when none is chosen). */
+export const PRICE_SORTS = ["price-asc", "price-desc"] as const;
 export type ShopSort = (typeof SHOP_SORTS)[number];
 
-/** Shop filters carried in the URL (`/shop?category=perfume&destination=capri&sort=price-asc`). */
+/** Shop filters carried in the URL (`/shop?category=perfume&sort=price-asc`). */
 export type ShopFilters = {
   category: string | null;
   destination: string | null;
@@ -44,8 +46,6 @@ export function filterProducts(products: StoreProduct[], f: ShopFilters): StoreP
       return list.toSorted((a, b) => fromPrice(a) - fromPrice(b));
     case "price-desc":
       return list.toSorted((a, b) => fromPrice(b) - fromPrice(a));
-    case "name":
-      return list.toSorted((a, b) => a.name.localeCompare(b.name));
     default:
       return list.toSorted((a, b) => Number(b.featured) - Number(a.featured));
   }
