@@ -329,7 +329,7 @@ export function EventForm({
 
       <fieldset className="grid gap-4 sm:grid-cols-2">
         <legend className="text-foreground mb-3 text-sm font-semibold">Organiser</legend>
-        <Field label="Organiser" htmlFor="organiserName" error={e.organiserName}>
+        <Field label="Company / organiser" htmlFor="organiserName" error={e.organiserName}>
           <Input
             id="organiserName"
             name="organiserName"

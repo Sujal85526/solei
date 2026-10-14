@@ -62,14 +62,20 @@ export function EventStock({
 
   return (
     <div className="flex flex-col gap-5">
-      <dl className="grid grid-cols-3 gap-2 sm:grid-cols-5" data-testid="stock-totals">
+      <dl className="grid grid-cols-5 gap-1.5 sm:gap-2" data-testid="stock-totals">
         {COLS.map((c) => (
           <div
             key={c.key}
-            className={cn("bg-muted/50 rounded-lg p-3", c.key === "remaining" && "bg-pink-wash")}
+            className={cn(
+              "bg-muted/50 rounded-lg px-2 py-2 text-center sm:p-3 sm:text-start",
+              c.key === "remaining" && "bg-pink-wash",
+            )}
           >
-            <dt className="text-muted-foreground text-xs">{c.label}</dt>
-            <dd className="numeric text-xl font-semibold" data-testid={`total-${c.key}`}>
+            <dt className="text-muted-foreground text-[0.65rem] sm:text-xs">
+              <span className="sm:hidden">{c.short}</span>
+              <span className="hidden sm:inline">{c.label}</span>
+            </dt>
+            <dd className="numeric text-lg font-semibold sm:text-xl" data-testid={`total-${c.key}`}>
               {totals[c.key]}
             </dd>
           </div>

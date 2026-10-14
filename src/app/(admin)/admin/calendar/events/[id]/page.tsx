@@ -112,13 +112,20 @@ export default async function EventPage({
                 scroll={false}
                 aria-current={t === tab ? "page" : undefined}
                 className={cn(
-                  "inline-flex h-11 items-center border-b-2 px-4 text-sm transition-colors",
+                  "inline-flex h-11 items-center border-b-2 px-3 text-sm transition-colors sm:px-4",
                   t === tab
                     ? "border-burgundy text-burgundy font-medium"
                     : "text-muted-foreground hover:text-foreground border-transparent",
                 )}
               >
-                {TAB_LABELS[t]}
+                {t === "documents" ? (
+                  <>
+                    <span className="sm:hidden">Docs</span>
+                    <span className="hidden sm:inline">Documents</span>
+                  </>
+                ) : (
+                  TAB_LABELS[t]
+                )}
               </Link>
             </li>
           ))}

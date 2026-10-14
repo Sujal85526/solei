@@ -56,7 +56,7 @@ export function MonthView({
             <div
               key={week[0]}
               role="row"
-              className="grid grid-cols-7 border-b last:border-b-0 sm:[grid-template-rows:auto_repeat(4,1.625rem)] sm:pb-1.5"
+              className="grid grid-cols-7 border-b last:border-b-0 sm:[grid-template-rows:2.25rem_repeat(3,1.625rem)_1.25rem]"
             >
               {week.map((day, i) => {
                 const dayEvents = eventsOnDay(events, day);
