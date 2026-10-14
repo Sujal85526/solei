@@ -171,31 +171,31 @@ Open client questions are built as configurable defaults. Each row: what we chos
   the icon; private bookings get a gold edge so customer bookings (M14) stand out.
 
 ## Orders admin & notifications (milestone 8)
-- **T40 — Orders change only through RPCs** (`update_order_status`, `record_payment`, `record_refund`,
+- **T50 — Orders change only through RPCs** (`update_order_status`, `record_payment`, `record_refund`,
   `cancel_order`, `update_order_notes`): each checks the permission, locks the order row and writes an audit
   entry. The direct `orders` update policy was dropped so status rules can't be bypassed. Allowed manual moves
   live in `order_status_allowed()` (mirrored and drift-tested in `src/modules/orders/status.ts`); `pending_payment
   → new` only happens on full payment, cancelling is its own action.
-- **T41 — Manual payments** accept cash / card terminal / soft POS / bank transfer / other only (online methods
+- **T51 — Manual payments** accept cash / card terminal / soft POS / bank transfer / other only (online methods
   come from verified webhooks), never more than the outstanding balance. A payment that completes an order
   awaiting payment confirms it, deducts stock once and cancels stale online attempts.
-- **T42 — Refunds are records of money already returned** (cash, transfer, or a refund done in the provider
+- **T52 — Refunds are records of money already returned** (cash, transfer, or a refund done in the provider
   dashboard) — at most paid − refunded, reason required. Cancelling is separate: it returns deducted stock to
   the location it left from once (toggle off for lost/damaged goods), cancels pending online payments and calls
   `after_order_cancelled()` (loyalty reversal later). Sales staff can record payments but not refund/cancel.
-- **T43 — Notifications** (`src/modules/notifications`): owner-editable templates (light markdown +
+- **T53 — Notifications** (`src/modules/notifications`): owner-editable templates (light markdown +
   `{{variables}}`; variable values are escaped and never parsed as markdown) → allowlist guard → provider →
   `notification_log` (sent / failed / skipped + reason). A send never throws into the caller and runs after
   the response (`after()`), so a slow email provider can't delay a webhook. Without `RESEND_API_KEY` emails are
   logged (provider `log`) and visible in Admin → Settings → Notifications → Outbox. Outside production only
   `EMAIL_ALLOWLIST` recipients get real email (`EMAIL_ALLOW_ALL=1` on the live site).
-- **T44 — Which emails fire**: paid order → customer confirmation + owner "new order" (not for POS sales) +
+- **T54 — Which emails fire**: paid order → customer confirmation + owner "new order" (not for POS sales) +
   low-stock check; preparing / dispatched (with courier + tracking) / delivered → customer; online payment
   failed/expired → retry link (only while the order still awaits payment); a recorded payment that doesn't
   complete the order → "payment received". Owner alerts go to `private_settings.owner_notification_email`
   (editable on the notifications page; empty = off). ❓ Client to confirm the owner alert address.
-- **T45 — Low-stock alerts**: after paid orders and after damage / correction / transfer actions, variants at or
+- **T55 — Low-stock alerts**: after paid orders and after damage / correction / transfer actions, variants at or
   below their alert level (warehouse stock, excluding event locations — same as the stock screen) email the
   owner, at most once per SKU per 24 h (`notification_log.dedupe_key`).
-- **T46 — Order list default** hides abandoned website checkouts (`pending_payment`); choose "All" or search
+- **T56 — Order list default** hides abandoned website checkouts (`pending_payment`); choose "All" or search
   by number / name / phone to find them. "Outstanding" sums balances of open (non-cancelled, confirmed) orders.
