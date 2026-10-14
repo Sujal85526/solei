@@ -56,3 +56,21 @@ export function BagIcon(props: SVGProps<SVGSVGElement>) {
     </svg>
   );
 }
+
+/** Menu mark: two hairlines, the lower one shorter — a quiet step instead of a hamburger. */
+export function MenuIcon(props: SVGProps<SVGSVGElement>) {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.25"
+      strokeLinecap="round"
+      aria-hidden
+      {...props}
+    >
+      <path d="M3.5 9h17" />
+      <path d="M9.5 15h11" />
+    </svg>
+  );
+}

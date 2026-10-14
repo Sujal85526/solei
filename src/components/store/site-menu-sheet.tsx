@@ -7,7 +7,7 @@ import { storeNav } from "@/content/site";
 import { t } from "@/content/en";
 
 /** Loaded on first open so the dialog code stays out of the initial store bundle. */
-export default function MobileMenuSheet({
+export default function SiteMenuSheet({
   open,
   setOpen,
 }: {
@@ -17,13 +17,13 @@ export default function MobileMenuSheet({
   return (
     <Sheet open={open} onOpenChange={setOpen}>
       <SheetContent
-        side="left"
+        side="right"
         className="theme-store border-pink/10 bg-noir text-pearl w-[86vw] max-w-sm p-8"
       >
         <SheetTitle className="sr-only">{t.nav.menu}</SheetTitle>
         <Logo className="text-pink h-8 self-start" />
         <OrnamentDivider className="my-6" />
-        <nav aria-label="Mobile">
+        <nav aria-label="Menu">
           <ul className="flex flex-col gap-1">
             {storeNav.map((item) => (
               <li key={item.href}>

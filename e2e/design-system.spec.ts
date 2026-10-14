@@ -10,10 +10,10 @@ test("styleguide shows tokens and motifs", async ({ page }) => {
 
 test("store header navigation adapts to the viewport", async ({ page, isMobile }) => {
   await page.goto("/styleguide");
-  if (isMobile) {
-    await page.getByRole("button", { name: "Menu" }).click();
-    await expect(page.getByRole("navigation", { name: "Mobile" })).toBeVisible();
-  } else {
+  await page.getByRole("button", { name: "Menu" }).click();
+  await expect(page.getByRole("navigation", { name: "Menu" })).toBeVisible();
+  await page.keyboard.press("Escape");
+  if (!isMobile) {
     const viewport = page.viewportSize();
     if (viewport && viewport.width >= 1024) {
       await expect(page.getByRole("navigation", { name: "Primary" })).toBeVisible();
