@@ -2288,6 +2288,7 @@ export type Database = {
           isSetofReturn: false
         }
       }
+      event_report_data: { Args: { p_event_ids: string[] }; Returns: Json }
       event_staff_options: {
         Args: never
         Returns: {
@@ -2386,6 +2387,21 @@ export type Database = {
         Returns: string
       }
       reopen_event: { Args: { p_event_id: string }; Returns: undefined }
+      report_event_options: {
+        Args: never
+        Returns: {
+          emirate: Database["public"]["Enums"]["emirate"]
+          end_date: string
+          id: string
+          location: string
+          name: string
+          order_count: number
+          start_date: string
+          status: Database["public"]["Enums"]["event_status"]
+          type: Database["public"]["Enums"]["event_type"]
+          units: number
+        }[]
+      }
       request_ip: { Args: never; Returns: unknown }
       require_permission: { Args: { p_key: string }; Returns: undefined }
       send_booking_quote: {

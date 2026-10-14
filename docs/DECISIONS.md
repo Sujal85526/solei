@@ -267,3 +267,25 @@ Open client questions are built as configurable defaults. Each row: what we chos
   reminders create a fresh link, email it if possible and open WhatsApp.
 - Dev hosted project has a **bot owner** (`dev-bot@solei.test`) for automated checks; its password/TOTP live in
   the macOS Keychain (`solei-dev-bot-password`, `solei-dev-bot-totp`), never in the repo.
+
+## Event reports (milestone 13)
+- **T73 — Facts in SQL, rules in one TS module**: `event_report_data(event_ids[])` (SECURITY DEFINER,
+  `reports.view`) returns per-event facts — orders with status, lines with snapshots, succeeded payments/refunds,
+  stock movements per Asia/Dubai day × variant × type, expenses. `src/modules/reports/aggregate.ts` rolls them up
+  for the page, the comparison and the exports, so every view applies the same rules (unit-tested).
+- **T74 — Financial gating in the database**: cost snapshots, expenses and the participation fee come back as
+  null/empty unless the caller has `reports.financial.view` (with MFA for owner/manager); the UI and the
+  Excel/CSV exports simply omit those columns then.
+- **T75 — Report rules**: counted orders exclude `cancelled` and `pending_payment`; business day = POS
+  `event_day`, else `placed_at` in Asia/Dubai; revenue = order totals − refunds (incl. VAT; refunds land on the
+  order's day); profit and margins are **ex VAT** (VAT pro-rated after refunds); COGS = Σ qty × line cost
+  snapshot (missing snapshots count as 0 and are flagged); expenses + fee are event-level, so net profit appears
+  only under "All days"; a waived fee counts as 0. Product/destination/category "sales" are line totals.
+- **T76 — Stock per day**: movements before the first day (allocation) or after the last (close-out) are shown on
+  the edge day; a day tab shows that day's movements and the closing on-hand that evening.
+- **T77 — Comparison** normalises by the scheduled event days (start → end) and picks 2–6 events
+  (`?ids=a,b` or repeated `ids`); charts are one measure each (no dual axes), burgundy single-series bars next to
+  tables with the same numbers.
+- **T78 — Exports**: Excel (exceljs) with a burgundy brand header, AED / % / date number formats, a summary,
+  breakdown sheets and one sheet per event day; CSV is a tidy one-row-per-day × product table (compare: one row
+  per event). Both are permission-aware route handlers under `/admin/reports/events/…/export`.
