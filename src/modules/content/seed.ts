@@ -7,6 +7,7 @@
 export type SeedDestination = {
   slug: string;
   name: string;
+  country: string;
   region: string;
   mood: string;
   story: string;
@@ -18,6 +19,7 @@ export type SeedDestination = {
 export const seedDestinations: SeedDestination[] = [
   {
     slug: "cannes",
+    country: "France",
     name: "Cannes",
     region: "French Riviera",
     mood: "Red carpet evenings, crimson blooms and warm amber.",
@@ -29,6 +31,7 @@ export const seedDestinations: SeedDestination[] = [
   },
   {
     slug: "marbella",
+    country: "Spain",
     name: "Marbella",
     region: "Costa del Sol",
     mood: "Sun-ripe oranges and orange blossom in the shade.",
@@ -40,6 +43,7 @@ export const seedDestinations: SeedDestination[] = [
   },
   {
     slug: "verona",
+    country: "Italy",
     name: "Verona",
     region: "Veneto",
     mood: "Romantic peony, rose and soft vanilla.",
@@ -51,6 +55,7 @@ export const seedDestinations: SeedDestination[] = [
   },
   {
     slug: "capri",
+    country: "Italy",
     name: "Capri",
     region: "Amalfi Coast",
     mood: "Sparkling lemon, white florals and sea air.",
@@ -61,6 +66,7 @@ export const seedDestinations: SeedDestination[] = [
   },
   {
     slug: "santorini",
+    country: "Greece",
     name: "Santorini",
     region: "Cyclades",
     mood: "Bougainvillea, sun-warmed stone and blue horizons.",
@@ -72,6 +78,7 @@ export const seedDestinations: SeedDestination[] = [
   },
   {
     slug: "soho",
+    country: "United States",
     name: "Soho",
     region: "New York",
     mood: "City dusk, skyline glow and an easy, modern trail.",
@@ -83,6 +90,7 @@ export const seedDestinations: SeedDestination[] = [
   },
   {
     slug: "monaco",
+    country: "Monaco",
     name: "Monaco",
     region: "Côte d'Azur",
     mood: "Harbour breeze, polished and effortlessly bright.",
@@ -94,6 +102,7 @@ export const seedDestinations: SeedDestination[] = [
   },
   {
     slug: "mayfair",
+    country: "United Kingdom",
     name: "Mayfair",
     region: "London",
     mood: "White blossom, dark woods and quiet elegance.",
@@ -128,6 +137,15 @@ export const seedCategories = [
 
 /** Launch prices in fils (from the company profile). Editable in admin once the catalog exists. */
 export const seedPrices = { perfume: 28_000, all_over_spray: 19_000 } as const;
+
+/** Bottle sizes in ml. Sprays are 100 ml (profile); perfume size ❓ assumed 50 ml. */
+export const seedSizes = { perfume: 50, all_over_spray: 100 } as const;
+
+/** Placeholder unit costs (fils) for demo COGS — ❓ client to supply real costs. */
+export const seedCosts = { perfume: 9_000, all_over_spray: 5_500 } as const;
+
+/** Opening stock per variant in the main warehouse (demo). */
+export const seedInitialStock = 50;
 
 export const seedEventTypes = [
   "Weddings",
