@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { Search } from "lucide-react";
+import { Plus, Search } from "lucide-react";
 import { OrdersList } from "@/components/admin/orders/orders-list";
 import { PageHeader } from "@/components/admin/page-header";
 import { Pagination, queryString } from "@/components/admin/pagination";
@@ -10,6 +10,7 @@ import { Input } from "@/components/ui/input";
 import { NativeSelect } from "@/components/ui/native-select";
 import { requirePagePermission } from "@/lib/auth/session";
 import { formatAED } from "@/lib/money";
+import { can } from "@/lib/permissions";
 import { ORDERS_PAGE_SIZE, eventOptions, listOrders, orderStats } from "@/modules/orders/queries";
 import { orderFiltersSchema } from "@/modules/orders/schema";
 import {
@@ -23,7 +24,7 @@ export const metadata: Metadata = { title: "Orders" };
 const first = (v: string | string[] | undefined) => (typeof v === "string" && v ? v : undefined);
 
 export default async function OrdersPage({ searchParams }: PageProps<"/admin/orders">) {
-  await requirePagePermission("orders.view");
+  const staff = await requirePagePermission("orders.view");
   const sp = await searchParams;
   const filters = orderFiltersSchema.parse(
     Object.fromEntries(Object.entries(sp).map(([k, v]) => [k, first(v)])),
@@ -38,7 +39,25 @@ export default async function OrdersPage({ searchParams }: PageProps<"/admin/ord
 
   return (
     <>
-      <PageHeader title="Orders" description="Every sale from every channel. Times in Abu Dhabi." />
+      <PageHeader
+        title="Orders"
+        description="Every sale from every channel. Times in Abu Dhabi."
+        actions={
+          <>
+            <Link
+              href="/admin/orders/outstanding"
+              className={buttonVariants({ variant: "outline" })}
+            >
+              Outstanding
+            </Link>
+            {can(staff.permissions, "orders.create") ? (
+              <Link href="/admin/orders/new" className={buttonVariants()}>
+                <Plus /> New order
+              </Link>
+            ) : null}
+          </>
+        }
+      />
       <div className="mb-5 grid grid-cols-2 gap-3 lg:grid-cols-4">
         <StatCard
           label="Today's orders"
