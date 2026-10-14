@@ -264,21 +264,6 @@
  * switches off under prefers-reduced-motion. Components live in src/components/motion/.
  * --------------------------------------------------------------------------------------------- */
 
-/* Lenis smooth scroll (rules from lenis/dist/lenis.css). */
-html.lenis,
-html.lenis body {
-  height: auto;
-}
-.lenis:not(.lenis-autoToggle).lenis-stopped {
-  overflow: clip;
-}
-.lenis [data-lenis-prevent] {
-  overscroll-behavior: contain;
-}
-.lenis.lenis-smooth iframe {
-  pointer-events: none;
-}
-
 @keyframes solei-rise {
   from {
     opacity: 0;
@@ -372,6 +357,10 @@ html.lenis body {
   .hero-rise {
     animation: solei-rise 0.9s var(--ease-soft) both;
     animation-delay: calc(var(--intro-offset, 0s) + var(--d, 0s));
+  }
+  .hero-photo {
+    animation: solei-hero-settle 2.4s var(--ease-soft) both;
+    animation-delay: var(--intro-offset, 0s);
   }
   .hero-line {
     --rise: 105%;
@@ -507,11 +496,8 @@ html.lenis body {
 /* Store header: solid bar by default; floats transparently over a page hero until scrolled. */
 .site-header {
   position: sticky;
-  background-color: color-mix(in oklab, var(--brand-noir) 78%, transparent);
-  backdrop-filter: blur(12px);
-  transition:
-    background-color 0.5s var(--ease-soft),
-    backdrop-filter 0.5s var(--ease-soft);
+  background-color: color-mix(in oklab, var(--brand-noir) 94%, transparent);
+  transition: background-color 0.5s var(--ease-soft);
 }
 body:has([data-hero]) .site-header {
   position: fixed;
@@ -523,21 +509,10 @@ body:has([data-hero]) .site-header:not([data-scrolled]) {
     color-mix(in oklab, var(--brand-noir) 50%, transparent),
     transparent
   );
-  backdrop-filter: none;
 }
 
-/* Luxury layer: film grain on the hero, curtain unveil for photos, light sweep. */
-.film-grain {
-  background-image: url(/images/brand/grain.svg);
-  background-size: 180px;
-  opacity: 0.12;
-  mix-blend-mode: overlay;
-}
+/* Curtain unveil for photos. */
 @media (prefers-reduced-motion: no-preference) {
-  .film-grain {
-    animation: solei-grain 0.9s steps(6) infinite;
-  }
-
   /* Photo wipes up like a curtain while the image settles from a slight zoom. */
   [data-reveal="ready"][data-curtain]:not([data-revealed]) {
     opacity: 1;
@@ -554,52 +529,6 @@ body:has([data-hero]) .site-header:not([data-scrolled]) {
   }
   [data-reveal="ready"][data-curtain]:not([data-revealed]) img {
     scale: 1.18;
-  }
-
-  .light-sweep::after {
-    content: "";
-    position: absolute;
-    inset: 0;
-    pointer-events: none;
-    background: linear-gradient(
-      115deg,
-      transparent 35%,
-      rgb(247 205 208 / 0.16) 48%,
-      rgb(255 236 214 / 0.22) 50%,
-      transparent 62%
-    );
-    background-size: 250% 100%;
-    animation: solei-sweep 7s var(--ease-soft) infinite;
-    mix-blend-mode: soft-light;
-  }
-}
-@keyframes solei-grain {
-  0% {
-    background-position: 0 0;
-  }
-  20% {
-    background-position: -40px 20px;
-  }
-  40% {
-    background-position: 30px -50px;
-  }
-  60% {
-    background-position: -60px -10px;
-  }
-  80% {
-    background-position: 50px 40px;
-  }
-  100% {
-    background-position: 0 0;
-  }
-}
-@keyframes solei-sweep {
-  0%,
-  35% {
-    background-position: 150% 0;
-  }
-  100% {
-    background-position: -50% 0;
   }
 }
 
@@ -636,5 +565,11 @@ body:has([data-hero]) .site-header:not([data-scrolled]) {
   summary,
   select {
     cursor: pointer;
+  }
+}
+
+@keyframes solei-hero-settle {
+  from {
+    scale: 1.06;
   }
 }

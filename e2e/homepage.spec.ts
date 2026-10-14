@@ -1,17 +1,12 @@
 import { expect, test } from "@playwright/test";
 
 test.describe("homepage", () => {
-  test("shows the hero slider, its controls and every section", async ({ page }) => {
+  test("shows the hero and every section", async ({ page }) => {
     await page.goto("/");
     await expect(
       page.getByRole("heading", { level: 1, name: /A destination in every scent/ }),
     ).toBeVisible();
     await expect(page.getByRole("link", { name: /^Shop now/ }).first()).toBeVisible();
-    await expect(
-      page.getByRole("button", { name: /Pause slideshow|Play slideshow/ }),
-    ).toBeAttached();
-    await page.getByRole("button", { name: "Next slide" }).click();
-    await expect(page.getByText("02", { exact: false }).first()).toBeVisible();
     for (const name of [
       /Signature Scents/,
       /Scents are memories in another form/,
