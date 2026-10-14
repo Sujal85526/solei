@@ -3,31 +3,33 @@ import { SplitHeading } from "@/components/motion/split-heading";
 import { CircleArrowLink } from "@/components/store/home/circle-arrow-link";
 
 /**
- * Collection opener: the all-over sprays toned into burgundy, copy on the left with a link down to
- * the grid. The header floats over it (data-hero).
+ * Collection opener: the sprays among burgundy flowers in late light, copy on the dark wall (left
+ * on wide screens, top on phones) with a link down to the grid. The header floats over it.
  */
 export function CollectionHero({ image, targetId }: { image: string; targetId: string }) {
   return (
     <section
       data-hero
       aria-labelledby="collection-title"
-      className="bg-noir relative isolate flex min-h-[78svh] items-center overflow-hidden"
+      className="bg-noir relative isolate flex min-h-[88svh] items-start overflow-hidden sm:min-h-[80svh] sm:items-center"
     >
-      <div className="absolute inset-0 -z-10 sm:start-[30%]">
+      {/* Phones: the photo fills the lower part and fades up into the dark wall behind the copy;
+          wide screens: full-bleed with the copy over the dark left side. */}
+      <div className="absolute inset-x-0 top-[34%] bottom-0 -z-10 overflow-hidden sm:inset-0">
         <Image
           src={image}
           alt=""
           fill
           priority
           fetchPriority="high"
-          sizes="(min-width: 640px) 70vw, 100vw"
-          className="hero-photo object-cover object-[40%_50%]"
+          sizes="100vw"
+          className="hero-photo object-cover object-[78%_60%] sm:object-center"
         />
-        {/* Tone the warm-cream photograph into the burgundy night of the brand. */}
-        <div className="bg-burgundy absolute inset-0 opacity-60 mix-blend-multiply" />
-        <div className="from-noir via-noir/40 absolute inset-0 bg-gradient-to-t to-transparent sm:bg-gradient-to-r sm:to-transparent sm:to-60%" />
+        <div className="from-noir absolute inset-x-0 -top-px h-1/2 bg-gradient-to-b to-transparent sm:hidden" />
+        <div className="from-noir/70 via-noir/20 absolute inset-0 hidden bg-gradient-to-r to-transparent to-55% sm:block" />
+        <div className="from-noir/60 absolute inset-x-0 bottom-0 h-32 bg-gradient-to-t to-transparent" />
       </div>
-      <div className="mx-auto w-full max-w-[96rem] px-6 pt-28 pb-16 sm:px-10 lg:px-14">
+      <div className="mx-auto w-full max-w-[96rem] px-6 pt-28 pb-16 sm:px-10 sm:pt-24 lg:px-14">
         <div className="max-w-md">
           <p
             className="hero-rise eyebrow text-pearl/75"
