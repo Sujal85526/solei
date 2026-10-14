@@ -4,6 +4,7 @@ import { useActionState, useState } from "react";
 import { Mail } from "lucide-react";
 import { optInAction } from "@/app/(store)/actions";
 import { Container, Eyebrow, PostmarkWaves, WhatsAppIcon } from "@/components/brand";
+import { Stagger } from "@/components/motion/reveal";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import type { OptInState } from "@/modules/marketing/service";
@@ -26,11 +27,13 @@ export function OptIn() {
   return (
     <section aria-labelledby="optin-title" className="bg-sand py-20 sm:py-24">
       <Container size="narrow" className="flex flex-col items-center gap-6 text-center">
-        <PostmarkWaves className="w-28" lines={3} />
-        <Eyebrow>Postcards from Solei</Eyebrow>
-        <h2 id="optin-title" className="text-3xl sm:text-4xl">
-          New destinations, pop-ups <span className="italic">& private previews.</span>
-        </h2>
+        <Stagger className="flex flex-col items-center gap-6">
+          <PostmarkWaves className="w-28" lines={3} />
+          <Eyebrow>Postcards from Solei</Eyebrow>
+          <h2 id="optin-title" className="text-3xl sm:text-4xl">
+            New destinations, pop-ups <span className="italic">& private previews.</span>
+          </h2>
+        </Stagger>
         {state.status === "success" ? (
           <p role="status" className="font-display text-burgundy text-xl italic">
             Thank you — your first postcard is on its way.

@@ -1,6 +1,8 @@
-import Image from "next/image";
 import Link from "next/link";
 import { Container, Eyebrow, PassportStamp, Section } from "@/components/brand";
+import { Parallax } from "@/components/motion/parallax";
+import { Stagger } from "@/components/motion/reveal";
+import { ShimmerImage } from "@/components/motion/shimmer-image";
 import { buttonVariants } from "@/components/ui/button";
 import type { HomeContent, HomeDestination } from "@/modules/content/queries";
 
@@ -22,7 +24,7 @@ export function PassportBand({
   return (
     <Section tone="pink" aria-labelledby="passport-title" className="overflow-hidden">
       <Container size="wide" className="grid items-center gap-14 lg:grid-cols-12">
-        <div className="flex flex-col gap-6 lg:col-span-5">
+        <Stagger className="flex flex-col gap-6 lg:col-span-5">
           <Eyebrow className="text-burgundy/80">The Solei Passport</Eyebrow>
           <h2 id="passport-title" className="text-4xl leading-[1.05] sm:text-5xl lg:text-6xl">
             Collect the destinations. <span className="italic">Keep the memory.</span>
@@ -40,17 +42,26 @@ export function PassportBand({
               Discover the Passport
             </Link>
           </div>
-        </div>
+        </Stagger>
 
         <div className="lg:col-span-6 lg:col-start-7">
-          <div className="bg-cream relative rounded-sm p-5 shadow-[0_24px_48px_-24px_rgb(70_3_40/0.35)] sm:p-8">
+          <Parallax
+            from="24px"
+            to="-24px"
+            className="bg-cream relative rounded-sm p-5 shadow-[0_24px_48px_-24px_rgb(70_3_40/0.35)] sm:p-8"
+          >
             <div className="border-burgundy/15 flex items-baseline justify-between border-b pb-4">
               <p className="eyebrow text-burgundy">Passport · Stamps</p>
               <p className="numeric font-display text-burgundy text-xl">
                 {collected} / {total}
               </p>
             </div>
-            <ol
+            {/* Stamps press in one after another as the passport scrolls into view. */}
+            <Stagger
+              as="ol"
+              variant="stamp"
+              step={70}
+              delay={150}
               aria-label={`${collected} of ${total} stamps collected (example)`}
               className="grid grid-cols-4 gap-3 pt-6 sm:gap-5"
             >
@@ -75,10 +86,15 @@ export function PassportBand({
                   )}
                 </li>
               ))}
-            </ol>
-          </div>
-          <div className="bg-cream relative ms-auto me-4 -mt-10 hidden w-56 rotate-3 p-2 shadow-lg sm:block">
-            <Image
+            </Stagger>
+          </Parallax>
+          {/* The loose photo sits at a nearer depth than the passport, so it travels further. */}
+          <Parallax
+            from="70px"
+            to="-50px"
+            className="bg-cream relative ms-auto me-4 -mt-10 hidden w-56 rotate-3 p-2 shadow-lg sm:block"
+          >
+            <ShimmerImage
               src="/images/events/booth-passport.jpg"
               alt="Solei passports beside perfume bottles at a pop-up"
               width={968}
@@ -86,7 +102,7 @@ export function PassportBand({
               sizes="224px"
               className="aspect-[4/3] object-cover"
             />
-          </div>
+          </Parallax>
         </div>
       </Container>
     </Section>

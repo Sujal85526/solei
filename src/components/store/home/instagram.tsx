@@ -1,6 +1,6 @@
-import Image from "next/image";
-import { InstagramIcon } from "@/components/brand";
-import { Container, Eyebrow } from "@/components/brand";
+import { Container, Eyebrow, InstagramIcon } from "@/components/brand";
+import { Stagger } from "@/components/motion/reveal";
+import { ShimmerImage } from "@/components/motion/shimmer-image";
 
 const tiles = [
   { src: "/images/products/perfumes-trio.jpg", alt: "Cannes, Marbella and Verona perfumes" },
@@ -15,7 +15,7 @@ export function InstagramStrip({ handle, url }: { handle: string; url: string })
   return (
     <section aria-labelledby="ig-title" className="bg-cream pb-20 sm:pb-28">
       <Container size="wide">
-        <div className="mb-8 flex flex-col items-center gap-3 text-center">
+        <Stagger className="mb-8 flex flex-col items-center gap-3 text-center">
           <Eyebrow lines>Follow the journey</Eyebrow>
           <h2 id="ig-title" className="text-3xl sm:text-4xl">
             <a
@@ -28,8 +28,8 @@ export function InstagramStrip({ handle, url }: { handle: string; url: string })
               {handle}
             </a>
           </h2>
-        </div>
-        <ul className="grid grid-cols-3 gap-1.5 sm:gap-3 lg:grid-cols-6">
+        </Stagger>
+        <Stagger as="ul" step={70} className="grid grid-cols-3 gap-1.5 sm:gap-3 lg:grid-cols-6">
           {tiles.map((tile) => (
             <li key={tile.src}>
               <a
@@ -39,17 +39,17 @@ export function InstagramStrip({ handle, url }: { handle: string; url: string })
                 aria-label={`${tile.alt} — view on Instagram`}
                 className="group bg-sand relative block aspect-square overflow-hidden"
               >
-                <Image
+                <ShimmerImage
                   src={tile.src}
                   alt=""
                   fill
                   sizes="(min-width: 1024px) 16vw, 33vw"
-                  className="object-cover transition duration-500 group-hover:scale-105 group-hover:opacity-90"
+                  className="object-cover group-hover:scale-105 group-hover:opacity-90"
                 />
               </a>
             </li>
           ))}
-        </ul>
+        </Stagger>
       </Container>
     </section>
   );
