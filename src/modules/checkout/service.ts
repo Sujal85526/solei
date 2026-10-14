@@ -110,7 +110,13 @@ export async function placeOrder(
  */
 export async function startPayment(
   orderId: string,
-  opts: { lines?: CheckoutLine[]; email?: string | null } = {},
+  opts: {
+    lines?: CheckoutLine[];
+    email?: string | null;
+    /** Where the hosted page returns to (default: the guest order page). */
+    successUrl?: string;
+    cancelUrl?: string;
+  } = {},
 ): Promise<string> {
   const admin = createAdminClient();
   const { data: order } = await admin
@@ -134,8 +140,8 @@ export async function startPayment(
       ? opts.lines
       : [{ name: `Solei order ${order.number}`, unitAmountFils: outstanding, quantity: 1 }];
 
-  const successUrl = orderUrl(order.id, order.number, "&paid=1");
-  const cancelUrl = orderUrl(order.id, order.number, "&cancelled=1");
+  const successUrl = opts.successUrl ?? orderUrl(order.id, order.number, "&paid=1");
+  const cancelUrl = opts.cancelUrl ?? orderUrl(order.id, order.number, "&cancelled=1");
   const session = await provider.createCheckout({
     orderId: order.id,
     orderNumber: order.number,

@@ -18,7 +18,7 @@ Phase 1 milestones (one branch + PR each, in order). See `docs/BUILD_PROMPT.md` 
 | 11 | `feat/event-calendar` | 🔄 in review | [#10](https://github.com/Sujal85526/solei/pull/10) |
 | 12 | `feat/event-pos` | ⬜ | |
 | 13 | `feat/event-reports` | ⬜ | |
-| 14 | `feat/event-booking` | ⬜ | |
+| 14 | `feat/event-booking` | 🔄 in review | [#16](https://github.com/Sujal85526/solei/pull/16) |
 | 15 | `feat/loyalty-passport` | ⬜ | |
 | 16 | `feat/dashboard-exports` | ⬜ | |
 | 17 | `chore/hardening` | ⬜ | |

@@ -14,6 +14,62 @@ export type Database = {
   }
   public: {
     Tables: {
+"booking_event_types": {
+                  Row: { "id": string,"name": string,"sort": number,"active": boolean,"created_at": string,"updated_at": string }
+                  ComputedFields: never
+                  Insert: { "id"?: string,"name": string,"sort"?: number,"active"?: boolean,"created_at"?: string,"updated_at"?: string }
+                  Update: { "id"?: string,"name"?: string,"sort"?: number,"active"?: boolean,"created_at"?: string,"updated_at"?: string }
+                  Relationships: []
+                },
+"booking_service_types": {
+                  Row: { "id": string,"name": string,"sort": number,"active": boolean,"created_at": string,"updated_at": string,"description": string | null }
+                  ComputedFields: never
+                  Insert: { "id"?: string,"name": string,"sort"?: number,"active"?: boolean,"created_at"?: string,"updated_at"?: string,"description"?: string | null }
+                  Update: { "id"?: string,"name"?: string,"sort"?: number,"active"?: boolean,"created_at"?: string,"updated_at"?: string,"description"?: string | null }
+                  Relationships: []
+                },
+"booking_packages": {
+                  Row: { "id": string,"name": string,"sort": number,"active": boolean,"created_at": string,"updated_at": string,"description": string | null,"inclusions": string[],"base_price_fils": number,"images": string[] }
+                  ComputedFields: never
+                  Insert: { "id"?: string,"name": string,"sort"?: number,"active"?: boolean,"created_at"?: string,"updated_at"?: string,"description"?: string | null,"inclusions"?: string[],"base_price_fils"?: number,"images"?: string[] }
+                  Update: { "id"?: string,"name"?: string,"sort"?: number,"active"?: boolean,"created_at"?: string,"updated_at"?: string,"description"?: string | null,"inclusions"?: string[],"base_price_fils"?: number,"images"?: string[] }
+                  Relationships: []
+                },
+"booth_designs": {
+                  Row: { "id": string,"name": string,"sort": number,"active": boolean,"created_at": string,"updated_at": string,"description": string | null,"photos": string[] }
+                  ComputedFields: never
+                  Insert: { "id"?: string,"name": string,"sort"?: number,"active"?: boolean,"created_at"?: string,"updated_at"?: string,"description"?: string | null,"photos"?: string[] }
+                  Update: { "id"?: string,"name"?: string,"sort"?: number,"active"?: boolean,"created_at"?: string,"updated_at"?: string,"description"?: string | null,"photos"?: string[] }
+                  Relationships: []
+                },
+"flower_options": {
+                  Row: { "id": string,"name": string,"sort": number,"active": boolean,"created_at": string,"updated_at": string,"hex": string,"price_fils": number }
+                  ComputedFields: never
+                  Insert: { "id"?: string,"name": string,"sort"?: number,"active"?: boolean,"created_at"?: string,"updated_at"?: string,"hex"?: string,"price_fils"?: number }
+                  Update: { "id"?: string,"name"?: string,"sort"?: number,"active"?: boolean,"created_at"?: string,"updated_at"?: string,"hex"?: string,"price_fils"?: number }
+                  Relationships: []
+                },
+"bookings": {
+                  Row: { "id": string,"ref": string,"customer_id": string | null,"contact_name": string,"contact_phone": string,"contact_email": string,"event_type_id": string,"event_date": string,"start_time": string,"end_time": string,"location": string,"emirate": Database["public"]["Enums"]["emirate"],"guests": number,"products_interest": Json,"service_type_ids": string[],"package_id": string | null,"booth_design_id": string | null,"flowers": boolean,"flower_option_id": string | null,"special_requests": string | null,"estimate": Json,"estimated_total_fils": number,"status": Database["public"]["Enums"]["booking_status"],"reject_reason": string | null,"event_id": string | null,"consent_at": string | null,"client_uuid": string | null,"confirmed_at": string | null,"created_at": string,"updated_at": string }
+                  ComputedFields: never
+                  Insert: { "id"?: string,"ref"?: string,"customer_id"?: string | null,"contact_name": string,"contact_phone": string,"contact_email": string,"event_type_id": string,"event_date": string,"start_time": string,"end_time": string,"location": string,"emirate": Database["public"]["Enums"]["emirate"],"guests": number,"products_interest"?: Json,"service_type_ids"?: string[],"package_id"?: string | null,"booth_design_id"?: string | null,"flowers"?: boolean,"flower_option_id"?: string | null,"special_requests"?: string | null,"estimate"?: Json,"estimated_total_fils"?: number,"status"?: Database["public"]["Enums"]["booking_status"],"reject_reason"?: string | null,"event_id"?: string | null,"consent_at"?: string | null,"client_uuid"?: string | null,"confirmed_at"?: string | null,"created_at"?: string,"updated_at"?: string }
+                  Update: { "id"?: string,"ref"?: string,"customer_id"?: string | null,"contact_name"?: string,"contact_phone"?: string,"contact_email"?: string,"event_type_id"?: string,"event_date"?: string,"start_time"?: string,"end_time"?: string,"location"?: string,"emirate"?: Database["public"]["Enums"]["emirate"],"guests"?: number,"products_interest"?: Json,"service_type_ids"?: string[],"package_id"?: string | null,"booth_design_id"?: string | null,"flowers"?: boolean,"flower_option_id"?: string | null,"special_requests"?: string | null,"estimate"?: Json,"estimated_total_fils"?: number,"status"?: Database["public"]["Enums"]["booking_status"],"reject_reason"?: string | null,"event_id"?: string | null,"consent_at"?: string | null,"client_uuid"?: string | null,"confirmed_at"?: string | null,"created_at"?: string,"updated_at"?: string }
+                  Relationships: [{ foreignKeyName: "bookings_customer_id_fkey"; columns: ["customer_id"]; isOneToOne: false; referencedRelation: "customers"; referencedColumns: ["id"] },{ foreignKeyName: "bookings_event_type_id_fkey"; columns: ["event_type_id"]; isOneToOne: false; referencedRelation: "booking_event_types"; referencedColumns: ["id"] },{ foreignKeyName: "bookings_package_id_fkey"; columns: ["package_id"]; isOneToOne: false; referencedRelation: "booking_packages"; referencedColumns: ["id"] },{ foreignKeyName: "bookings_booth_design_id_fkey"; columns: ["booth_design_id"]; isOneToOne: false; referencedRelation: "booth_designs"; referencedColumns: ["id"] },{ foreignKeyName: "bookings_flower_option_id_fkey"; columns: ["flower_option_id"]; isOneToOne: false; referencedRelation: "flower_options"; referencedColumns: ["id"] },{ foreignKeyName: "bookings_event_id_fkey"; columns: ["event_id"]; isOneToOne: false; referencedRelation: "events"; referencedColumns: ["id"] }]
+                },
+"booking_quotes": {
+                  Row: { "id": string,"booking_id": string,"version": number,"status": Database["public"]["Enums"]["booking_quote_status"],"lines": Json,"subtotal_fils": number,"discount_fils": number,"total_fils": number,"deposit_fils": number,"valid_until": string,"notes": string | null,"token": string,"sent_at": string,"accepted_at": string | null,"created_by": string | null,"created_at": string }
+                  ComputedFields: never
+                  Insert: { "id"?: string,"booking_id": string,"version": number,"status"?: Database["public"]["Enums"]["booking_quote_status"],"lines": Json,"subtotal_fils": number,"discount_fils"?: number,"total_fils": number,"deposit_fils": number,"valid_until": string,"notes"?: string | null,"token"?: string,"sent_at"?: string,"accepted_at"?: string | null,"created_by"?: string | null,"created_at"?: string }
+                  Update: { "id"?: string,"booking_id"?: string,"version"?: number,"status"?: Database["public"]["Enums"]["booking_quote_status"],"lines"?: Json,"subtotal_fils"?: number,"discount_fils"?: number,"total_fils"?: number,"deposit_fils"?: number,"valid_until"?: string,"notes"?: string | null,"token"?: string,"sent_at"?: string,"accepted_at"?: string | null,"created_by"?: string | null,"created_at"?: string }
+                  Relationships: [{ foreignKeyName: "booking_quotes_booking_id_fkey"; columns: ["booking_id"]; isOneToOne: false; referencedRelation: "bookings"; referencedColumns: ["id"] }]
+                },
+"booking_messages": {
+                  Row: { "id": string,"booking_id": string,"direction": Database["public"]["Enums"]["booking_message_direction"],"channel": Database["public"]["Enums"]["booking_message_channel"],"body": string,"created_by": string | null,"created_at": string }
+                  ComputedFields: never
+                  Insert: { "id"?: string,"booking_id": string,"direction": Database["public"]["Enums"]["booking_message_direction"],"channel"?: Database["public"]["Enums"]["booking_message_channel"],"body": string,"created_by"?: string | null,"created_at"?: string }
+                  Update: { "id"?: string,"booking_id"?: string,"direction"?: Database["public"]["Enums"]["booking_message_direction"],"channel"?: Database["public"]["Enums"]["booking_message_channel"],"body"?: string,"created_by"?: string | null,"created_at"?: string }
+                  Relationships: [{ foreignKeyName: "booking_messages_booking_id_fkey"; columns: ["booking_id"]; isOneToOne: false; referencedRelation: "bookings"; referencedColumns: ["id"] }]
+                },
       audit_log: {
         Row: {
           action: string
@@ -1320,6 +1376,8 @@ export type Database = {
       settings: {
         Row: {
           booking_deposit_bp: number
+          booking_flower_base_fils: number
+          booking_quote_validity_days: number
           business_name: string
           contact_email: string | null
           contact_phone: string | null
@@ -1340,6 +1398,8 @@ export type Database = {
         }
         Insert: {
           booking_deposit_bp?: number
+          booking_flower_base_fils?: number
+          booking_quote_validity_days?: number
           business_name?: string
           contact_email?: string | null
           contact_phone?: string | null
@@ -1360,6 +1420,8 @@ export type Database = {
         }
         Update: {
           booking_deposit_bp?: number
+          booking_flower_base_fils?: number
+          booking_quote_validity_days?: number
           business_name?: string
           contact_email?: string | null
           contact_phone?: string | null
@@ -1728,6 +1790,21 @@ export type Database = {
       }
     }
     Functions: {
+"booking_estimate": { Args: { "p": Json }; Returns: Json },
+"submit_booking": { Args: { "p": Json }; Returns: { "booking_id": string,"existing": boolean,"estimated_total_fils": number,"ref": string }[] },
+"set_booking_status": { Args: { "p_booking_id": string,"p_reason"?: string,"p_status": Database["public"]["Enums"]["booking_status"] }; Returns: undefined },
+"send_booking_quote": { Args: { "p": Json }; Returns: { "deposit_fils": number,"quote_id": string,"token": string,"total_fils": number,"version": number }[] },
+"booking_paid_fils": { Args: { "p_booking_id": string }; Returns: number },
+"get_booking_quote": { Args: { "p_token": string }; Returns: Json },
+"_confirm_booking": { Args: { "p_booking_id": string }; Returns: string },
+"confirm_booking": { Args: { "p_booking_id": string }; Returns: string },
+"accept_quote": { Args: { "p_token": string }; Returns: { "deposit_fils": number,"ref": string,"status": Database["public"]["Enums"]["booking_status"] }[] },
+"_booking_payment_order": { Args: { "p_booking_id": string,"p_kind": string }; Returns: string },
+"quote_payment_order": { Args: { "p_kind": string,"p_token": string }; Returns: string },
+"booking_payment_order": { Args: { "p_booking_id": string,"p_kind": string }; Returns: string },
+"booking_order_paid": { Args: Record<PropertyKey, never>; Returns: unknown },
+"next_booking_ref": { Args: Record<PropertyKey, never>; Returns: string },
+"update_booking_settings": { Args: { "p_deposit_bp": number,"p_flower_base_fils": number,"p_quote_validity_days": number }; Returns: undefined },
       after_order_cancelled: {
         Args: { p_order_id: string }
         Returns: undefined
@@ -1971,6 +2048,7 @@ export type Database = {
       }
     }
     Enums: {
+"booking_status": "requested"|"in_review"|"quoted"|"accepted"|"confirmed"|"completed"|"rejected"|"cancelled","booking_quote_status": "sent"|"accepted"|"superseded"|"withdrawn","booking_message_direction": "in"|"out"|"note","booking_message_channel": "email"|"whatsapp_link"|"internal",
       customer_source:
         | "website"
         | "pos"
@@ -2177,6 +2255,7 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
+"booking_status": ["requested", "in_review", "quoted", "accepted", "confirmed", "completed", "rejected", "cancelled"],"booking_quote_status": ["sent", "accepted", "superseded", "withdrawn"],"booking_message_direction": ["in", "out", "note"],"booking_message_channel": ["email", "whatsapp_link", "internal"],
       customer_source: [
         "website",
         "pos",
