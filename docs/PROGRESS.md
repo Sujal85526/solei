@@ -12,7 +12,7 @@ Phase 1 milestones (one branch + PR each, in order). See `docs/BUILD_PROMPT.md` 
 | 5 | `feat/admin-catalog-inventory` | ✅ merged | [#8](https://github.com/Sujal85526/solei/pull/8) |
 | 6 | `feat/storefront-shop-cart` | ✅ merged | [#7](https://github.com/Sujal85526/solei/pull/7) |
 | 7 | `feat/checkout-payments` | 🔄 in review | |
-| 8 | `feat/orders-admin-notifications` | ⬜ | |
+| 8 | `feat/orders-admin-notifications` | 🔄 in review | |
 | 9 | `feat/manual-orders-payment-links` | ⬜ | |
 | 10 | `feat/customers` | ⬜ | |
 | 11 | `feat/event-calendar` | 🔄 in review | [#10](https://github.com/Sujal85526/solei/pull/10) |
@@ -38,8 +38,15 @@ Phase 1 milestones (one branch + PR each, in order). See `docs/BUILD_PROMPT.md` 
 - Local Supabase: `pnpm db:start`; copy keys from `pnpm exec supabase status` into `.env.local` (see `.env.example`).
 
 ## Carry-overs
-- **M8 (notifications):** low-stock alert email to the owner (low-stock detection exists in
-  `src/modules/inventory/queries.ts` → `stockMatrix()`); send when a movement crosses the threshold.
+- ~~**M8 (notifications):** low-stock alert email to the owner~~ — done in M8: `owner_low_stock` after paid
+  orders and after damage / correction / transfer actions (one per SKU per 24 h).
+- **M9 (manual orders):** use `record_payment` for "paid now / partial"; email templates `payment_received` /
+  `order_confirmation` already fire from `src/modules/orders/notify.ts`. Cancel's "Return the items to stock"
+  toggle assumes non-`pending_payment` orders have stock movements — revisit if manual orders deduct stock
+  before payment.
+- **M10/M14/M15:** `booking_received`, `quote_sent`, `booking_confirmed`, `owner_new_booking`,
+  `passport_stamp`, `reward_unlocked` templates are seeded; call `notify()` from those milestones. Loyalty
+  reversal hooks into `after_order_cancelled()`.
 - **M7/M12:** call `updateTag("stock")` / `revalidateTag("stock")` after sales so storefront availability refreshes.
 - **M15 (loyalty):** homepage passport band still uses launch defaults in `src/modules/content/queries.ts`
   (`passportDefaults`) — switch to the active loyalty rule version.

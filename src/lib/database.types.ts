@@ -426,6 +426,141 @@ export type Database = {
         }
         Relationships: []
       }
+      notification_log: {
+        Row: {
+          booking_id: string | null
+          channel: Database["public"]["Enums"]["notification_channel"]
+          created_at: string
+          customer_id: string | null
+          dedupe_key: string | null
+          error: string | null
+          id: number
+          order_id: string | null
+          provider: string | null
+          provider_id: string | null
+          recipient: string
+          status: Database["public"]["Enums"]["notification_status"]
+          subject: string | null
+          template_key: string | null
+        }
+        Insert: {
+          booking_id?: string | null
+          channel?: Database["public"]["Enums"]["notification_channel"]
+          created_at?: string
+          customer_id?: string | null
+          dedupe_key?: string | null
+          error?: string | null
+          id?: never
+          order_id?: string | null
+          provider?: string | null
+          provider_id?: string | null
+          recipient: string
+          status: Database["public"]["Enums"]["notification_status"]
+          subject?: string | null
+          template_key?: string | null
+        }
+        Update: {
+          booking_id?: string | null
+          channel?: Database["public"]["Enums"]["notification_channel"]
+          created_at?: string
+          customer_id?: string | null
+          dedupe_key?: string | null
+          error?: string | null
+          id?: never
+          order_id?: string | null
+          provider?: string | null
+          provider_id?: string | null
+          recipient?: string
+          status?: Database["public"]["Enums"]["notification_status"]
+          subject?: string | null
+          template_key?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "notification_log_customer_id_fkey"
+            columns: ["customer_id"]
+            isOneToOne: false
+            referencedRelation: "customers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "notification_log_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "admin_orders"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "notification_log_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "order_payment_summary"
+            referencedColumns: ["order_id"]
+          },
+          {
+            foreignKeyName: "notification_log_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "orders"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "notification_log_template_key_fkey"
+            columns: ["template_key"]
+            isOneToOne: false
+            referencedRelation: "notification_templates"
+            referencedColumns: ["key"]
+          },
+        ]
+      }
+      notification_templates: {
+        Row: {
+          audience: Database["public"]["Enums"]["notification_audience"]
+          body: string
+          channel: Database["public"]["Enums"]["notification_channel"]
+          description: string | null
+          enabled: boolean
+          is_marketing: boolean
+          key: string
+          name: string
+          sort: number
+          subject: string
+          updated_at: string
+          updated_by: string | null
+          variables: string[]
+        }
+        Insert: {
+          audience: Database["public"]["Enums"]["notification_audience"]
+          body: string
+          channel?: Database["public"]["Enums"]["notification_channel"]
+          description?: string | null
+          enabled?: boolean
+          is_marketing?: boolean
+          key: string
+          name: string
+          sort?: number
+          subject: string
+          updated_at?: string
+          updated_by?: string | null
+          variables?: string[]
+        }
+        Update: {
+          audience?: Database["public"]["Enums"]["notification_audience"]
+          body?: string
+          channel?: Database["public"]["Enums"]["notification_channel"]
+          description?: string | null
+          enabled?: boolean
+          is_marketing?: boolean
+          key?: string
+          name?: string
+          sort?: number
+          subject?: string
+          updated_at?: string
+          updated_by?: string | null
+          variables?: string[]
+        }
+        Relationships: []
+      }
       order_line_costs: {
         Row: {
           order_line_id: string
@@ -523,6 +658,13 @@ export type Database = {
             foreignKeyName: "order_lines_order_id_fkey"
             columns: ["order_id"]
             isOneToOne: false
+            referencedRelation: "admin_orders"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "order_lines_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
             referencedRelation: "order_payment_summary"
             referencedColumns: ["order_id"]
           },
@@ -571,6 +713,13 @@ export type Database = {
           to_status?: Database["public"]["Enums"]["order_status"]
         }
         Relationships: [
+          {
+            foreignKeyName: "order_status_history_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "admin_orders"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "order_status_history_order_id_fkey"
             columns: ["order_id"]
@@ -791,6 +940,13 @@ export type Database = {
             foreignKeyName: "payment_links_order_id_fkey"
             columns: ["order_id"]
             isOneToOne: false
+            referencedRelation: "admin_orders"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "payment_links_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
             referencedRelation: "order_payment_summary"
             referencedColumns: ["order_id"]
           },
@@ -856,6 +1012,13 @@ export type Database = {
           updated_at?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "payments_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "admin_orders"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "payments_order_id_fkey"
             columns: ["order_id"]
@@ -1402,6 +1565,55 @@ export type Database = {
       }
     }
     Views: {
+      admin_orders: {
+        Row: {
+          booking_id: string | null
+          channel: Database["public"]["Enums"]["order_channel"] | null
+          contact_email: string | null
+          contact_name: string | null
+          contact_phone: string | null
+          courier: string | null
+          created_at: string | null
+          customer_id: string | null
+          delivery_emirate: Database["public"]["Enums"]["emirate"] | null
+          delivery_fee_fils: number | null
+          discount_fils: number | null
+          event_day: string | null
+          event_id: string | null
+          event_name: string | null
+          fulfilment: Database["public"]["Enums"]["fulfilment_type"] | null
+          id: string | null
+          item_count: number | null
+          number: string | null
+          outstanding_fils: number | null
+          paid_fils: number | null
+          payment_status: string | null
+          placed_at: string | null
+          refunded_fils: number | null
+          staff_id: string | null
+          status: Database["public"]["Enums"]["order_status"] | null
+          subtotal_fils: number | null
+          total_fils: number | null
+          tracking_number: string | null
+          vat_fils: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "orders_customer_id_fkey"
+            columns: ["customer_id"]
+            isOneToOne: false
+            referencedRelation: "customers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "orders_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "events"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       event_stock_summary: {
         Row: {
           allocated: number | null
@@ -1475,6 +1687,10 @@ export type Database = {
       }
     }
     Functions: {
+      after_order_cancelled: {
+        Args: { p_order_id: string }
+        Returns: undefined
+      }
       after_order_paid: { Args: { p_order_id: string }; Returns: undefined }
       allocate_event_stock: {
         Args: { p_event_id: string; p_from_location?: string; p_lines: Json }
@@ -1486,6 +1702,10 @@ export type Database = {
       can_access_event_object: {
         Args: { p_name: string; p_write: boolean }
         Returns: boolean
+      }
+      cancel_order: {
+        Args: { p_order_id: string; p_reason: string; p_restock?: boolean }
+        Returns: number
       }
       close_event_stock: {
         Args: {
@@ -1572,6 +1792,13 @@ export type Database = {
           variant_id: string
         }[]
       }
+      order_status_allowed: {
+        Args: {
+          p_from: Database["public"]["Enums"]["order_status"]
+          p_to: Database["public"]["Enums"]["order_status"]
+        }
+        Returns: boolean
+      }
       overlapping_events: {
         Args: {
           p_end: string
@@ -1589,6 +1816,29 @@ export type Database = {
           status: Database["public"]["Enums"]["event_status"]
           type: Database["public"]["Enums"]["event_type"]
         }[]
+      }
+      record_payment: {
+        Args: {
+          p_amount_fils: number
+          p_method: Database["public"]["Enums"]["payment_method"]
+          p_note?: string
+          p_order_id: string
+          p_reference?: string
+        }
+        Returns: {
+          newly_paid: boolean
+          outstanding_fils: number
+          payment_id: string
+        }[]
+      }
+      record_refund: {
+        Args: {
+          p_amount_fils: number
+          p_method: Database["public"]["Enums"]["payment_method"]
+          p_order_id: string
+          p_reason: string
+        }
+        Returns: string
       }
       record_stock_movement: {
         Args: {
@@ -1629,6 +1879,20 @@ export type Database = {
         }
         Returns: string
       }
+      update_order_notes: {
+        Args: { p_internal_notes: string; p_order_id: string }
+        Returns: undefined
+      }
+      update_order_status: {
+        Args: {
+          p_courier?: string
+          p_note?: string
+          p_order_id: string
+          p_status: Database["public"]["Enums"]["order_status"]
+          p_tracking_number?: string
+        }
+        Returns: Database["public"]["Enums"]["order_status"]
+      }
       upsert_customer: {
         Args: {
           p_address?: Json
@@ -1641,6 +1905,18 @@ export type Database = {
           p_source?: Database["public"]["Enums"]["customer_source"]
         }
         Returns: string
+      }
+      variant_stock_alerts: {
+        Args: { p_variant_ids: string[] }
+        Returns: {
+          is_low: boolean
+          on_hand: number
+          product_name: string
+          sku: string
+          threshold: number
+          variant_id: string
+          variant_label: string
+        }[]
       }
       write_audit: {
         Args: {
@@ -1694,6 +1970,9 @@ export type Database = {
         | "not_applicable"
       fulfilment_type: "delivery" | "pickup" | "handed_over"
       location_kind: "warehouse" | "event" | "other"
+      notification_audience: "customer" | "owner"
+      notification_channel: "email" | "whatsapp"
+      notification_status: "sent" | "failed" | "skipped"
       order_channel:
         | "website"
         | "pos"
@@ -1902,6 +2181,9 @@ export const Constants = {
       ],
       fulfilment_type: ["delivery", "pickup", "handed_over"],
       location_kind: ["warehouse", "event", "other"],
+      notification_audience: ["customer", "owner"],
+      notification_channel: ["email", "whatsapp"],
+      notification_status: ["sent", "failed", "skipped"],
       order_channel: [
         "website",
         "pos",

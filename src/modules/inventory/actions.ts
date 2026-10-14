@@ -2,6 +2,7 @@
 
 import { revalidatePath, updateTag } from "next/cache";
 import { fail, ok, type ActionResult } from "@/lib/action-result";
+import { onStockReduced } from "@/modules/orders/events";
 import * as inventory from "./service";
 
 /** Availability on the storefront is cached under this tag. */
@@ -27,8 +28,9 @@ export async function receiveStockAction(_: unknown, fd: FormData): Promise<Acti
 
 export async function adjustStockAction(_: unknown, fd: FormData): Promise<ActionResult> {
   try {
-    await inventory.adjustStock(entries(fd));
+    const r = await inventory.adjustStock(entries(fd));
     refresh();
+    if (r.reduced) onStockReduced([r.variantId]);
     return ok(undefined, "Stock adjusted.");
   } catch (e) {
     return fail(e);
@@ -37,8 +39,10 @@ export async function adjustStockAction(_: unknown, fd: FormData): Promise<Actio
 
 export async function transferStockAction(_: unknown, fd: FormData): Promise<ActionResult> {
   try {
-    await inventory.transferStock(entries(fd));
+    const r = await inventory.transferStock(entries(fd));
     refresh();
+    // Moving units to an event lowers what's left in the warehouses.
+    onStockReduced([r.variantId]);
     return ok(undefined, "Stock transferred.");
   } catch (e) {
     return fail(e);
