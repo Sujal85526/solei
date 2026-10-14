@@ -3,14 +3,16 @@
 import { useActionState, useState } from "react";
 import { ArrowRight, Check } from "lucide-react";
 import { optInAction } from "@/app/(store)/actions";
-import { Logo } from "@/components/brand";
+import { Parallax } from "@/components/motion/parallax";
+import { Reveal } from "@/components/motion/reveal";
+import { ShimmerImage } from "@/components/motion/shimmer-image";
 import type { OptInState } from "@/modules/marketing/service";
 
 /**
- * "More than a fragrance." — embossed gift box visual (pure CSS, no asset needed) + early-access
- * email sign-up with explicit consent.
+ * "More than a fragrance." — the Solei gift bag in late light (curtain unveil, parallax, slow light
+ * sweep) + early-access email sign-up with explicit consent.
  */
-export function Experience() {
+export function Experience({ image }: { image: string }) {
   const [state, action, pending] = useActionState<OptInState, FormData>(optInAction, {
     status: "idle",
   });
@@ -20,22 +22,19 @@ export function Experience() {
 
   return (
     <section aria-labelledby="experience-title" className="grid lg:grid-cols-2">
-      <div
-        aria-hidden
-        className="relative flex aspect-[4/3] items-center justify-center overflow-hidden lg:aspect-auto lg:min-h-[36rem]"
-        style={{
-          background:
-            "radial-gradient(120% 90% at 30% 20%, #6b0d3c 0%, #460328 45%, #2e021a 100%), url(/images/brand/grain.svg)",
-        }}
-      >
-        <div
-          className="absolute inset-0 opacity-40 mix-blend-overlay"
-          style={{ backgroundImage: "url(/images/brand/grain.svg)", backgroundSize: "180px" }}
-        />
-        <div className="relative -rotate-12">
-          <Logo className="h-20 text-[#5a0832] drop-shadow-[0_1px_0_rgba(247,205,208,0.35)] [filter:drop-shadow(0_-1px_0_rgba(0,0,0,0.5))] sm:h-28" />
-        </div>
-        <div className="absolute inset-0 bg-[linear-gradient(115deg,transparent_40%,rgba(247,205,208,0.12)_50%,transparent_60%)]" />
+      <div className="bg-noir light-sweep relative aspect-[4/3] overflow-hidden lg:aspect-auto lg:min-h-[40rem]">
+        <Reveal data-curtain="" className="absolute inset-0">
+          <Parallax from="-6%" to="6%" scale={1.12} className="absolute inset-0">
+            <ShimmerImage
+              src={image}
+              alt="A burgundy Solei gift bag with a satin ribbon in late-afternoon light"
+              fill
+              tone="dark"
+              sizes="(min-width: 1024px) 50vw, 100vw"
+              className="object-cover object-[35%_50%]"
+            />
+          </Parallax>
+        </Reveal>
       </div>
 
       <div className="on-blush flex items-center px-6 py-20 sm:px-14 lg:px-20">

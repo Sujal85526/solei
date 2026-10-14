@@ -1,5 +1,6 @@
 import { IntroLoader } from "@/components/motion/intro-loader";
 import { ParallaxFallback } from "@/components/motion/parallax-fallback";
+import { DestinationTicker } from "@/components/store/home/destination-ticker";
 import { DestinationsBand } from "@/components/store/home/destinations-band";
 import { Experience } from "@/components/store/home/experience";
 import { HeroSlider } from "@/components/store/home/hero-slider";
@@ -19,12 +20,13 @@ export default async function HomePage() {
     <>
       <IntroLoader />
       <HeroSlider slides={heroSlides()} />
-      <SignatureScents products={featured} />
       <StorySplit image={images.soho} />
-      <DestinationsBand image={images.window} destinations={content.destinations} />
+      <DestinationsBand image={images.window} />
+      <DestinationTicker destinations={content.destinations} />
+      <SignatureScents products={featured} />
+      <Experience image={images.bag} />
       <PlanYourEvent eventTypes={content.eventTypes} image={images.booth} />
       <PassportBand passport={content.passport} destinations={content.destinations} />
-      <Experience />
       <ParallaxFallback />
     </>
   );
