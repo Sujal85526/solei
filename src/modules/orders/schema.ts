@@ -82,7 +82,10 @@ export type OrderFilters = z.infer<typeof orderFiltersSchema>;
  * "050 123 4567", "+971 50…" and "00971…" all become "50…" to match stored E.164 numbers.
  */
 export function searchNeedles(q: string): { text: string; phone: string | null } {
-  const text = q.replace(/[,()*%:"\\]/g, " ").replace(/\s+/g, " ").trim();
+  const text = q
+    .replace(/[,()*%:"\\]/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
   if (/[a-z]/i.test(q)) return { text, phone: null };
   const digits = q.replace(/\D/g, "").replace(/^00/, "").replace(/^971/, "").replace(/^0/, "");
   return { text, phone: digits.length >= 4 ? digits : null };

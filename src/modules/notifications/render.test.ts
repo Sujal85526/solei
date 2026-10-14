@@ -34,7 +34,7 @@ describe("notification rendering", () => {
         lines: "1 × Capri\n2 × Soho",
       },
     );
-    expect(r.html).not.toContain("evil.example\"");
+    expect(r.html).not.toContain('evil.example"');
     expect(r.html).not.toContain("<strong>bold</strong>");
     expect(r.html).toContain("[win](https://evil.example) **bold**");
     expect(r.html).toContain('href="https://solei.ae/order/SOL-1?t=a&amp;b"');

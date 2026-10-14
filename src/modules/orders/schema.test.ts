@@ -24,15 +24,15 @@ describe("order forms", () => {
   });
 
   it("requires a refund reason", () => {
-    expect(refundSchema.safeParse({ orderId, amount: "10", method: "cash", reason: "" }).success).toBe(
-      false,
-    );
+    expect(
+      refundSchema.safeParse({ orderId, amount: "10", method: "cash", reason: "" }).success,
+    ).toBe(false);
   });
 
   it("reads the restock checkbox", () => {
-    expect(cancelSchema.parse({ orderId, reason: "Customer changed mind", restock: "on" }).restock).toBe(
-      true,
-    );
+    expect(
+      cancelSchema.parse({ orderId, reason: "Customer changed mind", restock: "on" }).restock,
+    ).toBe(true);
     expect(cancelSchema.parse({ orderId, reason: "Damaged in transit" }).restock).toBe(false);
   });
 });

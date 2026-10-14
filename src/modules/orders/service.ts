@@ -3,13 +3,7 @@ import { UserError } from "@/lib/action-result";
 import { assertPermission } from "@/lib/auth/session";
 import { formatAED } from "@/lib/money";
 import { createClient } from "@/lib/supabase/server";
-import {
-  cancelSchema,
-  notesSchema,
-  paymentSchema,
-  refundSchema,
-  statusSchema,
-} from "./schema";
+import { cancelSchema, notesSchema, paymentSchema, refundSchema, statusSchema } from "./schema";
 import { ORDER_STATUS_LABELS, type OrderStatus } from "./status";
 
 /**
@@ -29,7 +23,9 @@ function dbError(error: { message: string; code?: string }): never {
         (_, a: string, b: string) =>
           `from ${ORDER_STATUS_LABELS[a as OrderStatus] ?? a} to ${ORDER_STATUS_LABELS[b as OrderStatus] ?? b}`,
       );
-    throw new UserError(msg.charAt(0).toUpperCase() + msg.slice(1) + (msg.endsWith(".") ? "" : "."));
+    throw new UserError(
+      msg.charAt(0).toUpperCase() + msg.slice(1) + (msg.endsWith(".") ? "" : "."),
+    );
   }
   throw new Error(error.message);
 }

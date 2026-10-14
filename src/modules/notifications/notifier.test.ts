@@ -117,9 +117,7 @@ describe("notifier", () => {
 
   it("sends when the dedupe key wasn't used recently", async () => {
     const { notify, logs } = setup({ sentRecently: false });
-    expect((await notify("owner_low_stock", { ...input, dedupeKey: "SKU-1" })).status).toBe(
-      "sent",
-    );
+    expect((await notify("owner_low_stock", { ...input, dedupeKey: "SKU-1" })).status).toBe("sent");
     expect(logs[0].dedupe_key).toBe("SKU-1");
   });
 });
