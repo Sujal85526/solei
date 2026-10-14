@@ -1,8 +1,10 @@
 # Product renders (Blender)
 
-The images in `public/images/renders/` are 3D product visualisations generated entirely from these
-scripts — no `.blend` files are committed. They stand in for studio photography until the client
-supplies originals (see `docs/DECISIONS.md`, T9).
+The per-product images in `public/images/renders/` (`product-<slug>-<perfume|spray>.jpg/.webp`) are 3D
+product visualisations generated entirely from these scripts — no `.blend` files are committed. They are
+placeholders until the client uploads real product photos via admin (see `docs/DECISIONS.md`, T9).
+`render_all.py` also defines hero, collection and detail shots; those are not shipped (the client supplied
+hero/lifestyle imagery), but they still render if you ask for them by name.
 
 | File            | Role                                                                                                                                            |
 | --------------- | ----------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -20,8 +22,11 @@ Requires Blender 5.2 (tested with 5.2.2 LTS on an Apple M3, Metal GPU), Node 20+
 node scripts/blender/labels.mjs /tmp/solei-blender/labels
 SOLEI_LABEL_DIR=/tmp/solei-blender/labels \
   /Applications/Blender.app/Contents/MacOS/Blender -b --factory-startup \
-  -P scripts/blender/render_all.py -- --out /tmp/solei-blender/out
-node scripts/blender/optimise.mjs /tmp/solei-blender/out public/images/renders
+  -P scripts/blender/render_all.py -- --out /tmp/solei-blender/out \
+  --shots $(echo product-{cannes,marbella,verona,capri,santorini}-perfume product-{soho,monaco,mayfair}-spray | tr ' ' ,)
+# ship only the product squares
+mkdir -p /tmp/solei-blender/ship && cp /tmp/solei-blender/out/product-*-{perfume,spray}.png /tmp/solei-blender/ship/
+node scripts/blender/optimise.mjs /tmp/solei-blender/ship public/images/renders
 ```
 
 Useful flags for `render_all.py` (after `--`):
