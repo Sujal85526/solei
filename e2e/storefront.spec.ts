@@ -1,7 +1,5 @@
-import { expect, test, type Page } from "@playwright/test";
+import { expect, test } from "@playwright/test";
 import { adminClient } from "./helpers/auth";
-
-const summary = (page: Page) => page.getByTestId("cart-summary");
 
 test.describe("storefront — browse and cart", () => {
   test("shop → filter → product → add 2 → cart totals, delivery, qty, remove, persistence", async ({

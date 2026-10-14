@@ -53,6 +53,7 @@ export const en = {
     noResults: "No scents match these filters yet.",
     soldOut: "Sold out",
     viewAll: "View the whole collection",
+    from: "From",
     comingSoon: "Coming soon",
     comingSoonLede: "This chapter of the collection is still being written. Check back soon.",
     breadcrumb: "Breadcrumb",

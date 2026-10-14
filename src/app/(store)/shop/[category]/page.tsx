@@ -84,6 +84,9 @@ export default async function CategoryPage({ params }: PageProps<"/shop/[categor
             <p className="flex items-baseline gap-4">
               {category.fromFils !== null ? (
                 <span className="numeric font-display text-pink text-2xl">
+                  <span className="eyebrow text-cream/70 me-2 align-middle text-[0.6rem]">
+                    {t.shop.from}
+                  </span>
                   {formatAED(category.fromFils)}
                 </span>
               ) : null}

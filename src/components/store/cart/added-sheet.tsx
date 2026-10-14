@@ -34,18 +34,15 @@ export function AddedSheet({
     <Sheet open={open} onOpenChange={onOpenChange}>
       <SheetContent
         side="right"
-        className="bg-cream text-ink w-full gap-0 p-0 sm:max-w-md"
+        className="bg-cream text-ink w-[88vw] gap-0 p-0 sm:max-w-md"
         data-testid="added-sheet"
       >
-        <div className="flex flex-col gap-2 px-6 pt-8 pb-6 sm:px-8">
-          <p className="eyebrow text-gold-ink flex items-center gap-2 text-[0.65rem]">
-            <span className="bg-burgundy text-pink flex size-5 items-center justify-center rounded-full">
-              <Check className="size-3" strokeWidth={2.5} />
+        <div className="flex flex-col gap-2 px-6 pe-14 pt-8 pb-6 sm:px-8 sm:pe-14">
+          <SheetTitle className="font-display text-burgundy flex items-center gap-3 text-2xl font-medium sm:text-3xl">
+            <span className="bg-burgundy text-pink flex size-6 shrink-0 items-center justify-center rounded-full">
+              <Check className="size-3.5" strokeWidth={2.5} />
             </span>
             {t.cart.added}
-          </p>
-          <SheetTitle className="font-display text-burgundy text-3xl font-medium">
-            {item?.name ?? t.cart.added}
           </SheetTitle>
           <SheetDescription className="text-ink-muted text-sm">
             {t.cart.itemsInCart(count)}

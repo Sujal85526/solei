@@ -60,7 +60,7 @@ export function ProductCard({
         {product.destination ? (
           <p className="eyebrow text-gold-ink text-[0.65rem]">
             {product.destination.name}
-            <span className="text-ink-muted/70 hidden sm:inline">
+            <span className="text-ink-muted/70 hidden xl:inline">
               {" "}
               · {product.destination.region}
             </span>
@@ -72,7 +72,7 @@ export function ProductCard({
         <p className="flex items-baseline justify-between gap-3 text-sm">
           <span className="text-ink-muted">{sizeLabel || product.category.name}</span>
           <span className="numeric text-burgundy font-medium">
-            {varies ? "From " : ""}
+            {varies ? `${t.shop.from} ` : ""}
             {formatAED(from)}
           </span>
         </p>

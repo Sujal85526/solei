@@ -70,7 +70,7 @@ export default async function DestinationPage({ params }: PageProps<"/destinatio
             </Eyebrow>
             <h1
               id="destination-title"
-              className="text-6xl leading-none tracking-[0.06em] uppercase sm:text-7xl lg:text-8xl"
+              className="text-[clamp(2.75rem,12vw,5rem)] leading-none tracking-[0.05em] uppercase lg:text-[clamp(3.5rem,5.5vw,6rem)]"
             >
               {d.name}
             </h1>
@@ -93,7 +93,7 @@ export default async function DestinationPage({ params }: PageProps<"/destinatio
 
           <div className="relative mx-auto w-full max-w-xl lg:col-span-7 lg:max-w-2xl">
             <PostmarkWaves
-              className="absolute -start-6 -top-6 hidden w-44 sm:block"
+              className="absolute -start-6 -bottom-8 hidden w-44 sm:block"
               lines={4}
               width={180}
             />
@@ -117,12 +117,12 @@ export default async function DestinationPage({ params }: PageProps<"/destinatio
                 </p>
               </div>
             </PostcardFrame>
-            <div aria-hidden className="absolute -end-2 -bottom-8 sm:-end-6">
+            <div aria-hidden className="absolute end-3 -top-10 sm:-end-6 sm:-top-12">
               <PassportStamp
                 label={d.name}
                 sublabel={d.region}
                 tilt={10}
-                className="bg-cream/90 size-28 border-(--accent) text-(--accent) sm:size-32"
+                className="bg-cream/90 size-24 border-(--accent) text-(--accent) sm:size-32"
               />
             </div>
           </div>
