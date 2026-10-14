@@ -12,6 +12,8 @@ export const en = {
     collect: "Collect the destinations. Keep the memory.",
   },
   nav: {
+    home: "Home",
+    collections: "Collections",
     shop: "Shop",
     destinations: "Destinations",
     events: "Plan your event",

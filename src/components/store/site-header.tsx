@@ -1,6 +1,6 @@
 import Link from "next/link";
-import { ShoppingBag, UserRound } from "lucide-react";
-import { Logo } from "@/components/brand";
+import { UserRound } from "lucide-react";
+import { BagIcon, Logo } from "@/components/brand";
 import { t } from "@/content/en";
 import { storeNav } from "@/content/site";
 import { CartCount } from "./cart/cart-count";
@@ -47,7 +47,7 @@ export function SiteHeader() {
           </Link>
           <Link href="/cart" className={iconLink} title={t.nav.cart}>
             <span className="relative">
-              <ShoppingBag className="size-[1.15rem]" strokeWidth={1.25} aria-hidden />
+              <BagIcon className="size-[1.3rem]" />
               <CartCount />
             </span>
             <span className="sr-only">{t.nav.cart}</span>
