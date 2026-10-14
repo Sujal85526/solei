@@ -40,15 +40,13 @@ async function createStockedVariant(stamp: string) {
     .select("id")
     .eq("is_default", true)
     .single();
-  const { error: e3 } = await admin
-    .from("stock_movements")
-    .insert({
-      variant_id: variant.id,
-      location_id: main!.id,
-      qty: 50,
-      type: "receive",
-      reason: "E2E",
-    });
+  const { error: e3 } = await admin.from("stock_movements").insert({
+    variant_id: variant.id,
+    location_id: main!.id,
+    qty: 50,
+    type: "receive",
+    reason: "E2E",
+  });
   if (e3) throw e3;
   return { variantId: variant.id, mainId: main!.id, productName: product.name };
 }
@@ -228,14 +226,12 @@ test.describe("event calendar", () => {
       .select("id")
       .single();
     if (error) throw error;
-    await admin
-      .from("event_expenses")
-      .insert({
-        event_id: ev.id,
-        category: "setup",
-        amount_fils: 99_900,
-        note: `Secret florist ${stamp}`,
-      });
+    await admin.from("event_expenses").insert({
+      event_id: ev.id,
+      category: "setup",
+      amount_fils: 99_900,
+      note: `Secret florist ${stamp}`,
+    });
 
     await signInAsSales(page);
     await page.goto(`/admin/calendar?view=list&date=${dates.start}`);
