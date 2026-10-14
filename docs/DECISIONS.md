@@ -45,3 +45,17 @@ Open client questions are built as configurable defaults. Each row: what we chos
   available photography is ~1100px wide; switch to full-bleed when high-res client photography arrives.
 - **T13 — Opt-in form** is a native form + server action (no client form library) to keep the homepage
   bundle small; consent checkbox is required and unticked by default.
+
+## Core schema (milestone 3)
+- **T14 — Costs are separate tables** (`variant_costs`, `order_line_costs`) readable only with
+  `reports.financial.view`, because Postgres RLS is row-level, not column-level.
+- **T15 — MFA in the database**: `has_permission()` ignores the permissions of roles with `requires_mfa`
+  (owner, manager) unless the session JWT is `aal2`.
+- **T16 — Audit**: a generic trigger logs every insert/update/delete on business tables (actor, before/after,
+  IP); RPCs add semantic entries (`stock.transfer`, `order.cancel`…). The log is append-only.
+- **T17 — Order status** adds `pending_payment` (website orders before the webhook confirms payment) to the
+  brief's list; payment status (`pending | partially_paid | paid | refunded`) is derived in `order_payment_summary`.
+- **D13 — Perfume size** assumed **50 ml** (sprays 100 ml per profile). ❓ confirm.
+- **D14 — Demo unit costs** perfume AED 90, spray AED 55 (seed only). ❓ client to supply.
+- **D3 (update) — Delivery fees** default AD 20 / Dubai, Sharjah, Ajman 25 / UAQ, RAK, Fujairah 30 AED;
+  free delivery from AED 500. ❓ confirm.
