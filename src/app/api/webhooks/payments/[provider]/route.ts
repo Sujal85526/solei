@@ -1,6 +1,6 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { createAdminClient } from "@/lib/supabase/server";
-import { onOrderPaid } from "@/modules/orders/events";
+import { onOrderPaid, onPaymentFailed } from "@/modules/orders/events";
 import { providerByName } from "@/providers/payment";
 import { WebhookSignatureError } from "@/providers/payment/types";
 
@@ -57,12 +57,14 @@ export async function POST(
       if (error) throw new Error(error.message);
       if (data.newly_paid) await onOrderPaid({ id: data.order_id, number: data.order_number });
     } else if (event.kind === "failed") {
-      const { error } = await admin.rpc("fail_payment", {
+      const { data: failedOrderId, error } = await admin.rpc("fail_payment", {
         p_provider: provider.name,
         p_provider_ref: event.providerRef,
         p_reason: event.reason,
       });
       if (error) throw new Error(error.message);
+      // Null when the attempt was already superseded/settled — no retry email then.
+      if (failedOrderId) await onPaymentFailed(failedOrderId);
     }
     await admin
       .from("payment_events")
