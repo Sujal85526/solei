@@ -2,6 +2,7 @@ import "server-only";
 import { cacheLife, cacheTag } from "next/cache";
 import { must } from "@/lib/supabase/must";
 import { createPublicClient } from "@/lib/supabase/server";
+import { getPublicProgramme } from "@/modules/loyalty/queries";
 import { seedCategories, seedDestinations, seedEventTypes, seedPrices } from "./seed";
 
 /**
@@ -41,13 +42,14 @@ export type HomeContent = {
   passport: {
     stampsForReward: number;
     rewardLabel: string;
-    issueAfterPurchases: number;
+    /** null = passports only on request. */
+    issueAfterPurchases: number | null;
     enabled: boolean;
   };
   instagram: { handle: string; url: string };
 };
 
-/** Launch loyalty defaults; replaced by the loyalty rule read in feat/loyalty-passport. */
+/** Launch loyalty defaults — used only without a database (CONTENT_FALLBACK=1) or before a rule exists. */
 const passportDefaults: HomeContent["passport"] = {
   stampsForReward: 12,
   rewardLabel: "a free all-over spray of your choice",
@@ -65,7 +67,7 @@ export async function getHomeContent(): Promise<HomeContent> {
   if (process.env.CONTENT_FALLBACK === "1") return fallbackContent();
 
   const db = createPublicClient();
-  const [destinationsRes, productsRes, categoriesRes, settingsRes] = await Promise.all([
+  const [destinationsRes, productsRes, categoriesRes, settingsRes, programme] = await Promise.all([
     db
       .from("destinations")
       .select("id, slug, name, region, mood, postcard_image_url")
@@ -76,6 +78,7 @@ export async function getHomeContent(): Promise<HomeContent> {
       .order("sort"),
     db.from("categories").select("id, slug, name, description, image_url").order("sort"),
     db.from("settings").select("instagram_handle, instagram_url").single(),
+    getPublicProgramme(),
   ]);
   const destinationRows = must(destinationsRes, "destinations");
   const productRows = must(productsRes, "products");
@@ -122,7 +125,14 @@ export async function getHomeContent(): Promise<HomeContent> {
     destinations,
     collection,
     eventTypes: seedEventTypes,
-    passport: passportDefaults,
+    passport: programme.rule
+      ? {
+          stampsForReward: programme.rule.stampsForReward,
+          rewardLabel: programme.rule.rewardLabel,
+          issueAfterPurchases: programme.rule.issuePassportAfterPurchases,
+          enabled: programme.enabled,
+        }
+      : passportDefaults,
     instagram: {
       handle: settings.instagram_handle ?? "@solei.ad",
       url: settings.instagram_url ?? "https://www.instagram.com/solei.ad/",

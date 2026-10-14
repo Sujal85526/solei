@@ -4,6 +4,7 @@ import { formatAED } from "@/lib/money";
 import { formatPhone } from "@/lib/phone";
 import { createAdminClient } from "@/lib/supabase/server";
 import { orderUrl } from "@/modules/checkout/service";
+import { notifyPassportForOrder } from "@/modules/loyalty/notify";
 import { notify, ownerEmail } from "@/modules/notifications/service";
 import { formatOrderLines, humanize, trackingText } from "./format";
 import { CHANNEL_LABELS, CUSTOMER_STATUS_TEMPLATES, type OrderStatus } from "./status";
@@ -62,7 +63,7 @@ async function guard(what: string, fn: () => Promise<unknown>) {
   }
 }
 
-/** Order fully paid: confirmation to the customer, alert to the owner, low-stock check. */
+/** Order fully paid: confirmation to the customer, alert to the owner, low-stock check, passport stamp. */
 export function notifyOrderPaid(orderId: string) {
   return guard("paid", async () => {
     const o = await loadOrder(orderId);
@@ -89,6 +90,8 @@ export function notifyOrderPaid(orderId: string) {
       }
     }
     await checkLowStock(o.lines.map((l) => l.variant_id));
+    // Stamps were awarded in the same transaction that settled the order.
+    await notifyPassportForOrder(o.id);
   });
 }
 

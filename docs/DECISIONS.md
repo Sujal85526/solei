@@ -300,3 +300,45 @@ Open client questions are built as configurable defaults. Each row: what we chos
   the POS page + static assets so it reopens offline; the app is installable (manifest, apple-touch icon).
 - **T81 — Tap count**: tile, tile, Charge, Cash = 4 taps for a 2-perfume cash sale; customer phone is optional
   on the payment sheet (creates/links the customer for passport stamps).
+## Solei Passport (milestone 15)
+- **T82 — Versioned rules, one programme row**: `loyalty_programs` (id 1, on/off) + `loyalty_rule_versions`
+  (stamps per item, qualifying categories/products — both empty = everything, threshold, reward type + config +
+  customer-facing label, passport after N purchases or null = on request only, reward items earn?, expiry
+  months). Saving settings with any rule change inserts a new version effective now (`loyalty_save_rules`,
+  `loyalty.manage`); stamps keep the `rule_version_id` they were earned under. Launch rule seeded as version 1
+  (1 per item, 12 → "a free all-over spray of your choice", passport after 2, rewards don't earn, no expiry).
+  The reward category is stored by id, or by slug when the catalogue is seeded after migrations (local/CI).
+- **T83 — Balance = Σ ledger = progress on the current card**. Kinds: `earned` (+, one row per qualifying order
+  line: qty × stamps per item, line destination), `manual` (±, reason, `loyalty.adjust`), `reversed` (−, undoes
+  one earned row once), `redeemed` (−threshold when a card completes and a reward unlocks; +cost when an unused
+  reward is withdrawn), `expired`. Settling (`loyalty_settle`) unlocks one reward per full card — several when
+  one order crosses several thresholds — and carries the remainder (11 + 3 → 1 reward, 2 left). Rewards snapshot
+  the rule (cost, type, config, label). `src/modules/loyalty/engine.ts` mirrors the SQL and is unit-tested.
+- **T84 — Award on paid, reverse on cancel / full refund**: `after_order_paid` (stock, then loyalty) and
+  `after_order_cancelled` now award/reverse; a trigger on refund payments reverses the stamps when the order's
+  payment status becomes `refunded`. **Partial refunds keep the stamps** (no item-level refund data yet).
+  Stamps need an order customer and the programme on; awarding is idempotent per line. Loyalty failures never
+  block a payment or cancellation: they are caught and logged to `audit_log` (`loyalty.award_failed`).
+  If stamps are taken back after their reward was already redeemed the card goes negative ("owed") and later
+  stamps fill it; an unused reward is withdrawn instead. Cancelling a reward order gives the reward back.
+- **T85 — Passport**: auto-issued (`passports.how = auto`) once the customer has N paid purchases (orders with at
+  least one non-reward line); staff can issue on request. Stamps accrue from the first purchase regardless.
+  Numbers are `SP-0xxxx`.
+- **T86 — Redemption** (`loyalty_redeem_reward`, `loyalty.adjust` or `pos.use`): item rewards add a zero-priced
+  `is_reward` line — on a new `direct` order (total 0, settles as paid at once, `reward_redemption` stock
+  movement) or on an existing open order of the same customer (POS can pass its order). Value rewards (fixed
+  AED / %) are only *marked used* on an order; applying the discount waits for the promotions engine (Phase 2).
+  ❓ **Online redemption at checkout is not built yet** — the passport page tells customers to redeem at a
+  pop-up or on WhatsApp (needs a reward hold on pending website orders; see PROGRESS).
+- **T87 — Customer passport login**: `/passport` sends a Supabase magic link (`/auth/callback?next=/passport`)
+  only when the email belongs to a customer (same answer either way — no enumeration, no stray accounts).
+  `link_customer_account()` links the confirmed auth user to the oldest customer with that email on first
+  visit; it never creates customers. Customers read only their own stamps/rewards/passport (RLS via
+  `is_own_customer`). Programme + rules are public (homepage band and passport page read the active version,
+  cached under the `loyalty` tag).
+- **T88 — Emails**: after a paid order with stamps, `passport_stamp` ("You collected Capri — 8/12") or, when the
+  order completed a card, `reward_unlocked` instead — once per order (dedupe key `order:<id>`), only with a
+  customer email and the template enabled. Manual adjustments don't email.
+- **T89 — Expiry** (when a rule sets `expiry_months`): earned rows get `expires_at`; unused stamps past it are
+  written off FIFO the next time the card settles (award, adjustment, reversal) — there is no scheduled job yet
+  (M17), so a dormant card shows expired stamps until it next changes.

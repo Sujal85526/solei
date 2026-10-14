@@ -16,10 +16,10 @@ Phase 1 milestones (one branch + PR each, in order). See `docs/BUILD_PROMPT.md` 
 | 9 | `feat/manual-orders-payment-links` | 🔄 in review |  |
 | 10 | `feat/customers` | ✅ merged | [#15](https://github.com/Sujal85526/solei/pull/15) |
 | 11 | `feat/event-calendar` | ✅ merged | [#10](https://github.com/Sujal85526/solei/pull/10) |
-| 12 | `feat/event-pos` | ✅ merged | |
+| 12 | `feat/event-pos` | ✅ merged | [#20](https://github.com/Sujal85526/solei/pull/20) |
 | 13 | `feat/event-reports` | 🔄 in review | |
 | 14 | `feat/event-booking` | ✅ merged | [#16](https://github.com/Sujal85526/solei/pull/16) |
-| 15 | `feat/loyalty-passport` | ⬜ | |
+| 15 | `feat/loyalty-passport` | ✅ merged | [#19](https://github.com/Sujal85526/solei/pull/19) |
 | 16 | `feat/dashboard-exports` | ⬜ | |
 | 17 | `chore/hardening` | ⬜ | |
 
@@ -54,9 +54,17 @@ Phase 1 milestones (one branch + PR each, in order). See `docs/BUILD_PROMPT.md` 
 - **M7/M12:** call `updateTag("stock")` / `revalidateTag("stock")` after sales so storefront availability refreshes.
 - **M9/M12 (manual orders, POS):** attach customers with `CustomerPicker`
   (`src/components/admin/customers/customer-picker.tsx`, `source="whatsapp" | "direct" | "pos"`).
-- **M15 (loyalty):** replace the customer profile's `PassportPanel` placeholder
-  (`src/components/admin/customers/passport-panel.tsx`) with stamps / rewards.
-- **M15 (loyalty):** homepage passport band still uses launch defaults in `src/modules/content/queries.ts`
-  (`passportDefaults`) — switch to the active loyalty rule version.
+- ~~**M15 (loyalty):** passport panel placeholder, homepage band defaults~~ — done in M15 (T82–T89).
+- **M15 → M12 (POS):** sales through `settle_if_paid` earn stamps automatically. To redeem at the till call
+  `loyalty_redeem_reward(reward_id, variant_id, p_order_id => <open POS order>)` (allowed with `pos.use`);
+  available rewards: `loyalty_rewards` where `status = 'available'`. Any redefinition of `after_order_paid` /
+  `after_order_cancelled` must keep the loyalty calls.
+- **M15 TODO — online reward redemption at checkout**: offer a signed-in passport holder's available reward as a
+  zero-priced line in checkout. Needs: passing `reward_id` + variant to `create_web_order` (customer must match
+  the passport), a hold on the reward while the order is `pending_payment` (released for abandoned checkouts),
+  and marking it redeemed in `after_order_paid`. Until then the passport page says "redeem at a pop-up / on
+  WhatsApp".
+- **M17 (loyalty):** scheduled stamp expiry (only matters if the owner turns expiry on — T89); rate-limit the
+  passport magic-link form.
 - **M17 (hardening):** Lighthouse mobile on `/` measured locally at perf 90–91, a11y 100, best-practices 96
   (404 prefetches of not-yet-built routes), SEO 100. Re-check with real client photography.
