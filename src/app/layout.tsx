@@ -1,10 +1,11 @@
 import type { Metadata, Viewport } from "next";
+import { publicEnv } from "@/lib/env";
 import { motionScript } from "@/components/motion/motion-script";
 import { fontVariables } from "./fonts";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000"),
+  metadataBase: new URL(publicEnv.NEXT_PUBLIC_SITE_URL),
   title: { default: "Solei — A destination in scent", template: "%s · Solei" },
   description:
     "Solei is a destination-led fragrance house from Abu Dhabi. Perfumes and all-over sprays inspired by Cannes, Capri, Santorini and more. Made to remain.",
