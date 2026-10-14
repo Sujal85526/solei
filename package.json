@@ -17,7 +17,8 @@
     "db:stop": "supabase stop",
     "db:reset": "supabase db reset",
     "db:types": "supabase gen types typescript --local > src/lib/database.types.ts",
-    "check": "pnpm lint && pnpm typecheck && pnpm test"
+    "check": "pnpm lint && pnpm typecheck && pnpm test",
+    "db:seed:generate": "tsx scripts/generate-seed.ts"
   },
   "dependencies": {
     "@base-ui/react": "^1.9.0",
