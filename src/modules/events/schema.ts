@@ -270,12 +270,7 @@ export const assignStaffSchema = z.object({
 export const expenseSchema = z.object({
   eventId: z.uuid(),
   category: z.enum(expenseCategories, { error: "Choose a category" }),
-  amountAed: z
-    .string()
-    .trim()
-    .min(1, "Enter the amount")
-    .pipe(aedField)
-    .refine((f) => f > 0, "Enter an amount above 0"),
+  amountAed: aedField.refine((f) => f > 0, "Enter an amount above 0"),
   incurredOn: date("Choose the date"),
   note: text(500),
   receiptPath: z
