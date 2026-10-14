@@ -125,14 +125,21 @@ export function Eyebrow({
   children,
   className,
   lines = false,
+  style,
 }: {
   children: ReactNode;
   className?: string;
   lines?: boolean;
+  style?: CSSProperties;
 }) {
-  if (!lines) return <p className={cn("eyebrow text-gold-ink", className)}>{children}</p>;
+  if (!lines)
+    return (
+      <p className={cn("eyebrow text-gold-ink", className)} style={style}>
+        {children}
+      </p>
+    );
   return (
-    <p className={cn("eyebrow text-gold-ink flex items-center gap-4", className)}>
+    <p className={cn("eyebrow text-gold-ink flex items-center gap-4", className)} style={style}>
       <span aria-hidden className="h-px w-10 bg-current opacity-60" />
       {children}
       <span aria-hidden className="h-px w-10 bg-current opacity-60" />
@@ -177,7 +184,10 @@ export function PostcardFrame({
 }: {
   children: ReactNode;
   className?: string;
-  /** Rotation in degrees; keep within ±3. Disabled for reduced motion is not needed (static). */
+  /**
+   * Rotation in degrees; keep within ±3. Set as the CSS `rotate` property (not `transform`) so a
+   * hover can straighten it with `rotate-0` and it composes with translate/scale effects.
+   */
   tilt?: number;
 }) {
   return (
@@ -186,7 +196,7 @@ export function PostcardFrame({
         "relative bg-[#FBF6F2] p-2.5 shadow-[0_1px_2px_rgb(70_3_40/0.08),0_12px_32px_-12px_rgb(70_3_40/0.25)]",
         className,
       )}
-      style={tilt ? { transform: `rotate(${tilt}deg)` } : undefined}
+      style={tilt ? { rotate: `${tilt}deg` } : undefined}
     >
       <div className="outline-gold/40 relative outline outline-1 -outline-offset-1">{children}</div>
     </div>

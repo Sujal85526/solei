@@ -1,4 +1,5 @@
 import type { ReactNode } from "react";
+import { Stagger } from "@/components/motion/reveal";
 import { cn } from "@/lib/utils";
 import { Eyebrow } from "./motifs";
 
@@ -52,6 +53,7 @@ export function SectionHeading({
   lede,
   align = "start",
   className,
+  reveal = false,
 }: {
   id?: string;
   eyebrow?: string;
@@ -59,9 +61,12 @@ export function SectionHeading({
   lede?: ReactNode;
   align?: "start" | "center";
   className?: string;
+  /** Eyebrow, title and lede fade and rise in, staggered, as the heading scrolls into view. */
+  reveal?: boolean;
 }) {
+  const Wrapper = reveal ? Stagger : "div";
   return (
-    <div
+    <Wrapper
       className={cn(
         "flex flex-col gap-4",
         align === "center" && "items-center text-center",
@@ -77,6 +82,6 @@ export function SectionHeading({
           {lede}
         </p>
       ) : null}
-    </div>
+    </Wrapper>
   );
 }

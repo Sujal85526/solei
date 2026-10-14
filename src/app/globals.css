@@ -195,3 +195,250 @@
     scroll-behavior: auto !important;
   }
 }
+
+/* ------------------------------------------------------------------------------------------------
+ * Motion layer (storefront). Slow, eased, restrained: transform/opacity only, and everything below
+ * switches off under prefers-reduced-motion. Components live in src/components/motion/.
+ * --------------------------------------------------------------------------------------------- */
+
+/* Lenis smooth scroll (rules from lenis/dist/lenis.css). */
+html.lenis,
+html.lenis body {
+  height: auto;
+}
+.lenis:not(.lenis-autoToggle).lenis-stopped {
+  overflow: clip;
+}
+.lenis [data-lenis-prevent] {
+  overscroll-behavior: contain;
+}
+.lenis.lenis-smooth iframe {
+  pointer-events: none;
+}
+
+@keyframes solei-rise {
+  from {
+    opacity: 0;
+    translate: 0 var(--rise, 20px);
+  }
+}
+@keyframes solei-stamp {
+  0% {
+    opacity: 0;
+    scale: 1.15;
+    rotate: -5deg;
+  }
+  55% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 1;
+    scale: 1;
+    rotate: 0deg;
+  }
+}
+@keyframes solei-shimmer {
+  from {
+    background-position: 150% 0;
+  }
+  to {
+    background-position: -50% 0;
+  }
+}
+@keyframes solei-parallax {
+  from {
+    transform: translate3d(0, var(--parallax-from, -6%), 0) scale(var(--parallax-scale-from, 1))
+      rotate(var(--parallax-rotate-from, 0deg));
+  }
+  to {
+    transform: translate3d(0, var(--parallax-to, 6%), 0) scale(var(--parallax-scale-to, 1))
+      rotate(var(--parallax-rotate-to, 0deg));
+  }
+}
+
+/* Intro loader. `data-intro` is set on <html> by the inline script in the root layout, on the first
+ * homepage visit of a browser session only. Pure CSS: never waits for hydration. */
+.intro-loader {
+  display: none;
+}
+@keyframes solei-intro-lift {
+  to {
+    clip-path: inset(0 0 100% 0);
+    visibility: hidden;
+  }
+}
+@keyframes solei-intro-mark-out {
+  to {
+    opacity: 0;
+    translate: 0 -32px;
+  }
+}
+@keyframes solei-intro-sweep {
+  from {
+    mask-position: 140% 0;
+  }
+  to {
+    mask-position: -40% 0;
+  }
+}
+@keyframes solei-intro-line {
+  from {
+    scale: 0 1;
+  }
+}
+@media (prefers-reduced-motion: no-preference) {
+  [data-intro] .intro-loader {
+    display: flex;
+    clip-path: inset(0 0 0 0);
+    animation: solei-intro-lift 0.8s cubic-bezier(0.76, 0, 0.24, 1) 1s forwards;
+  }
+  [data-intro] .intro-loader__mark {
+    animation:
+      solei-rise 0.7s var(--ease-soft) both,
+      solei-intro-mark-out 0.55s var(--ease-soft) 1s forwards;
+  }
+  [data-intro] .intro-loader__shine {
+    mask-image: linear-gradient(100deg, transparent 36%, #000 50%, transparent 64%);
+    mask-size: 260% 100%;
+    mask-repeat: no-repeat;
+    mask-position: 140% 0;
+    animation: solei-intro-sweep 1.05s cubic-bezier(0.45, 0, 0.25, 1) 0.2s both;
+  }
+  [data-intro] .intro-loader__line {
+    transform-origin: left;
+    animation: solei-intro-line 0.9s var(--ease-soft) 0.1s both;
+  }
+  [dir="rtl"][data-intro] .intro-loader__line {
+    transform-origin: right;
+  }
+}
+
+/* Hero entrance — CSS only, so it plays before hydration; it waits for the loader when one plays. */
+@media (prefers-reduced-motion: no-preference) {
+  [data-intro] {
+    --intro-offset: 1.15s;
+  }
+  .hero-rise {
+    animation: solei-rise 0.9s var(--ease-soft) both;
+    animation-delay: calc(var(--intro-offset, 0s) + var(--d, 0s));
+  }
+  .hero-line {
+    --rise: 105%;
+    animation: solei-rise 1.05s var(--ease-soft) both;
+    animation-delay: calc(var(--intro-offset, 0s) + var(--d, 0s));
+  }
+}
+
+/* Reveal / Stagger. The hidden state needs the attributes the client component adds on mount, so
+ * content is never lost when JavaScript fails or is slow. */
+@media (prefers-reduced-motion: no-preference) {
+  [data-reveal="ready"]:not([data-revealed]),
+  [data-stagger="rise"] > [data-reveal-item]:not([data-revealed]) {
+    opacity: 0;
+    translate: 0 var(--rise, 20px);
+  }
+  [data-reveal="ready"],
+  [data-stagger="rise"] > [data-reveal-item] {
+    transition:
+      opacity 0.85s var(--ease-soft),
+      translate 0.85s var(--ease-soft);
+    transition-delay: var(--reveal-delay, 0ms);
+  }
+  [data-stagger="stamp"] > [data-reveal-item]:not([data-revealed]) {
+    opacity: 0;
+  }
+  [data-stagger="stamp"] > [data-revealed] {
+    animation: solei-stamp 0.75s var(--ease-soft) both;
+    animation-delay: var(--reveal-delay, 0ms);
+  }
+}
+
+/* Scroll parallax — CSS scroll-driven animations (compositor-only). Browsers without them get the
+ * ParallaxFallback component (framer-motion `scroll()`), loaded only there. */
+@supports (animation-timeline: view()) {
+  @media (prefers-reduced-motion: no-preference) {
+    [data-parallax] {
+      animation: solei-parallax linear both;
+      animation-timeline: view();
+      animation-range: cover;
+    }
+    /* For elements already in view at load (the hero): tied to the first viewport of page scroll. */
+    [data-parallax="page"] {
+      animation-timeline: scroll(root);
+      animation-range: 0 100vh;
+    }
+  }
+}
+
+/* Image shimmer placeholder + crossfade (ShimmerImage). */
+[data-shimmer] {
+  background-color: var(--brand-cream);
+  background-image: linear-gradient(
+    100deg,
+    var(--brand-cream) 30%,
+    var(--brand-sand) 50%,
+    var(--brand-cream) 70%
+  );
+  background-size: 200% 100%;
+}
+[data-shimmer="dark"] {
+  background-color: var(--brand-burgundy);
+  background-image: linear-gradient(
+    100deg,
+    var(--brand-burgundy) 30%,
+    color-mix(in oklab, var(--brand-burgundy), var(--brand-pink) 12%) 50%,
+    var(--brand-burgundy) 70%
+  );
+}
+[data-shimmer] > img {
+  transition:
+    opacity 0.9s var(--ease-soft),
+    scale 0.9s var(--ease-soft);
+}
+[data-shimmer][data-state="loading"] > img {
+  opacity: 0;
+}
+[data-shimmer][data-state="loaded"] {
+  background-image: none;
+}
+@media (prefers-reduced-motion: no-preference) {
+  [data-shimmer]:not([data-state="loaded"]) {
+    animation: solei-shimmer 1.6s ease-in-out infinite;
+  }
+}
+
+/* CTA sheen: a soft light sweep across the button on hover (pointer devices only). */
+@layer components {
+  .sheen {
+    position: relative;
+    overflow: hidden;
+    isolation: isolate;
+  }
+  .sheen::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background: linear-gradient(
+      105deg,
+      transparent 30%,
+      rgb(255 255 255 / 0.3) 50%,
+      transparent 70%
+    );
+    translate: -110% 0;
+  }
+  @media (hover: hover) and (prefers-reduced-motion: no-preference) {
+    .sheen:hover::after {
+      translate: 110% 0;
+      transition: translate 0.9s var(--ease-soft);
+    }
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  [data-parallax],
+  .hero-rise,
+  .hero-line {
+    animation: none !important;
+  }
+}

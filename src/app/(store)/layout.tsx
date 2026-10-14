@@ -1,3 +1,4 @@
+import { SmoothScroll } from "@/components/motion/smooth-scroll";
 import { SiteFooter } from "@/components/store/site-footer";
 import { SiteHeader } from "@/components/store/site-header";
 
@@ -9,6 +10,7 @@ export default function StoreLayout({ children }: LayoutProps<"/">) {
         {children}
       </main>
       <SiteFooter />
+      <SmoothScroll />
     </>
   );
 }

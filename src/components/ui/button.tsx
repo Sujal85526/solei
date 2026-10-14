@@ -26,8 +26,8 @@ const buttonVariants = cva(
         default: "h-10 px-4",
         sm: "h-9 gap-1.5 px-3 text-[0.8rem]",
         lg: "h-12 px-6 text-[0.95rem]",
-        /** Editorial CTA: letter-spaced caps. */
-        cta: "h-12 px-7 text-xs tracking-[0.22em] uppercase",
+        /** Editorial CTA: letter-spaced caps, with a soft light sweep on hover (`.sheen`). */
+        cta: "sheen h-12 px-7 text-xs tracking-[0.22em] uppercase",
         /** POS / touch-first actions. */
         xl: "h-14 px-6 text-base",
         icon: "size-10",
