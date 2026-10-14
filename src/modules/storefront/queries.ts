@@ -24,7 +24,7 @@ import type {
  * minutes under `stock` and must be rendered inside <Suspense>.
  */
 
-const useFallback = () => process.env.CONTENT_FALLBACK === "1";
+const isFallback = () => process.env.CONTENT_FALLBACK === "1";
 
 const FALLBACK_IMAGE = "/images/brand/hero-sprays-arch.jpg";
 
@@ -36,24 +36,19 @@ const productSelect = `
   product_variants (id, label, size_ml, sku, price_fils, active, sort)
 ` as const;
 
-export async function listProducts(): Promise<StoreProduct[]> {
-  "use cache";
-  cacheLife("hours");
-  cacheTag(CONTENT_TAGS.catalog);
+function productQuery() {
+  return createPublicClient()
+    .from("products")
+    .select(productSelect)
+    .order("sort")
+    .order("name")
+    .order("sort", { referencedTable: "product_images" })
+    .order("sort", { referencedTable: "product_variants" });
+}
 
-  if (useFallback()) return fallbackProducts();
+type ProductRow = NonNullable<Awaited<ReturnType<typeof productQuery>>["data"]>[number];
 
-  const rows = must(
-    await createPublicClient()
-      .from("products")
-      .select(productSelect)
-      .order("sort")
-      .order("name")
-      .order("sort", { referencedTable: "product_images" })
-      .order("sort", { referencedTable: "product_variants" }),
-    "products",
-  );
-
+function toStoreProducts(rows: ProductRow[]): StoreProduct[] {
   return rows.flatMap((p): StoreProduct[] => {
     const variants = p.product_variants
       .filter((v) => v.active)
@@ -93,11 +88,40 @@ export async function listProducts(): Promise<StoreProduct[]> {
   });
 }
 
+export async function listProducts(): Promise<StoreProduct[]> {
+  "use cache";
+  cacheLife("hours");
+  cacheTag(CONTENT_TAGS.catalog);
+
+  if (isFallback()) return fallbackProducts();
+  return toStoreProducts(must(await productQuery(), "products"));
+}
+
+/** One product by slug (its own cache entry, so a newly published product resolves at once). */
 export async function getProduct(slug: string): Promise<StoreProduct | null> {
   "use cache";
   cacheLife("hours");
   cacheTag(CONTENT_TAGS.catalog);
-  return (await listProducts()).find((p) => p.slug === slug) ?? null;
+
+  if (isFallback()) return fallbackProducts().find((p) => p.slug === slug) ?? null;
+  const rows = must(await productQuery().eq("slug", slug).limit(1), "product");
+  return toStoreProducts(rows)[0] ?? null;
+}
+
+/** Uncached: the products owning these variants, with current prices (for the cart). */
+export async function fetchProductsForVariants(variantIds: string[]): Promise<StoreProduct[]> {
+  if (!variantIds.length) return [];
+  if (isFallback()) {
+    return fallbackProducts().filter((p) => p.variants.some((v) => variantIds.includes(v.id)));
+  }
+  const db = createPublicClient();
+  const variants = must(
+    await db.from("product_variants").select("product_id").in("id", variantIds),
+    "product_variants",
+  );
+  const productIds = [...new Set(variants.map((v) => v.product_id))];
+  if (!productIds.length) return [];
+  return toStoreProducts(must(await productQuery().in("id", productIds), "products"));
 }
 
 /** Other products from the same category first, then the rest of the collection. */
@@ -119,7 +143,7 @@ export async function listCategories(): Promise<StoreCategory[]> {
   cacheTag(CONTENT_TAGS.catalog);
 
   const products = await listProducts();
-  if (useFallback()) return fallbackCategories(products);
+  if (isFallback()) return fallbackCategories(products);
 
   const rows = must(
     await createPublicClient()
@@ -154,7 +178,7 @@ export async function listDestinations(): Promise<StoreDestination[]> {
   cacheLife("hours");
   cacheTag(CONTENT_TAGS.catalog);
 
-  if (useFallback()) return fallbackDestinations();
+  if (isFallback()) return fallbackDestinations();
 
   const rows = must(
     await createPublicClient()
@@ -196,7 +220,7 @@ export async function getCartSettings(): Promise<CartSettings> {
   cacheLife("hours");
   cacheTag(CONTENT_TAGS.settings);
 
-  if (useFallback()) return fallbackCartSettings();
+  if (isFallback()) return fallbackCartSettings();
 
   const db = createPublicClient();
   const [settingsRes, zonesRes] = await Promise.all([
@@ -219,7 +243,7 @@ export async function getCartSettings(): Promise<CartSettings> {
 /** Live (uncached) online availability — for server actions that must not oversell. */
 export async function fetchAvailability(variantIds: string[]): Promise<Availability> {
   if (!variantIds.length) return {};
-  if (useFallback()) return Object.fromEntries(variantIds.map((id) => [id, fallbackStock]));
+  if (isFallback()) return Object.fromEntries(variantIds.map((id) => [id, fallbackStock]));
   const rows = must(
     await createPublicClient().rpc("online_availability", { p_variant_ids: variantIds }),
     "online_availability",
