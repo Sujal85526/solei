@@ -263,16 +263,17 @@ export async function bookingOrders(bookingId: string) {
 
 export async function getBookingSettings() {
   const supabase = await createClient();
-  return must(
-    await supabase
-      .from("settings")
-      .select(
-        "booking_deposit_bp, booking_flower_base_fils, booking_quote_validity_days, whatsapp_number",
-      )
-      .eq("id", 1)
-      .single(),
-    "booking settings",
-  );
+  const { data: row, error } = await supabase
+    .from("settings")
+    .select("booking_deposit_bp, booking_flower_base_fils, booking_quote_validity_days")
+    .eq("id", 1)
+    .maybeSingle();
+  if (error) throw new Error(`booking settings failed: ${error.message}`);
+  return {
+    booking_deposit_bp: row?.booking_deposit_bp ?? 5000,
+    booking_flower_base_fils: row?.booking_flower_base_fils ?? 0,
+    booking_quote_validity_days: row?.booking_quote_validity_days ?? 14,
+  };
 }
 
 /** All config rows including inactive ones (admin settings screen). */
