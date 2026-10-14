@@ -5,8 +5,8 @@ Phase 1 milestones (one branch + PR each, in order). See `docs/BUILD_PROMPT.md` 
 | # | Branch | Status | PR |
 |---|---|---|---|
 | 0 | `chore/bootstrap` | ✅ merged | [#1](https://github.com/Sujal85526/solei/pull/1) |
-| 1 | `feat/design-system` | 🔄 in review | |
-| 2 | `feat/homepage` | ⬜ (pause for client screenshots) | |
+| 1 | `feat/design-system` | ✅ merged | [#2](https://github.com/Sujal85526/solei/pull/2) |
+| 2 | `feat/homepage` | 🔄 in review | |
 | 3 | `feat/schema-core` | ⬜ | |
 | 4 | `feat/admin-auth-staff` | ⬜ | |
 | 5 | `feat/admin-catalog-inventory` | ⬜ | |
@@ -25,3 +25,10 @@ Phase 1 milestones (one branch + PR each, in order). See `docs/BUILD_PROMPT.md` 
 
 ## Current notes
 - Local Supabase: `pnpm db:start`; copy keys from `pnpm exec supabase status` into `.env.local` (see `.env.example`).
+
+## Carry-overs
+- **M3 (schema-core):** persist homepage opt-in (`src/modules/marketing/service.ts`) to customers with consent
+  timestamp; switch `src/modules/content/queries.ts` from seed constants to DB reads (destinations, prices,
+  loyalty rule, Instagram from settings).
+- **M17 (hardening):** Lighthouse mobile on `/` measured locally at perf 90–91, a11y 100, best-practices 96
+  (404 prefetches of not-yet-built routes), SEO 100. Re-check with real client photography.

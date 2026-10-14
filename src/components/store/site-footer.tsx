@@ -97,7 +97,7 @@ function FooterColumn({
   return (
     <div className={className}>
       <h2 className="eyebrow text-pink mb-5">{title}</h2>
-      <ul className="flex flex-col gap-3">{children}</ul>
+      <ul className="flex flex-col gap-1">{children}</ul>
     </div>
   );
 }

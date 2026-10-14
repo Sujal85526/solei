@@ -37,3 +37,11 @@ Open client questions are built as configurable defaults. Each row: what we chos
   destination cards ≈ 200px source, upscaled). 🔁 **Replace with client photography** (originals) before launch.
 - **T10 — Admin theme**: same palette on brighter surfaces (`.theme-admin`), burgundy sidebar on desktop,
   bottom nav (4 primary + More) on phone/iPad portrait.
+
+## Homepage (milestone 2)
+- **T11 — Destination copy**: region + mood + story lines per destination are placeholder copy written from the
+  postcard imagery (`src/modules/content/seed.ts`). ❓ Client to confirm or supply scent notes.
+- **T12 — Hero**: split layout (burgundy copy panel + photo) instead of full-bleed text-on-photo, because the
+  available photography is ~1100px wide; switch to full-bleed when high-res client photography arrives.
+- **T13 — Opt-in form** is a native form + server action (no client form library) to keep the homepage
+  bundle small; consent checkbox is required and unticked by default.

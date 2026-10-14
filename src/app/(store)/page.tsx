@@ -1,8 +1,25 @@
-export default function Home() {
+import { Collection } from "@/components/store/home/collection";
+import { ShopByDestination } from "@/components/store/home/destinations";
+import { Hero } from "@/components/store/home/hero";
+import { InstagramStrip } from "@/components/store/home/instagram";
+import { OptIn } from "@/components/store/home/opt-in";
+import { PassportBand } from "@/components/store/home/passport";
+import { PlanYourEvent } from "@/components/store/home/plan-event";
+import { BrandStory } from "@/components/store/home/story";
+import { getHomeContent } from "@/modules/content/queries";
+
+export default async function HomePage() {
+  const content = await getHomeContent();
   return (
-    <main className="flex flex-1 flex-col items-center justify-center gap-3 p-8 text-center">
-      <h1 className="text-4xl tracking-tight">solei</h1>
-      <p className="text-sm tracking-[0.3em] uppercase">Made to remain.</p>
-    </main>
+    <>
+      <Hero />
+      <ShopByDestination destinations={content.destinations} />
+      <Collection collection={content.collection} />
+      <PlanYourEvent eventTypes={content.eventTypes} />
+      <PassportBand passport={content.passport} destinations={content.destinations} />
+      <BrandStory />
+      <InstagramStrip handle={content.instagram.handle} url={content.instagram.url} />
+      <OptIn />
+    </>
   );
 }

@@ -201,6 +201,7 @@ export function PassportStamp({
   tilt = -6,
   variant = "ink",
   shape = "round",
+  compact = false,
 }: {
   label: string;
   sublabel?: string;
@@ -208,11 +209,13 @@ export function PassportStamp({
   tilt?: number;
   variant?: "ink" | "filled" | "empty";
   shape?: "round" | "rect";
+  /** Shrinks type on phones so long names (Santorini) fit small stamps. */
+  compact?: boolean;
 }) {
   const styles = {
     ink: "text-burgundy border-burgundy/70",
     filled: "bg-burgundy text-pink border-burgundy",
-    empty: "text-burgundy/30 border-burgundy/20 border-dashed",
+    empty: "text-ink-muted border-burgundy/25 border-dashed",
   }[variant];
   return (
     <div
@@ -224,10 +227,22 @@ export function PassportStamp({
       )}
       style={{ transform: `rotate(${tilt}deg)` }}
     >
-      <span className="font-display text-[0.6rem] tracking-[0.3em] uppercase opacity-80">
+      <span
+        className={cn(
+          "font-display text-[0.6rem] tracking-[0.3em] uppercase opacity-80",
+          compact && "hidden sm:inline",
+        )}
+      >
         Solei
       </span>
-      <span className="font-display text-sm leading-tight tracking-[0.12em] uppercase">
+      <span
+        className={cn(
+          "font-display leading-tight uppercase",
+          compact
+            ? "text-[0.5rem] tracking-[0.02em] sm:text-xs sm:tracking-[0.12em]"
+            : "text-sm tracking-[0.12em]",
+        )}
+      >
         {label}
       </span>
       {sublabel ? (
