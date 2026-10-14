@@ -41,7 +41,7 @@ export function HeroSlider({ slides }: { slides: HeroSlide[] }) {
       data-hero
       aria-roledescription="carousel"
       aria-label="Solei"
-      className="bg-noir relative isolate h-[100svh] min-h-[560px] overflow-hidden"
+      className="relative isolate h-[100svh] min-h-[560px] overflow-hidden bg-[#2a0610]"
     >
       {slides.map((slide, i) => {
         const active = i === index;
@@ -57,66 +57,76 @@ export function HeroSlider({ slides }: { slides: HeroSlide[] }) {
               active ? "z-10 opacity-100" : "z-0 opacity-0",
             )}
           >
-            <Image
-              src={slide.image}
-              alt={slide.alt}
-              fill
-              priority={i === 0}
-              fetchPriority={i === 0 ? "high" : "auto"}
-              sizes="100vw"
-              className={cn(
-                "object-cover transition-transform duration-[9000ms] ease-out motion-reduce:transition-none",
-                active ? "scale-100" : "scale-[1.08]",
-              )}
-              style={{ objectPosition: slide.focus }}
+            {/* Phones: the landscape photo sits in the lower part and fades into the wall colour,
+                so the product stays whole under the copy. */}
+            <div className="absolute inset-x-0 top-[30%] bottom-0 sm:top-0">
+              <Image
+                src={slide.image}
+                alt={slide.alt}
+                fill
+                priority={i === 0}
+                fetchPriority={i === 0 ? "high" : "auto"}
+                sizes="100vw"
+                className={cn(
+                  "object-cover transition-transform duration-[9000ms] ease-out motion-reduce:transition-none",
+                  active ? "scale-100" : "scale-[1.08]",
+                )}
+                style={{ objectPosition: slide.focus }}
+              />
+              <div
+                aria-hidden
+                className="absolute inset-x-0 top-0 h-1/3 bg-gradient-to-b from-[#2a0610] to-transparent sm:hidden"
+              />
+            </div>
+            {/* Copy sits centred at the top over the wall; the product holds the lower half. */}
+            <div
+              aria-hidden
+              className="from-noir/80 via-noir/25 absolute inset-x-0 top-0 h-3/5 bg-gradient-to-b to-transparent"
             />
             <div
               aria-hidden
-              className="from-noir/80 via-noir/35 absolute inset-0 bg-gradient-to-r to-transparent"
-            />
-            <div
-              aria-hidden
-              className="from-noir/80 absolute inset-x-0 bottom-0 h-48 bg-gradient-to-t to-transparent"
+              className="from-noir/70 absolute inset-x-0 bottom-0 h-40 bg-gradient-to-t to-transparent"
             />
 
-            <div className="relative z-10 mx-auto flex h-full max-w-[96rem] flex-col justify-center px-6 pt-16 sm:px-10 lg:px-14">
-              <div className="max-w-xl">
-                <p
-                  className={cn(
-                    "eyebrow text-pink/80 transition-all delay-300 duration-1000 ease-(--ease-soft)",
-                    active ? "translate-y-0 opacity-100" : "translate-y-3 opacity-0",
-                  )}
-                >
-                  {slide.eyebrow}
-                </p>
-                {i === 0 ? (
-                  <h1 className="display mt-6 text-[clamp(2.75rem,7vw,5.75rem)]">
-                    <HeadlineLines lines={slide.title} active={active} />
-                  </h1>
-                ) : (
-                  <h2 className="display mt-6 text-[clamp(2.75rem,7vw,5.75rem)]">
-                    <HeadlineLines lines={slide.title} active={active} />
-                  </h2>
+            <div className="relative z-10 mx-auto flex h-full max-w-[96rem] flex-col items-center px-6 pt-[clamp(7rem,17vh,10rem)] text-center sm:px-10">
+              <p
+                className={cn(
+                  "eyebrow text-pearl/80 transition-all delay-300 duration-1000 ease-(--ease-soft)",
+                  active ? "translate-y-0 opacity-100" : "translate-y-3 opacity-0",
                 )}
-                <Link
-                  href={slide.cta.href}
-                  tabIndex={active ? 0 : -1}
-                  className={cn(
-                    "group border-pink/50 text-pink hover:bg-pink hover:text-burgundy mt-10 inline-flex h-12 items-center gap-4 border px-7 text-[0.65rem] tracking-[0.3em] uppercase transition-all delay-500 duration-1000 ease-(--ease-soft)",
-                    active ? "translate-y-0 opacity-100" : "translate-y-3 opacity-0",
-                  )}
-                >
-                  {slide.cta.label}
-                  <ArrowRight
-                    className="size-3.5 transition-transform group-hover:translate-x-1 rtl:rotate-180"
-                    strokeWidth={1.25}
-                  />
-                </Link>
-              </div>
+              >
+                {slide.eyebrow}
+              </p>
+              {i === 0 ? (
+                <h1 className="display text-pearl mt-5 text-[clamp(2.5rem,5.6vw,5rem)] leading-[1.02]">
+                  <HeadlineLines lines={slide.title} active={active} />
+                </h1>
+              ) : (
+                <h2 className="display text-pearl mt-5 text-[clamp(2.5rem,5.6vw,5rem)] leading-[1.02]">
+                  <HeadlineLines lines={slide.title} active={active} />
+                </h2>
+              )}
+              <Link
+                href={slide.cta.href}
+                tabIndex={active ? 0 : -1}
+                aria-label={`${slide.cta.label} — ${slide.title.join(" ")}`}
+                className={cn(
+                  "group border-pearl/60 text-pearl hover:border-pink hover:bg-pink hover:text-burgundy relative mt-8 flex size-24 items-center justify-center rounded-full border text-[0.6rem] tracking-[0.28em] uppercase transition-all delay-500 duration-1000 ease-(--ease-soft) sm:size-28",
+                  active ? "scale-100 opacity-100" : "scale-90 opacity-0",
+                )}
+              >
+                <span
+                  aria-hidden
+                  className="border-pearl/25 absolute inset-[-7px] rounded-full border [border-style:dashed] transition-transform duration-700 group-hover:scale-110 motion-safe:animate-[spin_18s_linear_infinite]"
+                />
+                {slide.cta.label}
+              </Link>
             </div>
           </div>
         );
       })}
+
+      <div aria-hidden className="film-grain pointer-events-none absolute inset-0 z-[15]" />
 
       {/* Controls */}
       <div

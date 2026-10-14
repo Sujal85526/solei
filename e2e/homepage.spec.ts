@@ -4,9 +4,9 @@ test.describe("homepage", () => {
   test("shows the hero slider, its controls and every section", async ({ page }) => {
     await page.goto("/");
     await expect(
-      page.getByRole("heading", { level: 1, name: /Fragrances inspired by destinations/ }),
+      page.getByRole("heading", { level: 1, name: /A destination in every scent/ }),
     ).toBeVisible();
-    await expect(page.getByRole("link", { name: "Shop now" }).first()).toBeVisible();
+    await expect(page.getByRole("link", { name: /^Shop now/ }).first()).toBeVisible();
     await expect(
       page.getByRole("button", { name: /Pause slideshow|Play slideshow/ }),
     ).toBeVisible();
@@ -14,7 +14,7 @@ test.describe("homepage", () => {
     await expect(page.getByText("02", { exact: false }).first()).toBeVisible();
     for (const name of [
       /Signature Scents/,
-      /A world in every scent/,
+      /Scents are memories in another form/,
       /Different places/,
       /Bring Solei/,
       /Collect the destinations/,
@@ -32,7 +32,8 @@ test.describe("homepage", () => {
 
   test("lists all eight destinations and the catalogue from the database", async ({ page }) => {
     await page.goto("/");
-    const index = page.getByRole("navigation", { name: "Destinations" });
+    // The ticker renders the list twice for a seamless loop; the copy is aria-hidden.
+    const index = page.getByRole("region", { name: "Destinations" });
     for (const d of [
       "cannes",
       "marbella",
@@ -43,7 +44,7 @@ test.describe("homepage", () => {
       "monaco",
       "mayfair",
     ]) {
-      await expect(index.locator(`a[href="/destinations/${d}"]`)).toHaveCount(1);
+      await expect(index.locator(`a[href="/destinations/${d}"]`)).toHaveCount(2);
     }
     const rail = page.getByRole("region", { name: "Signature scents" });
     await expect(rail.getByText("AED 280").first()).toBeAttached();

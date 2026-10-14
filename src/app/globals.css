@@ -540,3 +540,92 @@ body:has([data-hero]) .site-header:not([data-scrolled]) {
   );
   backdrop-filter: none;
 }
+
+/* Luxury layer: film grain on the hero, curtain unveil for photos, light sweep, slow ticker. */
+.film-grain {
+  background-image: url(/images/brand/grain.svg);
+  background-size: 180px;
+  opacity: 0.12;
+  mix-blend-mode: overlay;
+}
+@media (prefers-reduced-motion: no-preference) {
+  .film-grain {
+    animation: solei-grain 0.9s steps(6) infinite;
+  }
+
+  /* Photo wipes up like a curtain while the image settles from a slight zoom. */
+  [data-reveal="ready"][data-curtain]:not([data-revealed]) {
+    opacity: 1;
+    translate: none;
+    clip-path: inset(100% 0 0 0);
+  }
+  [data-reveal="ready"][data-curtain] {
+    transition: clip-path 1.6s var(--ease-soft);
+    transition-delay: var(--reveal-delay, 0ms);
+  }
+  [data-reveal="ready"][data-curtain] img {
+    transition: scale 2.4s var(--ease-soft);
+    transition-delay: var(--reveal-delay, 0ms);
+  }
+  [data-reveal="ready"][data-curtain]:not([data-revealed]) img {
+    scale: 1.18;
+  }
+
+  .light-sweep::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background: linear-gradient(
+      115deg,
+      transparent 35%,
+      rgb(247 205 208 / 0.16) 48%,
+      rgb(255 236 214 / 0.22) 50%,
+      transparent 62%
+    );
+    background-size: 250% 100%;
+    animation: solei-sweep 7s var(--ease-soft) infinite;
+    mix-blend-mode: soft-light;
+  }
+
+  .ticker-track {
+    animation: solei-ticker 60s linear infinite;
+  }
+  .ticker:hover .ticker-track {
+    animation-play-state: paused;
+  }
+}
+@keyframes solei-grain {
+  0% {
+    background-position: 0 0;
+  }
+  20% {
+    background-position: -40px 20px;
+  }
+  40% {
+    background-position: 30px -50px;
+  }
+  60% {
+    background-position: -60px -10px;
+  }
+  80% {
+    background-position: 50px 40px;
+  }
+  100% {
+    background-position: 0 0;
+  }
+}
+@keyframes solei-sweep {
+  0%,
+  35% {
+    background-position: 150% 0;
+  }
+  100% {
+    background-position: -50% 0;
+  }
+}
+@keyframes solei-ticker {
+  to {
+    translate: -50% 0;
+  }
+}
