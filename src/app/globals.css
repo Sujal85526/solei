@@ -572,3 +572,36 @@ body:has([data-hero]) .site-header:not([data-scrolled]) {
     scale: 1.06;
   }
 }
+
+/* Menu drawer (phones): the panel glides in from the start edge over a fading overlay; links
+   follow one after another. Base UI sets data-starting-style / data-ending-style while animating. */
+.menu-drawer-backdrop {
+  transition: opacity 0.45s var(--ease-soft);
+}
+.menu-drawer-backdrop[data-starting-style],
+.menu-drawer-backdrop[data-ending-style] {
+  opacity: 0;
+}
+.menu-drawer {
+  transition: translate 0.55s cubic-bezier(0.22, 1, 0.36, 1);
+}
+.menu-drawer[data-starting-style],
+.menu-drawer[data-ending-style] {
+  translate: -100% 0;
+}
+[dir="rtl"] .menu-drawer[data-starting-style],
+[dir="rtl"] .menu-drawer[data-ending-style] {
+  translate: 100% 0;
+}
+@media (prefers-reduced-motion: no-preference) {
+  .menu-drawer[data-open] .menu-drawer-link {
+    animation: solei-slide-in 0.6s var(--ease-soft) both;
+    animation-delay: calc(0.15s + var(--i, 0) * 55ms);
+  }
+}
+@keyframes solei-slide-in {
+  from {
+    opacity: 0;
+    translate: -14px 0;
+  }
+}
