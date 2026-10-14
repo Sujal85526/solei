@@ -16,3 +16,4 @@ One line per merged PR (newest first).
 - 2026-10-14 — #25 simpler homepage (3 featured, animated headings, experience photo cycle), Collections nav, bag icon
 - 2026-10-15 — #26 pinned single hero, compact menu, product shelf, smoother laptop scrolling
 - 2026-10-15 — #27 overlay-style intro loader, phone menu drawer (baby pink, from the left)
+- 2026-10-15 — #28 collection page: burgundy hero, Filter + Sort, new product cards
