@@ -132,6 +132,11 @@ export function OptIn() {
                 </p>
               ) : null}
             </div>
+            {state.status === "error" && state.message ? (
+              <p role="alert" className="text-destructive text-center text-sm">
+                {state.message}
+              </p>
+            ) : null}
           </form>
         )}
       </Container>

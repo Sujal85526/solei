@@ -111,7 +111,7 @@ $$;
 revoke execute on function public.upsert_customer(text, text, text, public.customer_source, public.emirate, jsonb, boolean, text) from public, anon, authenticated;
 
 -- Public newsletter / WhatsApp opt-in (homepage). Consent is mandatory.
-create or replace function public.marketing_opt_in(p_channel text, p_email text, p_phone text)
+create or replace function public.marketing_opt_in(p_channel text, p_email text default null, p_phone text default null)
 returns void
 language plpgsql
 security definer
