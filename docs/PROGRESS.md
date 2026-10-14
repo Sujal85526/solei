@@ -17,7 +17,7 @@ Phase 1 milestones (one branch + PR each, in order). See `docs/BUILD_PROMPT.md` 
 | 10 | `feat/customers` | ✅ merged | [#15](https://github.com/Sujal85526/solei/pull/15) |
 | 11 | `feat/event-calendar` | ✅ merged | [#10](https://github.com/Sujal85526/solei/pull/10) |
 | 12 | `feat/event-pos` | ⬜ | |
-| 13 | `feat/event-reports` | ⬜ | |
+| 13 | `feat/event-reports` | 🔄 in review | |
 | 14 | `feat/event-booking` | ✅ merged | [#16](https://github.com/Sujal85526/solei/pull/16) |
 | 15 | `feat/loyalty-passport` | ⬜ | |
 | 16 | `feat/dashboard-exports` | ⬜ | |
@@ -39,6 +39,9 @@ Phase 1 milestones (one branch + PR each, in order). See `docs/BUILD_PROMPT.md` 
 - Local Supabase: `pnpm db:start`; copy keys from `pnpm exec supabase status` into `.env.local` (see `.env.example`).
 
 ## Carry-overs
+- **M13 (reports):** hosted dev DB keeps three demo events named "Report Test — …" (POS-style sales, refunds, a
+  cancelled sale, stock allocation/close-out, expenses) for trying the reports. `/admin/reports` will gain
+  dashboard-style reports in M16; the POS (M12) only needs to stamp `event_id` / `event_day` / cost snapshots.
 - ~~**M8 (notifications):** low-stock alert email to the owner~~ — done in M8: `owner_low_stock` after paid
   orders and after damage / correction / transfer actions (one per SKU per 24 h).
 - **M9 (manual orders):** use `record_payment` for "paid now / partial"; email templates `payment_received` /
