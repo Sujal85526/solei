@@ -82,3 +82,24 @@ Open client questions are built as configurable defaults. Each row: what we chos
 - **T31 — Admin forms keep their values after errors** (`useFormAction`): React 19 resets `<form action>`
   forms after every submit; we dispatch inside a transition instead, while keeping the server-action POST as
   the pre-hydration fallback (never a GET with field values in the URL).
+
+## Storefront shop & cart (milestone 6)
+- **T23 — Cart lives in the browser** (`localStorage` key `solei.cart.v1`, read with `useSyncExternalStore`, no
+  provider; syncs across tabs). It stores only `{ variantId, qty }` lines plus the emirate chosen for the delivery
+  estimate. Names, prices, availability and totals always come from the server action `getCartDetails`, which
+  clamps lines to live online stock and drops sold-out / withdrawn variants with a notice. Server-side carts (for
+  abandoned-cart in Phase 2) can replace the storage adapter without touching the UI.
+- **T24 — Pricing** is one pure function (`src/modules/orders/pricing.ts`) shared by cart, checkout and POS. VAT is
+  computed once on goods + delivery (delivery is VAT-able), rounded half-up; inclusive or exclusive per
+  `settings.prices_include_vat`. Free delivery when the goods subtotal ≥ `free_delivery_threshold_fils`; reward
+  lines are free and don't count towards the threshold.
+- **T25 — Caching**: catalog reads are `"use cache"` (`cacheLife("hours")`, tag `catalog`; settings/zones tag
+  `settings`). Display availability is a separate cache (`cacheLife("minutes")`, tag `stock`) — stock-changing
+  code should `revalidateTag("stock")`. The cart action reads availability live (uncached) so it never
+  oversells. Slug pages use `ensureStatic = "navigation"`: known slugs are prerendered and unknown slugs return a
+  real 404 instead of a streamed 200 shell.
+- **T26 — Public stock counts are not shown**; the product page only disables "Add to cart" (Sold out / all
+  available units already in the cart) and caps the quantity stepper at what is available.
+- **T27 — Product gallery** uses whatever `product_images` the admin uploads (first image leads). Seeded images
+  are low-resolution profile crops (see T9) and look soft at gallery size until client photography arrives.
+- `next.config.ts` allows `next/image` to load from the Supabase Storage public bucket (admin uploads).
