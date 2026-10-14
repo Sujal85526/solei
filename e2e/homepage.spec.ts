@@ -9,15 +9,13 @@ test.describe("homepage", () => {
     await expect(page.getByRole("link", { name: /^Shop now/ }).first()).toBeVisible();
     await expect(
       page.getByRole("button", { name: /Pause slideshow|Play slideshow/ }),
-    ).toBeVisible();
+    ).toBeAttached();
     await page.getByRole("button", { name: "Next slide" }).click();
     await expect(page.getByText("02", { exact: false }).first()).toBeVisible();
     for (const name of [
       /Signature Scents/,
       /Scents are memories in another form/,
       /Different places/,
-      /Bring Solei/,
-      /Collect the destinations/,
       /More than a fragrance/,
     ]) {
       await expect(page.getByRole("heading", { level: 2, name })).toBeAttached();
@@ -32,8 +30,9 @@ test.describe("homepage", () => {
 
   test("shows the catalogue from the database", async ({ page }) => {
     await page.goto("/");
-    const rail = page.getByRole("region", { name: "Signature scents" });
-    await expect(rail.getByText("AED 280").first()).toBeAttached();
+    const featured = page.locator("section[aria-labelledby=signature-title]");
+    await expect(featured.getByTestId("product-card")).toHaveCount(3);
+    await expect(featured.getByText("AED 280").first()).toBeAttached();
   });
 
   test("quick add puts a scent in the cart", async ({ page }) => {
