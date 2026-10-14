@@ -8,8 +8,8 @@ Phase 1 milestones (one branch + PR each, in order). See `docs/BUILD_PROMPT.md` 
 | 1 | `feat/design-system` | ✅ merged | [#2](https://github.com/Sujal85526/solei/pull/2) |
 | 2 | `feat/homepage` | ✅ merged | [#3](https://github.com/Sujal85526/solei/pull/3) |
 | 3 | `feat/schema-core` | ✅ merged | [#4](https://github.com/Sujal85526/solei/pull/4) |
-| 4 | `feat/admin-auth-staff` | 🔄 in review | |
-| 5 | `feat/admin-catalog-inventory` | ⬜ | |
+| 4 | `feat/admin-auth-staff` | ✅ merged | [#5](https://github.com/Sujal85526/solei/pull/5) |
+| 5 | `feat/admin-catalog-inventory` | 🔄 in review | |
 | 6 | `feat/storefront-shop-cart` | ⬜ | |
 | 7 | `feat/checkout-payments` | ⬜ | |
 | 8 | `feat/orders-admin-notifications` | ⬜ | |
@@ -34,6 +34,9 @@ Phase 1 milestones (one branch + PR each, in order). See `docs/BUILD_PROMPT.md` 
 - Local Supabase: `pnpm db:start`; copy keys from `pnpm exec supabase status` into `.env.local` (see `.env.example`).
 
 ## Carry-overs
+- **M8 (notifications):** low-stock alert email to the owner (low-stock detection exists in
+  `src/modules/inventory/queries.ts` → `stockMatrix()`); send when a movement crosses the threshold.
+- **M7/M12:** call `updateTag("stock")` / `revalidateTag("stock")` after sales so storefront availability refreshes.
 - **M15 (loyalty):** homepage passport band still uses launch defaults in `src/modules/content/queries.ts`
   (`passportDefaults`) — switch to the active loyalty rule version.
 - **M17 (hardening):** Lighthouse mobile on `/` measured locally at perf 90–91, a11y 100, best-practices 96
