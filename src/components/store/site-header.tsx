@@ -3,6 +3,7 @@ import { ShoppingBag } from "lucide-react";
 import { Logo } from "@/components/brand";
 import { storeNav } from "@/content/site";
 import { t } from "@/content/en";
+import { CartCount } from "./cart/cart-count";
 import { MobileMenu } from "./mobile-menu";
 
 export function SiteHeader({ overlay = false }: { overlay?: boolean }) {
@@ -53,9 +54,10 @@ export function SiteHeader({ overlay = false }: { overlay?: boolean }) {
           <Link
             href="/cart"
             className="relative -me-2 inline-flex size-11 items-center justify-center rounded-full transition-colors hover:bg-current/10"
-            aria-label={t.nav.cart}
           >
-            <ShoppingBag className="size-5" strokeWidth={1.5} />
+            <ShoppingBag aria-hidden className="size-5" strokeWidth={1.5} />
+            <span className="sr-only">{t.nav.cart}</span>
+            <CartCount />
           </Link>
         </div>
       </div>
