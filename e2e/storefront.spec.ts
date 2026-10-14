@@ -37,7 +37,7 @@ test.describe("storefront — browse and cart", () => {
     const sheet = page.getByTestId("added-sheet");
     await expect(sheet.getByText("Added to your cart")).toBeVisible();
     await expect(sheet.getByText("2 items in your cart")).toBeVisible();
-    await expect(page.getByTestId("cart-count")).toHaveText("(2)");
+    await expect(page.getByTestId("cart-count")).toHaveText("2");
     await sheet.getByRole("link", { name: "View cart" }).click();
 
     // Cart: 2 × AED 280 = AED 560, above the AED 500 free-delivery threshold.
@@ -68,13 +68,13 @@ test.describe("storefront — browse and cart", () => {
     await expect(page.getByTestId("cart-line")).toHaveCount(1);
     await expect(page.getByTestId("summary-total")).toHaveText("AED 305");
     await expect(page.getByTestId("emirate-select")).toHaveValue("dubai");
-    await expect(page.getByTestId("cart-count")).toHaveText("(1)");
+    await expect(page.getByTestId("cart-count")).toHaveText("1");
 
     // Remove → empty state.
     await page.getByRole("button", { name: "Remove Cannes Perfume" }).click();
     await expect(page.getByTestId("cart-empty")).toBeVisible();
     await expect(page.getByRole("link", { name: "Explore the collection" })).toBeVisible();
-    await expect(page.getByTestId("cart-count")).toHaveText("(0)");
+    await expect(page.getByTestId("cart-count")).toHaveText("0");
   });
 
   test("category and destination pages, and 404s for unknown slugs", async ({ page }) => {

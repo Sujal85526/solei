@@ -56,7 +56,7 @@ test.describe("homepage", () => {
       .getByRole("button", { name: /^Add .* to cart$/ })
       .first()
       .click();
-    await expect(page.getByTestId("cart-count")).toHaveText("(1)");
+    await expect(page.getByTestId("cart-count")).toHaveText("1");
   });
 
   test("early-access sign-up requires consent", async ({ page }) => {

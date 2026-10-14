@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { ShoppingBag, UserRound } from "lucide-react";
 import { Logo } from "@/components/brand";
 import { t } from "@/content/en";
 import { storeNav } from "@/content/site";
@@ -7,6 +8,8 @@ import { HeaderShell } from "./header-shell";
 import { MobileMenu } from "./mobile-menu";
 
 const navLink = "eyebrow text-[0.65rem] text-pearl/85 transition-colors hover:text-pink";
+const iconLink =
+  "text-pearl/85 hover:text-pink inline-flex size-11 items-center justify-center transition-colors";
 
 export function SiteHeader() {
   return (
@@ -37,29 +40,17 @@ export function SiteHeader() {
         <Link href="/" aria-label="Solei — home" className="justify-self-center">
           <Logo className="text-pink h-7 sm:h-9" />
         </Link>
-        <div className="flex items-center justify-end gap-9">
-          <nav aria-label="Secondary" className="hidden lg:block">
-            <ul className="flex items-center gap-9">
-              {storeNav.slice(3).map((item) => (
-                <li key={item.href}>
-                  <Link href={item.href} className={navLink}>
-                    {t.nav[item.key]}
-                  </Link>
-                </li>
-              ))}
-              <li>
-                <Link href="/track" className={navLink}>
-                  {t.nav.trackOrder}
-                </Link>
-              </li>
-            </ul>
-          </nav>
-          <Link
-            href="/cart"
-            className={`${navLink} relative inline-flex min-h-11 items-center gap-1.5`}
-          >
-            {t.nav.cart}
-            <CartCount />
+        <div className="flex items-center justify-end gap-2 sm:gap-4">
+          <Link href="/passport" className={iconLink} title={t.nav.account}>
+            <UserRound className="size-[1.15rem]" strokeWidth={1.25} aria-hidden />
+            <span className="sr-only">{t.nav.account}</span>
+          </Link>
+          <Link href="/cart" className={iconLink} title={t.nav.cart}>
+            <span className="relative">
+              <ShoppingBag className="size-[1.15rem]" strokeWidth={1.25} aria-hidden />
+              <CartCount />
+            </span>
+            <span className="sr-only">{t.nav.cart}</span>
           </Link>
         </div>
       </div>
