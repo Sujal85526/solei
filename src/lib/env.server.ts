@@ -1,16 +1,46 @@
 import "server-only";
+import { createHash } from "node:crypto";
 import { z } from "zod";
 
-const serverSchema = z.object({
-  SUPABASE_SECRET_KEY: z.string().min(1),
-  STRIPE_SECRET_KEY: z
-    .string()
-    .startsWith("sk_test_", "Only Stripe test keys are allowed in Phase 1")
-    .optional(),
-  STRIPE_WEBHOOK_SECRET: z.string().optional(),
-  RESEND_API_KEY: z.string().optional(),
-  EMAIL_FROM: z.string().default("Solei <hello@example.com>"),
-});
+const serverSchema = z
+  .object({
+    SUPABASE_SECRET_KEY: z.string().min(1),
+    PAYMENT_PROVIDER: z.enum(["stripe", "mock"]).optional(),
+    STRIPE_SECRET_KEY: z
+      .string()
+      .startsWith("sk_test_", "Only Stripe test keys are allowed in Phase 1")
+      .optional()
+      .or(z.literal("").transform(() => undefined)),
+    STRIPE_WEBHOOK_SECRET: z
+      .string()
+      .optional()
+      .or(z.literal("").transform(() => undefined)),
+    /** Allow the mock payment page in a production build (CI e2e only). */
+    ALLOW_MOCK_PAYMENTS: z.enum(["0", "1"]).optional(),
+    MOCK_PAYMENT_SECRET: z.string().optional(),
+    ORDER_LINK_SECRET: z.string().optional(),
+    RESEND_API_KEY: z.string().optional(),
+    EMAIL_FROM: z.string().default("Solei <hello@example.com>"),
+  })
+  .transform((env) => ({
+    ...env,
+    PAYMENT_PROVIDER: env.PAYMENT_PROVIDER ?? (env.STRIPE_SECRET_KEY ? "stripe" : "mock"),
+  }))
+  .superRefine((env, ctx) => {
+    if (
+      env.PAYMENT_PROVIDER === "mock" &&
+      process.env.NODE_ENV === "production" &&
+      process.env.NEXT_PHASE !== "phase-production-build" &&
+      env.ALLOW_MOCK_PAYMENTS !== "1"
+    ) {
+      ctx.addIssue({
+        code: "custom",
+        path: ["PAYMENT_PROVIDER"],
+        message:
+          "Mock payments are disabled in production. Configure Stripe or set ALLOW_MOCK_PAYMENTS=1 (CI only).",
+      });
+    }
+  });
 
 let cached: z.infer<typeof serverSchema> | undefined;
 
@@ -19,3 +49,12 @@ export function serverEnv() {
   cached ??= serverSchema.parse(process.env);
   return cached;
 }
+
+/** Derive a stable secret from the Supabase secret when a dedicated one isn't set. */
+function derived(label: string, explicit?: string) {
+  if (explicit) return explicit;
+  return createHash("sha256").update(`${label}:${serverEnv().SUPABASE_SECRET_KEY}`).digest("hex");
+}
+
+export const mockPaymentSecret = () => derived("mock-payments", serverEnv().MOCK_PAYMENT_SECRET);
+export const orderLinkSecret = () => derived("order-links", serverEnv().ORDER_LINK_SECRET);
