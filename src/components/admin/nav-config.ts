@@ -12,6 +12,7 @@ import {
   Store,
   Users,
   Inbox,
+  History,
 } from "lucide-react";
 import type { en } from "@/content/en";
 
@@ -52,6 +53,7 @@ export const adminNav: AdminNavItem[] = [
   { href: "/admin/reports", key: "reports", icon: BarChart3, permission: "reports.view" },
   { href: "/admin/staff", key: "staff", icon: ShieldCheck, permission: "staff.manage" },
   { href: "/admin/settings", key: "settings", icon: Settings, permission: "settings.manage" },
+  { href: "/admin/activity", key: "activity", icon: History, permission: "audit.view" },
 ];
 
 export function isActive(pathname: string, href: string) {

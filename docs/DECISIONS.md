@@ -59,3 +59,15 @@ Open client questions are built as configurable defaults. Each row: what we chos
 - **D14 — Demo unit costs** perfume AED 90, spray AED 55 (seed only). ❓ client to supply.
 - **D3 (update) — Delivery fees** default AD 20 / Dubai, Sharjah, Ajman 25 / UAQ, RAK, Fujairah 30 AED;
   free delivery from AED 500. ❓ confirm.
+
+## Admin auth (milestone 4)
+- **T18 — Staff accounts are invite-only** (Supabase invite email → `/auth/confirm` → set password). Public
+  sign-up stays enabled only for the customer passport magic link later; it grants no admin access because
+  access requires a `staff_profiles` row.
+- **T19 — Deactivation** sets `staff_profiles.active = false` (permissions vanish on the next query) **and** bans
+  the auth user so the session can't be refreshed.
+- **T20 — Guards**: owner can't change their own role or deactivate themselves; the last active owner can't be
+  demoted/deactivated; the owner role always has every permission.
+- **T21 — Login attempts** (success/failure, MFA failures, resets, logouts) are written to `audit_log` with IP.
+- **T22 — GoTrue revokes a user's other aal1 sessions after a successful MFA verify.** Expected security
+  behaviour; e2e tests therefore create a dedicated owner per test.

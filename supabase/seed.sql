@@ -166,3 +166,40 @@ select v.id, l.id, 50, 'receive', 'Opening stock (seed)'
 from public.product_variants v
 cross join public.stock_locations l
 where l.is_default;
+
+-- LOCAL DEV staff accounts (password: Solei-dev-2026). See scripts/dev-users.ts.
+insert into auth.users (instance_id, id, aud, role, email, encrypted_password, email_confirmed_at,
+  raw_app_meta_data, raw_user_meta_data, created_at, updated_at, confirmation_token, email_change,
+  email_change_token_new, recovery_token)
+values ('00000000-0000-0000-0000-000000000000', '00000000-0000-4000-a000-000000000001', 'authenticated', 'authenticated', 'owner@solei.test',
+  extensions.crypt('Solei-dev-2026', extensions.gen_salt('bf')), now(),
+  '{"provider":"email","providers":["email"]}', '{"full_name":"Noor (Owner)"}', now(), now(), '', '', '', '');
+insert into auth.identities (id, user_id, provider_id, identity_data, provider, last_sign_in_at, created_at, updated_at)
+values (gen_random_uuid(), '00000000-0000-4000-a000-000000000001', '00000000-0000-4000-a000-000000000001', '{"sub":"00000000-0000-4000-a000-000000000001","email":"owner@solei.test","email_verified":true}'::jsonb, 'email', now(), now(), now());
+insert into public.staff_profiles (user_id, full_name, email, role_id, position)
+select '00000000-0000-4000-a000-000000000001', 'Noor', 'owner@solei.test', r.id, 'Owner'
+from public.roles r where r.key = 'owner';
+insert into auth.mfa_factors (id, user_id, friendly_name, factor_type, status, created_at, updated_at, secret)
+values (gen_random_uuid(), '00000000-0000-4000-a000-000000000001', 'Dev authenticator', 'totp', 'verified', now(), now(), 'JBSWY3DPEHPK3PXPJBSWY3DPEHPK3PXP');
+insert into auth.users (instance_id, id, aud, role, email, encrypted_password, email_confirmed_at,
+  raw_app_meta_data, raw_user_meta_data, created_at, updated_at, confirmation_token, email_change,
+  email_change_token_new, recovery_token)
+values ('00000000-0000-0000-0000-000000000000', '00000000-0000-4000-a000-000000000002', 'authenticated', 'authenticated', 'manager@solei.test',
+  extensions.crypt('Solei-dev-2026', extensions.gen_salt('bf')), now(),
+  '{"provider":"email","providers":["email"]}', '{"full_name":"Sara (Manager)"}', now(), now(), '', '', '', '');
+insert into auth.identities (id, user_id, provider_id, identity_data, provider, last_sign_in_at, created_at, updated_at)
+values (gen_random_uuid(), '00000000-0000-4000-a000-000000000002', '00000000-0000-4000-a000-000000000002', '{"sub":"00000000-0000-4000-a000-000000000002","email":"manager@solei.test","email_verified":true}'::jsonb, 'email', now(), now(), now());
+insert into public.staff_profiles (user_id, full_name, email, role_id, position)
+select '00000000-0000-4000-a000-000000000002', 'Sara', 'manager@solei.test', r.id, 'Manager'
+from public.roles r where r.key = 'manager';
+insert into auth.users (instance_id, id, aud, role, email, encrypted_password, email_confirmed_at,
+  raw_app_meta_data, raw_user_meta_data, created_at, updated_at, confirmation_token, email_change,
+  email_change_token_new, recovery_token)
+values ('00000000-0000-0000-0000-000000000000', '00000000-0000-4000-a000-000000000003', 'authenticated', 'authenticated', 'sales@solei.test',
+  extensions.crypt('Solei-dev-2026', extensions.gen_salt('bf')), now(),
+  '{"provider":"email","providers":["email"]}', '{"full_name":"Omar (Sales)"}', now(), now(), '', '', '', '');
+insert into auth.identities (id, user_id, provider_id, identity_data, provider, last_sign_in_at, created_at, updated_at)
+values (gen_random_uuid(), '00000000-0000-4000-a000-000000000003', '00000000-0000-4000-a000-000000000003', '{"sub":"00000000-0000-4000-a000-000000000003","email":"sales@solei.test","email_verified":true}'::jsonb, 'email', now(), now(), now());
+insert into public.staff_profiles (user_id, full_name, email, role_id, position)
+select '00000000-0000-4000-a000-000000000003', 'Omar', 'sales@solei.test', r.id, 'Sales'
+from public.roles r where r.key = 'sales_staff';

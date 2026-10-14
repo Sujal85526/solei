@@ -13,6 +13,7 @@ import {
   seedPrices,
   seedSizes,
 } from "../src/modules/content/seed";
+import { DEV_OWNER_TOTP_SECRET, DEV_PASSWORD, DEV_USERS } from "./dev-users";
 
 const q = (s: string | null | undefined) => (s == null ? "null" : `'${s.replace(/'/g, "''")}'`);
 
@@ -67,6 +68,29 @@ from public.product_variants v
 cross join public.stock_locations l
 where l.is_default;
 `;
+
+sql += `
+-- LOCAL DEV staff accounts (password: ${DEV_PASSWORD}). See scripts/dev-users.ts.
+`;
+for (const u of DEV_USERS) {
+  sql += `insert into auth.users (instance_id, id, aud, role, email, encrypted_password, email_confirmed_at,
+  raw_app_meta_data, raw_user_meta_data, created_at, updated_at, confirmation_token, email_change,
+  email_change_token_new, recovery_token)
+values ('00000000-0000-0000-0000-000000000000', ${q(u.id)}, 'authenticated', 'authenticated', ${q(u.email)},
+  extensions.crypt(${q(DEV_PASSWORD)}, extensions.gen_salt('bf')), now(),
+  '{"provider":"email","providers":["email"]}', ${q(JSON.stringify({ full_name: u.name }))}, now(), now(), '', '', '', '');
+insert into auth.identities (id, user_id, provider_id, identity_data, provider, last_sign_in_at, created_at, updated_at)
+values (gen_random_uuid(), ${q(u.id)}, ${q(u.id)}, ${q(JSON.stringify({ sub: u.id, email: u.email, email_verified: true }))}::jsonb, 'email', now(), now(), now());
+insert into public.staff_profiles (user_id, full_name, email, role_id, position)
+select ${q(u.id)}, ${q(u.name.replace(/ \(.*\)$/, ""))}, ${q(u.email)}, r.id, ${q(u.name.match(/\((.*)\)/)?.[1] ?? null)}
+from public.roles r where r.key = ${q(u.role)};
+`;
+  if (u.totp) {
+    sql += `insert into auth.mfa_factors (id, user_id, friendly_name, factor_type, status, created_at, updated_at, secret)
+values (gen_random_uuid(), ${q(u.id)}, 'Dev authenticator', 'totp', 'verified', now(), now(), ${q(DEV_OWNER_TOTP_SECRET)});
+`;
+  }
+}
 
 writeFileSync(join(import.meta.dirname, "..", "supabase", "seed.sql"), sql);
 console.log("wrote supabase/seed.sql");

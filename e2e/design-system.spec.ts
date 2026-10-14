@@ -1,4 +1,5 @@
 import { expect, test } from "@playwright/test";
+import { signInAsSales } from "./helpers/auth";
 
 test("styleguide shows tokens and motifs", async ({ page }) => {
   await page.goto("/styleguide");
@@ -21,7 +22,7 @@ test("store header navigation adapts to the viewport", async ({ page, isMobile }
 });
 
 test("admin shell shows bottom nav on phones and sidebar on desktop", async ({ page }) => {
-  await page.goto("/admin");
+  await signInAsSales(page);
   await expect(page.getByRole("heading", { name: "Dashboard" })).toBeVisible();
   const width = page.viewportSize()?.width ?? 0;
   const nav = page.getByRole("navigation", { name: "Admin" });
