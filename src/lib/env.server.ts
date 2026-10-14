@@ -19,7 +19,14 @@ const serverSchema = z
     ALLOW_MOCK_PAYMENTS: z.enum(["0", "1"]).optional(),
     MOCK_PAYMENT_SECRET: z.string().optional(),
     ORDER_LINK_SECRET: z.string().optional(),
-    RESEND_API_KEY: z.string().optional(),
+    RESEND_API_KEY: z
+      .string()
+      .optional()
+      .or(z.literal("").transform(() => undefined)),
+    /** Non-production: only these recipients (emails or @domains) receive real email. */
+    EMAIL_ALLOWLIST: z.string().optional(),
+    /** Production switch to send to every customer (set on the live deployment only). */
+    EMAIL_ALLOW_ALL: z.enum(["0", "1"]).optional(),
     EMAIL_FROM: z.string().default("Solei <hello@example.com>"),
   })
   .transform((env) => ({
