@@ -2,12 +2,12 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ArrowLeft, ChevronRight } from "lucide-react";
+import { ConsentBadge } from "@/components/admin/customers/badges";
 import {
   ChannelBadge,
-  ConsentBadge,
   OrderStatusBadge,
-  PaymentBadge,
-} from "@/components/admin/customers/badges";
+  PaymentStatusBadge,
+} from "@/components/admin/orders/order-badges";
 import { PassportPanel } from "@/components/admin/customers/passport-panel";
 import {
   EditContactDialog,
@@ -135,7 +135,7 @@ export default async function CustomerPage({ params }: PageProps<"/admin/custome
                         <span className="order-3 col-span-2 flex flex-wrap items-center gap-1.5 sm:order-none sm:col-span-1">
                           <ChannelBadge channel={o.channel} />
                           <OrderStatusBadge status={o.status} />
-                          <PaymentBadge status={o.paymentStatus} />
+                          <PaymentStatusBadge status={o.paymentStatus} />
                           {o.eventName ? (
                             <span className="text-muted-foreground truncate text-xs">
                               {o.eventName}

@@ -151,48 +151,33 @@ export async function customerOrders(customerId: string) {
   const supabase = await createClient();
   const orders = must(
     await supabase
-      .from("orders")
-      .select("id, number, channel, status, placed_at, total_fils, event_id, events(name)")
+      .from("admin_orders")
+      .select(
+        "id, number, channel, status, placed_at, total_fils, event_name, payment_status, paid_fils, refunded_fils, outstanding_fils",
+      )
       .eq("customer_id", customerId)
       .order("placed_at", { ascending: false })
       .limit(500),
     "customer orders",
   );
-  if (!orders.length) return [];
-  // Chunked so the id list stays well inside URL length limits.
-  const ids = orders.map((o) => o.id);
-  const chunks = Array.from({ length: Math.ceil(ids.length / 100) }, (_, i) =>
-    ids.slice(i * 100, i * 100 + 100),
+  return orders.flatMap((o) =>
+    o.id && o.number && o.channel && o.status && o.placed_at
+      ? [
+          {
+            id: o.id,
+            number: o.number,
+            channel: o.channel,
+            status: o.status,
+            placedAt: o.placed_at,
+            totalFils: o.total_fils ?? 0,
+            eventName: o.event_name,
+            paymentStatus: o.payment_status ?? "pending",
+            paidFils: o.paid_fils ?? 0,
+            refundedFils: o.refunded_fils ?? 0,
+            outstandingFils: o.outstanding_fils ?? 0,
+          },
+        ]
+      : [],
   );
-  const payments = (
-    await Promise.all(
-      chunks.map(async (chunk) =>
-        must(
-          await supabase
-            .from("order_payment_summary")
-            .select("order_id, payment_status, paid_fils, refunded_fils, outstanding_fils")
-            .in("order_id", chunk),
-          "order payments",
-        ),
-      ),
-    )
-  ).flat();
-  const byOrder = new Map(payments.map((p) => [p.order_id, p]));
-  return orders.map((o) => {
-    const p = byOrder.get(o.id);
-    return {
-      id: o.id,
-      number: o.number,
-      channel: o.channel,
-      status: o.status,
-      placedAt: o.placed_at,
-      totalFils: o.total_fils,
-      eventName: o.events?.name ?? null,
-      paymentStatus: p?.payment_status ?? "pending",
-      paidFils: p?.paid_fils ?? 0,
-      refundedFils: p?.refunded_fils ?? 0,
-      outstandingFils: p?.outstanding_fils ?? o.total_fils,
-    };
-  });
 }
 export type CustomerOrderRow = Awaited<ReturnType<typeof customerOrders>>[number];

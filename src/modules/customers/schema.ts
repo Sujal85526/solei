@@ -1,14 +1,11 @@
 import { z } from "zod";
-import { Constants, type Database } from "@/lib/database.types";
+import { Constants } from "@/lib/database.types";
 import { normalizePhone } from "@/lib/phone";
 
 export const emirates = Constants.public.Enums.emirate;
 export const customerSources = Constants.public.Enums.customer_source;
-export const orderChannels = Constants.public.Enums.order_channel;
 export type Emirate = (typeof emirates)[number];
 export type CustomerSource = (typeof customerSources)[number];
-export type OrderChannel = Database["public"]["Enums"]["order_channel"];
-export type OrderStatus = Database["public"]["Enums"]["order_status"];
 
 /** Marketing channels a customer can consent to (homepage opt-in uses the same keys). */
 export const marketingChannels = ["email", "whatsapp"] as const;
@@ -33,32 +30,6 @@ export const sourceLabels: Record<CustomerSource, string> = {
   newsletter: "Newsletter",
   import: "Import",
   manual: "Added by staff",
-};
-
-export const channelLabels: Record<OrderChannel, string> = {
-  website: "Website",
-  pos: "Event POS",
-  whatsapp: "WhatsApp",
-  direct: "Direct",
-  payment_link: "Payment link",
-  booking: "Booking",
-};
-
-export const orderStatusLabels: Record<OrderStatus, string> = {
-  pending_payment: "Awaiting payment",
-  new: "New",
-  preparing: "Preparing",
-  dispatched: "Dispatched",
-  delivered: "Delivered",
-  completed: "Completed",
-  cancelled: "Cancelled",
-};
-
-export const paymentStatusLabels: Record<string, string> = {
-  paid: "Paid",
-  partially_paid: "Part paid",
-  pending: "Unpaid",
-  refunded: "Refunded",
 };
 
 export const channelLabel = (channel: string) =>
