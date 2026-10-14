@@ -309,50 +309,49 @@
 .intro-loader {
   display: none;
 }
-@keyframes solei-intro-lift {
+@keyframes solei-intro-done {
   to {
-    clip-path: inset(0 0 100% 0);
     visibility: hidden;
+  }
+}
+@keyframes solei-intro-bg-out {
+  to {
+    opacity: 0;
+  }
+}
+@keyframes solei-intro-mark-in {
+  from {
+    opacity: 0;
   }
 }
 @keyframes solei-intro-mark-out {
   to {
     opacity: 0;
-    translate: 0 -32px;
-  }
-}
-@keyframes solei-intro-sweep {
-  from {
-    mask-position: 140% 0;
-  }
-  to {
-    mask-position: -40% 0;
+    translate: 0 -48px;
+    filter: blur(12px);
   }
 }
 @media (prefers-reduced-motion: no-preference) {
+  /* Wordmark alone on burgundy; the burgundy dissolves into the hero while the wordmark drifts up,
+     blurs and fades over it. */
   [data-intro] .intro-loader {
     display: flex;
-    clip-path: inset(0 0 0 0);
-    animation: solei-intro-lift 0.8s cubic-bezier(0.76, 0, 0.24, 1) 1s forwards;
+    animation: solei-intro-done 0s linear 3s forwards;
+  }
+  [data-intro] .intro-loader__bg {
+    animation: solei-intro-bg-out 1.2s cubic-bezier(0.65, 0, 0.35, 1) 1.4s forwards;
   }
   [data-intro] .intro-loader__mark {
     animation:
-      solei-rise 0.7s var(--ease-soft) both,
-      solei-intro-mark-out 0.55s var(--ease-soft) 1s forwards;
-  }
-  [data-intro] .intro-loader__shine {
-    mask-image: linear-gradient(100deg, transparent 36%, #000 50%, transparent 64%);
-    mask-size: 260% 100%;
-    mask-repeat: no-repeat;
-    mask-position: 140% 0;
-    animation: solei-intro-sweep 1.05s cubic-bezier(0.45, 0, 0.25, 1) 0.2s both;
+      solei-intro-mark-in 0.6s var(--ease-soft) both,
+      solei-intro-mark-out 1.5s cubic-bezier(0.5, 0, 0.3, 1) 1.5s forwards;
   }
 }
 
 /* Hero entrance — CSS only, so it plays before hydration; it waits for the loader when one plays. */
 @media (prefers-reduced-motion: no-preference) {
   [data-intro] {
-    --intro-offset: 1.15s;
+    --intro-offset: 1.5s;
   }
   .hero-rise {
     animation: solei-rise 0.9s var(--ease-soft) both;
@@ -571,5 +570,38 @@ body:has([data-hero]) .site-header:not([data-scrolled]) {
 @keyframes solei-hero-settle {
   from {
     scale: 1.06;
+  }
+}
+
+/* Menu drawer (phones): the panel glides in from the start edge over a fading overlay; links
+   follow one after another. Base UI sets data-starting-style / data-ending-style while animating. */
+.menu-drawer-backdrop {
+  transition: opacity 0.45s var(--ease-soft);
+}
+.menu-drawer-backdrop[data-starting-style],
+.menu-drawer-backdrop[data-ending-style] {
+  opacity: 0;
+}
+.menu-drawer {
+  transition: translate 0.55s cubic-bezier(0.22, 1, 0.36, 1);
+}
+.menu-drawer[data-starting-style],
+.menu-drawer[data-ending-style] {
+  translate: -100% 0;
+}
+[dir="rtl"] .menu-drawer[data-starting-style],
+[dir="rtl"] .menu-drawer[data-ending-style] {
+  translate: 100% 0;
+}
+@media (prefers-reduced-motion: no-preference) {
+  .menu-drawer[data-open] .menu-drawer-link {
+    animation: solei-slide-in 0.6s var(--ease-soft) both;
+    animation-delay: calc(0.15s + var(--i, 0) * 55ms);
+  }
+}
+@keyframes solei-slide-in {
+  from {
+    opacity: 0;
+    translate: -14px 0;
   }
 }

@@ -2,10 +2,12 @@ import Link from "next/link";
 import { UserRound } from "lucide-react";
 import { BagIcon, Logo } from "@/components/brand";
 import { t } from "@/content/en";
+import { cn } from "@/lib/utils";
 import { storeNav } from "@/content/site";
 import { CartCount } from "./cart/cart-count";
 import { HeaderShell } from "./header-shell";
 import { SiteMenu } from "./site-menu";
+import { SiteMenuDrawer } from "./site-menu-drawer";
 
 const navLink = "eyebrow text-[0.65rem] text-pearl/85 transition-colors hover:text-pink";
 const iconLink =
@@ -22,6 +24,8 @@ export function SiteHeader() {
       </a>
       <div className="mx-auto grid h-14 max-w-[96rem] grid-cols-[1fr_auto_1fr] items-center gap-6 px-4 sm:h-16 sm:px-8 lg:px-14">
         <div className="flex items-center">
+          {/* Phones: the menu sits on the empty left; wide screens show the nav links here. */}
+          <SiteMenuDrawer className={cn(iconLink, "-ms-2.5 lg:hidden")} />
           <nav aria-label="Primary" className="hidden lg:block">
             <ul className="flex items-center gap-9">
               {storeNav.slice(0, 3).map((item) => (
@@ -49,7 +53,7 @@ export function SiteHeader() {
             </span>
             <span className="sr-only">{t.nav.cart}</span>
           </Link>
-          <SiteMenu className={iconLink} />
+          <SiteMenu className={cn(iconLink, "hidden lg:inline-flex")} />
         </div>
       </div>
     </HeaderShell>
