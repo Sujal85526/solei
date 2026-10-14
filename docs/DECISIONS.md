@@ -254,3 +254,16 @@ Open client questions are built as configurable defaults. Each row: what we chos
 - **T68 — Wizard draft** lives in `localStorage` (`solei.booking.draft.v1`) with the current step; cleared after
   submit. The homepage occasions band still uses the seed list (`seedEventTypes`) — switch it to
   `booking_event_types` when the homepage is next touched. Submissions are not rate-limited yet (M17).
+
+## Manual orders & payment links (milestone 9)
+- **T69 — One "fully paid" path**: `orders.paid_at` + `settle_if_paid()` is called by the webhook
+  (`confirm_payment`), manual payments (`record_payment`) and manual orders, so `after_order_paid` (stock for
+  website orders; loyalty next) runs exactly once whichever way an order is paid.
+- **T70 — Manual orders deduct stock at creation** (staff-confirmed sale) from the online/default location;
+  payment may be now, partial or later. Price overrides need `orders.price_override` + a reason (DB-enforced).
+- **T71 — Payment links** are hosted checkout sessions for any amount ≤ outstanding; each is a pending payment
+  + a `payment_links` row; the webhook marks both paid. WhatsApp sharing uses wa.me with a prefilled message.
+- **T72 — Outstanding** = confirmed orders (not cancelled, not abandoned website checkouts) with a balance;
+  reminders create a fresh link, email it if possible and open WhatsApp.
+- Dev hosted project has a **bot owner** (`dev-bot@solei.test`) for automated checks; its password/TOTP live in
+  the macOS Keychain (`solei-dev-bot-password`, `solei-dev-bot-totp`), never in the repo.
