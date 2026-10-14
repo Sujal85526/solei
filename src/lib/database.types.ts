@@ -223,6 +223,20 @@ isOneToOne: false
       referencedColumns: ["id"]
     }
                   ]
+                },"payment_events": {
+                  Row: {
+                    "error": string | null,"event_id": string,"id": number,"payload": Json | null,"processed_at": string | null,"provider": string,"received_at": string,"type": string
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "error"?: string | null,"event_id": string,"id"?: never,"payload"?: Json | null,"processed_at"?: string | null,"provider": string,"received_at"?: string,"type": string
+                  }
+                  Update: {
+                    "error"?: string | null,"event_id"?: string,"id"?: never,"payload"?: Json | null,"processed_at"?: string | null,"provider"?: string,"received_at"?: string,"type"?: string
+                  }
+                  Relationships: [
+                    
+                  ]
                 },"payment_links": {
                   Row: {
                     "amount_fils": number,"booking_id": string | null,"created_at": string,"created_by": string | null,"description": string | null,"expires_at": string | null,"id": string,"order_id": string | null,"provider": string,"provider_id": string | null,"status": Database["public"]['Enums']["payment_link_status"],"updated_at": string,"url": string | null
@@ -555,11 +569,27 @@ isOneToOne: false
                 }
           }
           Functions: {
-            "business_day":
+            "after_order_paid":
+{ Args: { "p_order_id": string }; Returns: undefined
+                           },
+"apply_order_stock":
+{ Args: { "p_order_id": string }; Returns: undefined
+                           },
+"business_day":
 { Args: { "ts": string }; Returns: string
                            },
 "business_today":
 { Args: Record<PropertyKey, never>; Returns: string
+                           },
+"confirm_payment":
+{ Args: { "p_amount_fils": number,"p_method": Database["public"]['Enums']["payment_method"],"p_payload"?: Json,"p_provider": string,"p_provider_ref": string }; Returns: {
+              "already_processed": boolean,"newly_paid": boolean,"order_id": string,"order_number": string
+            }[]
+                           },
+"create_web_order":
+{ Args: { "p": Json }; Returns: {
+              "existing": boolean,"order_id": string,"order_number": string,"total_fils": number
+            }[]
                            },
 "current_staff_role":
 { Args: Record<PropertyKey, never>; Returns: {
@@ -578,6 +608,9 @@ isOneToOne: false
         isOneToOne: true
         isSetofReturn: false
       } },
+"fail_payment":
+{ Args: { "p_provider": string,"p_provider_ref": string,"p_reason": string }; Returns: string
+                           },
 "has_permission":
 { Args: { "p_key": string }; Returns: boolean
                            },
