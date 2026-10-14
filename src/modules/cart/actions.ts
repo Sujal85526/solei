@@ -1,6 +1,10 @@
 "use server";
 
-import { fetchAvailability, getCartSettings, listProducts } from "@/modules/storefront/queries";
+import {
+  fetchAvailability,
+  fetchProductsForVariants,
+  getCartSettings,
+} from "@/modules/storefront/queries";
 import { resolveCart, type CartDetails } from "./details";
 import { cartDetailsInputSchema } from "./schema";
 
@@ -12,7 +16,7 @@ export async function getCartDetails(input: unknown): Promise<CartDetails> {
   const parsed = cartDetailsInputSchema.parse(input);
   const ids = [...new Set(parsed.lines.map((l) => l.variantId))];
   const [products, availability, settings] = await Promise.all([
-    listProducts(),
+    fetchProductsForVariants(ids),
     fetchAvailability(ids),
     getCartSettings(),
   ]);
