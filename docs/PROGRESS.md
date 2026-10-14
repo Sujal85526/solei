@@ -14,7 +14,7 @@ Phase 1 milestones (one branch + PR each, in order). See `docs/BUILD_PROMPT.md` 
 | 7 | `feat/checkout-payments` | 🔄 in review | |
 | 8 | `feat/orders-admin-notifications` | 🔄 in review | |
 | 9 | `feat/manual-orders-payment-links` | ⬜ | |
-| 10 | `feat/customers` | ⬜ | |
+| 10 | `feat/customers` | 🔄 in review | [#15](https://github.com/Sujal85526/solei/pull/15) |
 | 11 | `feat/event-calendar` | 🔄 in review | [#10](https://github.com/Sujal85526/solei/pull/10) |
 | 12 | `feat/event-pos` | ⬜ | |
 | 13 | `feat/event-reports` | ⬜ | |
@@ -48,6 +48,10 @@ Phase 1 milestones (one branch + PR each, in order). See `docs/BUILD_PROMPT.md` 
   `passport_stamp`, `reward_unlocked` templates are seeded; call `notify()` from those milestones. Loyalty
   reversal hooks into `after_order_cancelled()`.
 - **M7/M12:** call `updateTag("stock")` / `revalidateTag("stock")` after sales so storefront availability refreshes.
+- **M9/M12 (manual orders, POS):** attach customers with `CustomerPicker`
+  (`src/components/admin/customers/customer-picker.tsx`, `source="whatsapp" | "direct" | "pos"`).
+- **M15 (loyalty):** replace the customer profile's `PassportPanel` placeholder
+  (`src/components/admin/customers/passport-panel.tsx`) with stamps / rewards.
 - **M15 (loyalty):** homepage passport band still uses launch defaults in `src/modules/content/queries.ts`
   (`passportDefaults`) — switch to the active loyalty rule version.
 - **M17 (hardening):** Lighthouse mobile on `/` measured locally at perf 90–91, a11y 100, best-practices 96

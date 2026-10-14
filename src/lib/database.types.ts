@@ -1614,6 +1614,26 @@ export type Database = {
           },
         ]
       }
+      customer_summary: {
+        Row: {
+          created_at: string | null
+          email: string | null
+          emirate: Database["public"]["Enums"]["emirate"] | null
+          first_purchase_at: string | null
+          id: string | null
+          last_purchase_at: string | null
+          marketing_channels: string[] | null
+          marketing_consent: boolean | null
+          marketing_consent_at: string | null
+          name: string | null
+          order_count: number | null
+          phone: string | null
+          source: Database["public"]["Enums"]["customer_source"] | null
+          total_spent_fils: number | null
+          unsubscribed_at: string | null
+        }
+        Relationships: []
+      }
       event_stock_summary: {
         Row: {
           allocated: number | null
