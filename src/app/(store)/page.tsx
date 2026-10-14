@@ -4,6 +4,7 @@ import { DestinationTicker } from "@/components/store/home/destination-ticker";
 import { DestinationsBand } from "@/components/store/home/destinations-band";
 import { Experience } from "@/components/store/home/experience";
 import { HeroSlider } from "@/components/store/home/hero-slider";
+import { PopupGallery } from "@/components/store/home/popup-gallery";
 import { PassportBand } from "@/components/store/home/passport";
 import { PlanYourEvent } from "@/components/store/home/plan-event";
 import { SignatureScents } from "@/components/store/home/signature-scents";
@@ -24,6 +25,7 @@ export default async function HomePage() {
       <DestinationsBand image={images.window} />
       <DestinationTicker destinations={content.destinations} />
       <SignatureScents products={featured} />
+      <PopupGallery />
       <Experience image={images.bag} />
       <PlanYourEvent eventTypes={content.eventTypes} image={images.booth} />
       <PassportBand passport={content.passport} destinations={content.destinations} />
