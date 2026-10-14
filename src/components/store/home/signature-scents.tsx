@@ -1,18 +1,20 @@
-import { Suspense } from "react";
-import { ArrowRight } from "lucide-react";
+import Image from "next/image";
 import Link from "next/link";
-import { Reveal } from "@/components/motion/reveal";
+import { ArrowRight } from "lucide-react";
+import { Reveal, Stagger } from "@/components/motion/reveal";
 import { SplitHeading } from "@/components/motion/split-heading";
-import { ProductGrid, ProductGridSkeleton } from "@/components/store/shop/product-grid";
+import { QuickAdd } from "@/components/store/cart/quick-add";
+import { formatAED } from "@/lib/money";
 import type { StoreProduct } from "@/modules/storefront/types";
 
-const FEATURED_COUNT = 3;
-const columns = "grid-cols-1 sm:grid-cols-3 md:grid-cols-3 lg:grid-cols-3";
+export type ShelfItem = { product: StoreProduct; image: string };
 
-/** "Signature Scents." — three featured products from the catalogue, on blush. */
-export function SignatureScents({ products }: { products: StoreProduct[] }) {
-  const featured = products.slice(0, FEATURED_COUNT);
-  if (!featured.length) return null;
+/**
+ * "Signature Scents." — three bottles on one continuous shelf (cut from a single photograph).
+ * Each third opens its product page; name, price and a quick add sit beneath it.
+ */
+export function SignatureScents({ items }: { items: ShelfItem[] }) {
+  if (!items.length) return null;
   return (
     <section aria-labelledby="signature-title" className="on-blush py-20 sm:py-28">
       <div className="mx-auto max-w-[96rem] px-6 sm:px-10 lg:px-14">
@@ -38,10 +40,50 @@ export function SignatureScents({ products }: { products: StoreProduct[] }) {
             />
           </Link>
         </div>
-        <Suspense fallback={<ProductGridSkeleton count={FEATURED_COUNT} columns={columns} />}>
-          <ProductGrid products={featured} columns={columns} quickAdd />
-        </Suspense>
+
+        <Stagger as="ul" className="grid gap-y-10 sm:grid-cols-3 sm:gap-y-0">
+          {items.map(({ product, image }) => (
+            <li key={product.id}>
+              <ShelfBottle product={product} image={image} />
+            </li>
+          ))}
+        </Stagger>
       </div>
     </section>
+  );
+}
+
+function ShelfBottle({ product, image }: ShelfItem) {
+  const variant = product.variants[0];
+  const href = `/products/${product.slug}`;
+  return (
+    <article className="group">
+      <Link
+        href={href}
+        aria-label={`${product.name} — view`}
+        className="relative block aspect-[1280/935] overflow-hidden"
+      >
+        <Image
+          src={image}
+          alt={`${product.name} on a blush stone shelf`}
+          fill
+          sizes="(min-width: 640px) 33vw, 100vw"
+          className="object-cover transition-transform duration-700 ease-(--ease-soft) group-hover:scale-[1.04]"
+        />
+        <span className="text-burgundy bg-pearl/85 absolute start-1/2 bottom-5 -translate-x-1/2 translate-y-2 px-4 py-2 text-[0.6rem] tracking-[0.3em] uppercase opacity-0 backdrop-blur transition-all duration-500 group-hover:translate-y-0 group-hover:opacity-100 rtl:translate-x-1/2">
+          View
+        </span>
+      </Link>
+      <div className="flex items-center justify-between gap-4 pt-5 sm:px-5">
+        <div>
+          <p className="eyebrow text-primary/70 text-[0.6rem]">{product.destination?.name}</p>
+          <h3 className="font-display text-primary mt-1 text-xl leading-snug">
+            <Link href={href}>{product.name}</Link>
+          </h3>
+          <p className="numeric text-primary mt-1 text-sm">{formatAED(variant.priceFils)}</p>
+        </div>
+        <QuickAdd variantId={variant.id} name={product.name} />
+      </div>
+    </article>
   );
 }

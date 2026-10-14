@@ -26,7 +26,9 @@ test.describe("homepage", () => {
   test("shows the catalogue from the database", async ({ page }) => {
     await page.goto("/");
     const featured = page.locator("section[aria-labelledby=signature-title]");
-    await expect(featured.getByTestId("product-card")).toHaveCount(3);
+    for (const slug of ["capri-perfume", "marbella-perfume", "verona-perfume"]) {
+      await expect(featured.locator(`a[href="/products/${slug}"]`).first()).toBeAttached();
+    }
     await expect(featured.getByText("AED 280").first()).toBeAttached();
   });
 

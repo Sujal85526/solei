@@ -32,6 +32,16 @@ export function homeImages() {
   };
 }
 
+/**
+ * Signature Scents shelf: three bottles cut from one photograph, so side by side they read as the
+ * original shelf while each opens its own product page.
+ */
+export const featuredShelf = [
+  { slug: "capri-perfume", image: "/images/editorial/shelf-capri.jpg" },
+  { slug: "marbella-perfume", image: "/images/editorial/shelf-marbella.jpg" },
+  { slug: "verona-perfume", image: "/images/editorial/shelf-verona.jpg" },
+] as const;
+
 export function heroContent(): HeroContent {
   return {
     image: homeImages().heroBottle,
