@@ -293,10 +293,10 @@ export function BookingWizard({ config }: { config: BookingConfig }) {
         }}
         className="flex flex-col gap-8"
       >
-        <fieldset className="flex flex-col gap-6">
-          <legend className="sr-only">{meta.title}</legend>
+        <fieldset className="flex flex-col gap-6" aria-labelledby="wizard-step-title">
           <div>
             <h3
+              id="wizard-step-title"
               ref={headingRef}
               tabIndex={-1}
               className="font-display text-pink text-3xl outline-none sm:text-4xl"

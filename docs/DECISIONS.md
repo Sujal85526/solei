@@ -222,3 +222,35 @@ Open client questions are built as configurable defaults. Each row: what we chos
   always includes consent, channels, consent time and unsubscribe time so marketing sends can filter on them;
   cells are written formula-safe (`=`, `@`, `+`/`-` text prefixed with `'`; phone numbers left intact).
 - The Passport panel on the profile is a placeholder ("Passport launches soon") until milestone 15.
+
+## Event booking (milestone 14)
+- **T61 — Booking options are database rows** (`booking_event_types`, `booking_service_types`, `booking_packages`,
+  `booth_designs`, `flower_options`) edited in Admin → Bookings → Packages & options. Options used by bookings
+  can't be deleted (FK restrict) — hide them instead. Flower price = `settings.booking_flower_base_fils` + the
+  colour's surcharge.
+- **D15 — Launch package prices are placeholders** ❓: Essence AED 3,500, Signature AED 6,500, Grand Destination
+  AED 12,000; flowers AED 800 base (+0 blush/ivory, +150 burgundy, +250 gold, +300 mixed); quotes valid 14 days;
+  deposit 50% (D8). Inclusions and booth names are placeholder copy; photos reuse the profile crops in
+  `public/images/events` until client photography arrives.
+- **T62 — The estimate is computed in Postgres** (`booking_estimate`, used by `submit_booking` and the summary
+  preview): package base + flowers + products of interest × the category's lowest active price. Categories
+  without a price (dukhoon) are listed "priced in your quotation". `src/modules/bookings/estimate.ts` mirrors it
+  for the wizard's running total; client prices are never stored.
+- **T63 — Public submit/accept are SECURITY DEFINER RPCs** granted to `anon` (`submit_booking`, `accept_quote`,
+  `get_booking_quote`, `quote_payment_order`); submit is idempotent by a client UUID kept in the local draft.
+  Quote links carry a 64-hex random token per version (`/events/quote/<token>`).
+- **T64 — Quotes are versioned; every send is a new version** and supersedes older open ones (their links then
+  say "replaced"). Re-quoting is allowed until the booking is confirmed. Quote amounts are VAT-inclusive.
+- **T65 — Deposits/balances are orders** (`channel = 'booking'`, `booking_id`, no lines) paid through the normal
+  hosted checkout → webhook → `confirm_payment`. Trigger `booking_order_paid` logs the payment on the booking,
+  treats payment as acceptance of the current quote, confirms the booking (creating the `private_booking`
+  calendar event, linked both ways) and closes the order as `completed`. Offline payments recorded on the order
+  take the same path; staff can also "Confirm manually". A quote with a 0 deposit confirms on accept. The generic
+  order-confirmation email is skipped for booking orders; `booking_confirmed` is sent instead.
+- **T66 — Admin payment links** create the booking order + a provider checkout session, recorded in
+  `payment_links`. Customers can also pay from the quote page (a fresh session each time, so no expiry issue).
+- **T67 — WhatsApp is click-to-chat** (`wa.me` + prefilled text); "Open WhatsApp" in the messages panel is
+  logged in `booking_messages`. Free-form emails use the new `booking_message` template.
+- **T68 — Wizard draft** lives in `localStorage` (`solei.booking.draft.v1`) with the current step; cleared after
+  submit. The homepage occasions band still uses the seed list (`seedEventTypes`) — switch it to
+  `booking_event_types` when the homepage is next touched. Submissions are not rate-limited yet (M17).

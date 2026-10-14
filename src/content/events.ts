@@ -157,8 +157,10 @@ export const eventsCopy = {
     confirming: "Confirming your payment…",
     acceptedTitle: "Quotation accepted.",
     acceptedLede: "Pay the deposit to confirm your date.",
-    superseded: "This quotation has been replaced by a newer version — please use the latest link we sent you.",
-    withdrawn: "This quotation is no longer available. Please contact us if you have any questions.",
+    superseded:
+      "This quotation has been replaced by a newer version — please use the latest link we sent you.",
+    withdrawn:
+      "This quotation is no longer available. Please contact us if you have any questions.",
     expired: "This quotation has expired. Please contact us and we'll send you an updated one.",
     cancelled: "Payment was cancelled — nothing was charged. You can try again below.",
     closed: "This booking is closed. Please contact us if you have any questions.",
