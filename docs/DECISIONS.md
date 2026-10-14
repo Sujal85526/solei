@@ -35,6 +35,11 @@ Open client questions are built as configurable defaults. Each row: what we chos
   ❓ Replace with the designer's original SVG when supplied.
 - **T9 — Imagery**: photos in `public/images/**` are cropped from the company-profile PDF pages (≈ 1000px max,
   destination cards ≈ 200px source, upscaled). 🔁 **Replace with client photography** (originals) before launch.
+  Per-product images are **3D renders** in `public/images/renders/product-<slug>-<perfume|spray>.jpg` (+ `.webp`,
+  1600×1600 on cream), generated reproducibly by `scripts/blender/` (Blender 5.2 + Cycles; see its README) and
+  seeded as each product's first image (`productImage` in `src/modules/content/seed.ts`). They are product
+  _visualisations_ modelled on the real bottles — placeholders until the client uploads real product photos via
+  admin. Hero/lifestyle imagery comes from the client's own supplied images, not these renders.
 - **T10 — Admin theme**: same palette on brighter surfaces (`.theme-admin`), burgundy sidebar on desktop,
   bottom nav (4 primary + More) on phone/iPad portrait.
 

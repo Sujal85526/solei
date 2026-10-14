@@ -24,9 +24,9 @@ with p as (
   returning id
 ), img as (
   insert into public.product_images (product_id, url, alt, sort)
-  select p.id, '/images/destinations/cannes.jpg', 'Cannes — Red carpet evenings, crimson blooms and warm amber.', 0 from p
+  select p.id, '/images/renders/product-cannes-perfume.jpg', 'Solei Cannes perfume', 0 from p
   union all
-  select p.id, '/images/products/perfumes-trio.jpg', 'Solei perfume bottles', 1 from p
+  select p.id, '/images/destinations/cannes.jpg', 'Cannes — Red carpet evenings, crimson blooms and warm amber.', 1 from p
 ), v as (
   insert into public.product_variants (product_id, label, size_ml, sku, price_fils, low_stock_threshold)
   select p.id, '50 ml', 50, 'SOL-P-CAN-50', 28000, 5 from p
@@ -42,9 +42,9 @@ with p as (
   returning id
 ), img as (
   insert into public.product_images (product_id, url, alt, sort)
-  select p.id, '/images/destinations/marbella.jpg', 'Marbella — Sun-ripe oranges and orange blossom in the shade.', 0 from p
+  select p.id, '/images/renders/product-marbella-perfume.jpg', 'Solei Marbella perfume', 0 from p
   union all
-  select p.id, '/images/products/perfumes-trio.jpg', 'Solei perfume bottles', 1 from p
+  select p.id, '/images/destinations/marbella.jpg', 'Marbella — Sun-ripe oranges and orange blossom in the shade.', 1 from p
 ), v as (
   insert into public.product_variants (product_id, label, size_ml, sku, price_fils, low_stock_threshold)
   select p.id, '50 ml', 50, 'SOL-P-MAR-50', 28000, 5 from p
@@ -60,9 +60,9 @@ with p as (
   returning id
 ), img as (
   insert into public.product_images (product_id, url, alt, sort)
-  select p.id, '/images/destinations/verona.jpg', 'Verona — Romantic peony, rose and soft vanilla.', 0 from p
+  select p.id, '/images/renders/product-verona-perfume.jpg', 'Solei Verona perfume', 0 from p
   union all
-  select p.id, '/images/products/perfumes-trio.jpg', 'Solei perfume bottles', 1 from p
+  select p.id, '/images/destinations/verona.jpg', 'Verona — Romantic peony, rose and soft vanilla.', 1 from p
 ), v as (
   insert into public.product_variants (product_id, label, size_ml, sku, price_fils, low_stock_threshold)
   select p.id, '50 ml', 50, 'SOL-P-VER-50', 28000, 5 from p
@@ -78,9 +78,9 @@ with p as (
   returning id
 ), img as (
   insert into public.product_images (product_id, url, alt, sort)
-  select p.id, '/images/destinations/capri.jpg', 'Capri — Sparkling lemon, white florals and sea air.', 0 from p
+  select p.id, '/images/renders/product-capri-perfume.jpg', 'Solei Capri perfume', 0 from p
   union all
-  select p.id, '/images/products/perfumes-trio.jpg', 'Solei perfume bottles', 1 from p
+  select p.id, '/images/destinations/capri.jpg', 'Capri — Sparkling lemon, white florals and sea air.', 1 from p
 ), v as (
   insert into public.product_variants (product_id, label, size_ml, sku, price_fils, low_stock_threshold)
   select p.id, '50 ml', 50, 'SOL-P-CAP-50', 28000, 5 from p
@@ -96,9 +96,9 @@ with p as (
   returning id
 ), img as (
   insert into public.product_images (product_id, url, alt, sort)
-  select p.id, '/images/destinations/santorini.jpg', 'Santorini — Bougainvillea, sun-warmed stone and blue horizons.', 0 from p
+  select p.id, '/images/renders/product-santorini-perfume.jpg', 'Solei Santorini perfume', 0 from p
   union all
-  select p.id, '/images/products/perfumes-trio.jpg', 'Solei perfume bottles', 1 from p
+  select p.id, '/images/destinations/santorini.jpg', 'Santorini — Bougainvillea, sun-warmed stone and blue horizons.', 1 from p
 ), v as (
   insert into public.product_variants (product_id, label, size_ml, sku, price_fils, low_stock_threshold)
   select p.id, '50 ml', 50, 'SOL-P-SAN-50', 28000, 5 from p
@@ -114,9 +114,9 @@ with p as (
   returning id
 ), img as (
   insert into public.product_images (product_id, url, alt, sort)
-  select p.id, '/images/destinations/soho.jpg', 'Soho — City dusk, skyline glow and an easy, modern trail.', 0 from p
+  select p.id, '/images/renders/product-soho-spray.jpg', 'Solei Soho all-over spray', 0 from p
   union all
-  select p.id, '/images/products/sprays-stone.jpg', 'Solei all-over spray bottles', 1 from p
+  select p.id, '/images/destinations/soho.jpg', 'Soho — City dusk, skyline glow and an easy, modern trail.', 1 from p
 ), v as (
   insert into public.product_variants (product_id, label, size_ml, sku, price_fils, low_stock_threshold)
   select p.id, '100 ml', 100, 'SOL-S-SOH-100', 19000, 5 from p
@@ -132,9 +132,9 @@ with p as (
   returning id
 ), img as (
   insert into public.product_images (product_id, url, alt, sort)
-  select p.id, '/images/destinations/monaco.jpg', 'Monaco — Harbour breeze, polished and effortlessly bright.', 0 from p
+  select p.id, '/images/renders/product-monaco-spray.jpg', 'Solei Monaco all-over spray', 0 from p
   union all
-  select p.id, '/images/products/sprays-stone.jpg', 'Solei all-over spray bottles', 1 from p
+  select p.id, '/images/destinations/monaco.jpg', 'Monaco — Harbour breeze, polished and effortlessly bright.', 1 from p
 ), v as (
   insert into public.product_variants (product_id, label, size_ml, sku, price_fils, low_stock_threshold)
   select p.id, '100 ml', 100, 'SOL-S-MON-100', 19000, 5 from p
@@ -150,9 +150,9 @@ with p as (
   returning id
 ), img as (
   insert into public.product_images (product_id, url, alt, sort)
-  select p.id, '/images/destinations/mayfair.jpg', 'Mayfair — White blossom, dark woods and quiet elegance.', 0 from p
+  select p.id, '/images/renders/product-mayfair-spray.jpg', 'Solei Mayfair all-over spray', 0 from p
   union all
-  select p.id, '/images/products/sprays-stone.jpg', 'Solei all-over spray bottles', 1 from p
+  select p.id, '/images/destinations/mayfair.jpg', 'Mayfair — White blossom, dark woods and quiet elegance.', 1 from p
 ), v as (
   insert into public.product_variants (product_id, label, size_ml, sku, price_fils, low_stock_threshold)
   select p.id, '100 ml', 100, 'SOL-S-MAY-100', 19000, 5 from p

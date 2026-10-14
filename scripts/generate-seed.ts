@@ -38,8 +38,6 @@ for (const [i, d] of seedDestinations.entries()) {
   const kind = cat === "perfume" ? "Perfume" : "All-over spray";
   const size = seedSizes[cat];
   const sku = `SOL-${cat === "perfume" ? "P" : "S"}-${d.slug.slice(0, 3).toUpperCase()}-${size}`;
-  const productImage =
-    cat === "perfume" ? "/images/products/perfumes-trio.jpg" : "/images/products/sprays-stone.jpg";
   sql += `with p as (
   insert into public.products (category_id, destination_id, name, slug, description, featured, sort)
   select c.id, d.id, ${q(`${d.name} ${kind}`)}, ${q(`${d.slug}-${cat === "perfume" ? "perfume" : "all-over-spray"}`)}, ${q(d.story)}, true, ${i}
@@ -48,9 +46,9 @@ for (const [i, d] of seedDestinations.entries()) {
   returning id
 ), img as (
   insert into public.product_images (product_id, url, alt, sort)
-  select p.id, ${q(d.image)}, ${q(`${d.name} — ${d.mood}`)}, 0 from p
+  select p.id, ${q(d.productImage)}, ${q(`Solei ${d.name} ${kind.toLowerCase()}`)}, 0 from p
   union all
-  select p.id, ${q(productImage)}, ${q(`Solei ${kind.toLowerCase()} bottles`)}, 1 from p
+  select p.id, ${q(d.image)}, ${q(`${d.name} — ${d.mood}`)}, 1 from p
 ), v as (
   insert into public.product_variants (product_id, label, size_ml, sku, price_fils, low_stock_threshold)
   select p.id, ${q(`${size} ml`)}, ${size}, ${q(sku)}, ${seedPrices[cat]}, 5 from p

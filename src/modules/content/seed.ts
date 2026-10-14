@@ -13,6 +13,8 @@ export type SeedDestination = {
   story: string;
   accent: string;
   image: string;
+  /** Studio render of this scent's bottle (scripts/blender — product visualisation, see DECISIONS T9). */
+  productImage: string;
   category: "perfume" | "all_over_spray";
 };
 
@@ -27,6 +29,7 @@ export const seedDestinations: SeedDestination[] = [
       "Evening light on the Croisette — velvet petals, a glass of something golden and the hum of the festival after dark.",
     accent: "#8C1C2B",
     image: "/images/destinations/cannes.jpg",
+    productImage: "/images/renders/product-cannes-perfume.jpg",
     category: "perfume",
   },
   {
@@ -39,6 +42,7 @@ export const seedDestinations: SeedDestination[] = [
       "Long lunches under orange trees in the old town, blossom on the breeze and the sea just out of sight.",
     accent: "#C47A2C",
     image: "/images/destinations/marbella.jpg",
+    productImage: "/images/renders/product-marbella-perfume.jpg",
     category: "perfume",
   },
   {
@@ -51,6 +55,7 @@ export const seedDestinations: SeedDestination[] = [
       "A city of balconies and love letters — pink peonies, rose petals and the sweetness of vanilla.",
     accent: "#C25E78",
     image: "/images/destinations/verona.jpg",
+    productImage: "/images/renders/product-verona-perfume.jpg",
     category: "perfume",
   },
   {
@@ -62,6 +67,7 @@ export const seedDestinations: SeedDestination[] = [
     story: "Lemon groves above the Faraglioni, jasmine on whitewashed walls and salt on your skin.",
     accent: "#C9A227",
     image: "/images/destinations/capri.jpg",
+    productImage: "/images/renders/product-capri-perfume.jpg",
     category: "perfume",
   },
   {
@@ -74,6 +80,7 @@ export const seedDestinations: SeedDestination[] = [
       "Magenta bougainvillea spilling over blue domes, warm stone underfoot and the Aegean at sunset.",
     accent: "#2F5D8A",
     image: "/images/destinations/santorini.jpg",
+    productImage: "/images/renders/product-santorini-perfume.jpg",
     category: "perfume",
   },
   {
@@ -86,6 +93,7 @@ export const seedDestinations: SeedDestination[] = [
       "Rooftops at golden hour, cobbled streets and the electric calm before a night in the city.",
     accent: "#7B3F61",
     image: "/images/destinations/soho.jpg",
+    productImage: "/images/renders/product-soho-spray.jpg",
     category: "all_over_spray",
   },
   {
@@ -98,6 +106,7 @@ export const seedDestinations: SeedDestination[] = [
       "Yachts in the harbour, terraces stacked above the sea and a glamour that never tries too hard.",
     accent: "#3C6E91",
     image: "/images/destinations/monaco.jpg",
+    productImage: "/images/renders/product-monaco-spray.jpg",
     category: "all_over_spray",
   },
   {
@@ -110,6 +119,7 @@ export const seedDestinations: SeedDestination[] = [
       "Georgian squares in spring, white blossom against dark railings and the hush of a members' club.",
     accent: "#3E4A3D",
     image: "/images/destinations/mayfair.jpg",
+    productImage: "/images/renders/product-mayfair-spray.jpg",
     category: "all_over_spray",
   },
 ];
