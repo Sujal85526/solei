@@ -344,11 +344,6 @@ html.lenis body {
     mask-position: -40% 0;
   }
 }
-@keyframes solei-intro-line {
-  from {
-    scale: 0 1;
-  }
-}
 @media (prefers-reduced-motion: no-preference) {
   [data-intro] .intro-loader {
     display: flex;
@@ -366,13 +361,6 @@ html.lenis body {
     mask-repeat: no-repeat;
     mask-position: 140% 0;
     animation: solei-intro-sweep 1.05s cubic-bezier(0.45, 0, 0.25, 1) 0.2s both;
-  }
-  [data-intro] .intro-loader__line {
-    transform-origin: left;
-    animation: solei-intro-line 0.9s var(--ease-soft) 0.1s both;
-  }
-  [dir="rtl"][data-intro] .intro-loader__line {
-    transform-origin: right;
   }
 }
 
@@ -612,39 +600,6 @@ body:has([data-hero]) .site-header:not([data-scrolled]) {
   }
   100% {
     background-position: -50% 0;
-  }
-}
-
-/* Pinned hero: as the page scrolls over it, it settles back (slight zoom-out and dim). */
-@supports (animation-timeline: scroll()) {
-  @media (prefers-reduced-motion: no-preference) {
-    .hero-pinned > * {
-      animation: solei-hero-recede linear both;
-      animation-timeline: scroll(root);
-      animation-range: 0 100svh;
-    }
-    .hero-pinned::after {
-      content: "";
-      position: absolute;
-      inset: 0;
-      z-index: 30;
-      pointer-events: none;
-      background: var(--brand-noir);
-      opacity: 0;
-      animation: solei-hero-dim linear both;
-      animation-timeline: scroll(root);
-      animation-range: 0 100svh;
-    }
-  }
-}
-@keyframes solei-hero-recede {
-  to {
-    scale: 0.94;
-  }
-}
-@keyframes solei-hero-dim {
-  to {
-    opacity: 0.5;
   }
 }
 
