@@ -14,7 +14,7 @@ export function SignatureScents({ products }: { products: StoreProduct[] }) {
   const featured = products.slice(0, FEATURED_COUNT);
   if (!featured.length) return null;
   return (
-    <section aria-labelledby="signature-title" className="on-blush py-20 sm:py-28">
+    <section aria-labelledby="signature-title" className="on-blush relative z-10 py-20 sm:py-28">
       <div className="mx-auto max-w-[96rem] px-6 sm:px-10 lg:px-14">
         <div className="mb-10 flex items-end justify-between gap-6 sm:mb-14">
           <div>
@@ -24,7 +24,7 @@ export function SignatureScents({ products }: { products: StoreProduct[] }) {
             <SplitHeading
               id="signature-title"
               lines={["Signature", "Scents."]}
-              className="mt-4 text-5xl sm:text-6xl"
+              className="mt-4 text-4xl sm:text-5xl lg:text-6xl"
             />
           </div>
           <Link

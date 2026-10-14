@@ -16,10 +16,11 @@ export default async function HomePage() {
     <>
       <IntroLoader />
       <HeroSlider slides={heroSlides()} />
-      {/* The hero stays pinned; everything after it scrolls up over it like a curtain. */}
-      <div className="bg-background relative z-10 shadow-[0_-40px_80px_-20px_rgb(0_0_0/0.65)]">
+      {/* Solid sections are lifted above the fixed hero photographs (z-10 each, no shared stacking
+          context) so see-through ones can blur and reveal them again. */}
+      <div>
         <StorySplit image={images.soho} />
-        <DestinationsBand image={images.window} />
+        <DestinationsBand />
         <SignatureScents products={featured} />
         <Experience image={images.bag} />
       </div>

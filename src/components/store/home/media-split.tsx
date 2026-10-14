@@ -39,7 +39,7 @@ export function MediaSplit({
     <section
       id={id}
       aria-labelledby={labelledBy}
-      className={cn(tone === "blush" ? "on-blush" : "bg-noir")}
+      className={cn("relative z-10", tone === "blush" ? "on-blush" : "bg-noir")}
     >
       <div
         className={cn(
