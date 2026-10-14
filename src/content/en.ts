@@ -48,6 +48,15 @@ export const en = {
     metaDescription:
       "Shop Solei perfumes and all-over sprays — eight destinations in scent, from Cannes to Mayfair. Delivered across the UAE.",
     filters: "Filter the collection",
+    allFragrances: "All fragrances",
+    filterSort: "Filter + Sort",
+    sort: "Sort",
+    sorts: {
+      featured: "Featured",
+      "price-asc": "Price: low to high",
+      "price-desc": "Price: high to low",
+      name: "Name",
+    },
     category: "Category",
     destination: "Destination",
     all: "All",
