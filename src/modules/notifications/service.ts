@@ -1,15 +1,17 @@
 import "server-only";
-import { createAdminClient } from "@/lib/supabase/server";
+import { UserError } from "@/lib/action-result";
+import { assertPermission } from "@/lib/auth/session";
+import { publicEnv } from "@/lib/env";
+import { createAdminClient, createClient } from "@/lib/supabase/server";
 import { emailProvider, recipientAllowed } from "@/providers/email";
-import { createNotifier, type NotifyInput, type NotifyResult } from "./notifier";
+import { createNotifier, type NotifierDeps, type NotifyInput, type NotifyResult } from "./notifier";
+import { sampleVars } from "./samples";
+import { ownerEmailSchema, templateSchema, testSendSchema, toggleSchema } from "./schema";
 
 export type { NotifyInput, NotifyResult } from "./notifier";
 
-/**
- * Send a templated notification (server-only; uses the service-role client because sends happen
- * in webhooks and background work without a staff session). Never throws.
- */
-export function notify(key: string, input: NotifyInput): Promise<NotifyResult> {
+/** Wiring for the notifier: service-role client (sends happen in webhooks without a session). */
+function notifier(overrides: Partial<NotifierDeps> = {}) {
   const admin = createAdminClient();
   return createNotifier({
     loadTemplate: async (k) => {
@@ -38,10 +40,16 @@ export function notify(key: string, input: NotifyInput): Promise<NotifyResult> {
     },
     provider: emailProvider,
     recipientAllowed,
-  })(key, input);
+    ...overrides,
+  });
 }
 
-/** The owner's alert address (Admin → Settings), or null when not set. */
+/** Send a templated notification (server-only). Never throws; every outcome is in the outbox. */
+export function notify(key: string, input: NotifyInput): Promise<NotifyResult> {
+  return notifier()(key, input);
+}
+
+/** The owner's alert address, or null when not set. */
 export async function ownerEmail(): Promise<string | null> {
   const { data } = await createAdminClient()
     .from("private_settings")
@@ -49,4 +57,69 @@ export async function ownerEmail(): Promise<string | null> {
     .eq("id", 1)
     .maybeSingle();
   return data?.owner_notification_email?.trim() || null;
+}
+
+// --- Admin: templates ----------------------------------------------------------------------
+
+export async function saveTemplate(input: unknown) {
+  const staff = await assertPermission("notifications.manage");
+  const v = templateSchema.parse(input);
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from("notification_templates")
+    .update({ subject: v.subject, body: v.body, enabled: v.enabled, updated_by: staff.userId })
+    .eq("key", v.key)
+    .select("key");
+  if (error) throw new Error(error.message);
+  if (!data?.length) throw new UserError("Template not found.");
+}
+
+export async function setTemplateEnabled(input: unknown) {
+  const staff = await assertPermission("notifications.manage");
+  const v = toggleSchema.parse(input);
+  const supabase = await createClient();
+  const { error } = await supabase
+    .from("notification_templates")
+    .update({ enabled: v.enabled, updated_by: staff.userId })
+    .eq("key", v.key);
+  if (error) throw new Error(error.message);
+  return v;
+}
+
+/** Send the (unsaved) draft to the signed-in staff member with sample values. */
+export async function sendTest(input: unknown) {
+  const staff = await assertPermission("notifications.manage");
+  const v = testSendSchema.parse(input);
+  if (!staff.email) throw new UserError("Your account has no email address.");
+  const supabase = await createClient();
+  const { data: t } = await supabase
+    .from("notification_templates")
+    .select("variables")
+    .eq("key", v.key)
+    .maybeSingle();
+  if (!t) throw new UserError("Template not found.");
+  const result = await notifier({
+    loadTemplate: async () => ({
+      subject: `[Test] ${v.subject}`,
+      body: v.body,
+      enabled: true,
+    }),
+  })(v.key, {
+    to: staff.email,
+    vars: sampleVars(publicEnv.NEXT_PUBLIC_SITE_URL, t.variables),
+  });
+  if (result.status === "failed") throw new UserError(`Sending failed: ${result.reason}`);
+  if (result.status === "skipped") throw new UserError(`Not sent: ${result.reason}.`);
+  return { to: staff.email, provider: emailProvider().name };
+}
+
+export async function saveOwnerEmail(input: unknown) {
+  const staff = await assertPermission("settings.manage");
+  const v = ownerEmailSchema.parse(input);
+  const supabase = await createClient();
+  const { error } = await supabase
+    .from("private_settings")
+    .update({ owner_notification_email: v.ownerEmail, updated_by: staff.userId })
+    .eq("id", 1);
+  if (error) throw new Error(error.message);
 }
