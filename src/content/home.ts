@@ -29,6 +29,7 @@ export function homeImages() {
     soho: editorial("soho-portrait.jpg", "/images/products/sprays-stone.jpg"),
     window: editorial("sunset-window.jpg", "/images/destinations/monaco.jpg"),
     booth: editorial("event-booth.jpg", "/images/events/booth-florals.jpg"),
+    bag: editorial("solei-bag.jpg", "/images/brand/hero-sprays-arch.jpg"),
   };
 }
 
@@ -39,25 +40,25 @@ export function heroSlides(): HeroSlide[] {
       image: img.heroBottle,
       alt: "Solei Cannes perfume on a travertine ledge in late-afternoon light",
       eyebrow: "Made to remain.",
-      title: ["Fragrances inspired", "by destinations."],
-      cta: { label: "Shop now", href: "/shop" },
-      focus: "30% 60%",
-    },
-    {
-      image: img.soho,
-      alt: "A woman holding the Solei Soho all-over spray",
-      eyebrow: "The all-over spray",
       title: ["A destination", "in every scent."],
-      cta: { label: "Discover Soho", href: "/products/soho-all-over-spray" },
-      focus: "40% 40%",
+      cta: { label: "Shop now", href: "/shop" },
+      focus: "24% 70%",
     },
     {
       image: img.window,
       alt: "Sunset over the sea through an open window with linen curtains",
       eyebrow: "Private events",
       title: ["Bring Solei", "to your celebration."],
-      cta: { label: "Plan your event", href: "/events" },
-      focus: "70% 50%",
+      cta: { label: "Enquire", href: "/events" },
+      focus: "70% 60%",
+    },
+    {
+      image: img.bag,
+      alt: "A burgundy Solei gift bag with a satin ribbon on a travertine ledge, palm shadows behind",
+      eyebrow: "The art of gifting",
+      title: ["Wrapped in", "somewhere beautiful."],
+      cta: { label: "Gift now", href: "/shop" },
+      focus: "32% 70%",
     },
   ];
 }
