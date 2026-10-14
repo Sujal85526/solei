@@ -9,6 +9,8 @@ import {
 } from "@/components/admin/orders/order-badges";
 import { OrderActions } from "@/components/admin/orders/order-actions";
 import { OrderNotes } from "@/components/admin/orders/order-notes";
+import { PaymentLinkPanel } from "@/components/admin/orders/payment-link-panel";
+import { paymentLinksFor } from "@/modules/orders/manual-queries";
 import { AdminSection } from "@/components/admin/section";
 import { Badge } from "@/components/ui/badge";
 import { requirePagePermission } from "@/lib/auth/session";
@@ -45,7 +47,11 @@ export default async function OrderDetailPage({ params }: PageProps<"/admin/orde
   const staff = await requirePagePermission("orders.view");
   const { id } = await params;
   if (!/^[0-9a-f-]{36}$/i.test(id)) notFound();
-  const [data, people] = await Promise.all([getOrder(id), staffDirectory()]);
+  const [data, people, links] = await Promise.all([
+    getOrder(id),
+    staffDirectory(),
+    paymentLinksFor(id),
+  ]);
   if (!data) notFound();
   const { order, lines, summary, payments, history, notifications } = data;
   const status = order.status as OrderStatus;
@@ -260,6 +266,19 @@ export default async function OrderDetailPage({ params }: PageProps<"/admin/orde
             ) : (
               <p className="text-muted-foreground text-sm">No payments yet.</p>
             )}
+          </AdminSection>
+
+          <AdminSection
+            title="Payment links"
+            description="Hosted, secure links — cards or Apple Pay. Paid links update the order automatically."
+          >
+            <PaymentLinkPanel
+              orderId={order.id}
+              outstandingFils={status === "cancelled" ? 0 : (summary.outstanding_fils ?? 0)}
+              links={links}
+              canCreate={can(staff.permissions, "payment_links.create")}
+              hasEmail={Boolean(order.contact_email)}
+            />
           </AdminSection>
 
           <AdminSection title="History">
