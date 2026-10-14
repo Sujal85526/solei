@@ -50,6 +50,8 @@ export const en = {
     filters: "Filter the collection",
     allFragrances: "All fragrances",
     filter: "Filter",
+    filterAndSort: "Filter & sort",
+    closeFilters: "Close filters",
     sort: "Sort by price",
     sorts: {
       "price-asc": "Low to high",

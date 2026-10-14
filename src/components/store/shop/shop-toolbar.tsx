@@ -1,11 +1,12 @@
 import Link from "next/link";
 import { t } from "@/content/en";
 import { FilterOptions, type FilterOption } from "./filter-options";
+import { ShopFilterDrawer } from "./shop-filter-drawer";
 
 /**
- * "All fragrances — 08" on the left, one "Filter" toggle on the right that opens category and
- * price sort together. A native <details> (opens without JavaScript, and starts open while a
- * filter is active); the choices are plain links (URL search params).
+ * Wide screens: "All fragrances — 08" on the left, one "Filter" toggle on the right that opens
+ * category and price sort together — a native <details> (starts open while a filter is active).
+ * Phones: just a filter icon on the right that opens the same choices in a side drawer.
  */
 export function ShopToolbar({
   count,
@@ -17,7 +18,26 @@ export function ShopToolbar({
   filtered: boolean;
 }) {
   return (
-    <details open={filtered} className="group/filters border-primary/15 border-b">
+    <>
+      <div className="border-primary/15 flex justify-end border-b py-2 sm:hidden">
+        <ShopFilterDrawer groups={groups} filtered={filtered} />
+      </div>
+      <Desktop count={count} groups={groups} filtered={filtered} />
+    </>
+  );
+}
+
+function Desktop({
+  count,
+  groups,
+  filtered,
+}: {
+  count: number;
+  groups: { label: string; options: FilterOption[] }[];
+  filtered: boolean;
+}) {
+  return (
+    <details open={filtered} className="group/filters border-primary/15 hidden border-b sm:block">
       <summary className="flex cursor-pointer list-none items-center justify-between gap-4 py-5 [&::-webkit-details-marker]:hidden">
         <span
           className="eyebrow text-primary text-[0.6rem] whitespace-nowrap sm:text-[0.65rem]"
