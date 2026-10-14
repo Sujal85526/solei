@@ -37,6 +37,7 @@ export async function adjustStock(input: unknown) {
     p_reason: v.reason,
   });
   if (error) dbError(error);
+  return { variantId: v.variantId, reduced: v.signedQty < 0 };
 }
 
 export async function transferStock(input: unknown) {
@@ -51,6 +52,7 @@ export async function transferStock(input: unknown) {
     p_reason: v.reason || undefined,
   });
   if (error) dbError(error);
+  return { variantId: v.variantId };
 }
 
 export async function saveLocation(input: unknown) {
