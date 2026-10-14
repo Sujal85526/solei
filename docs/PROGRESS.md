@@ -7,8 +7,8 @@ Phase 1 milestones (one branch + PR each, in order). See `docs/BUILD_PROMPT.md` 
 | 0 | `chore/bootstrap` | ✅ merged | [#1](https://github.com/Sujal85526/solei/pull/1) |
 | 1 | `feat/design-system` | ✅ merged | [#2](https://github.com/Sujal85526/solei/pull/2) |
 | 2 | `feat/homepage` | ✅ merged | [#3](https://github.com/Sujal85526/solei/pull/3) |
-| 3 | `feat/schema-core` | 🔄 in review | |
-| 4 | `feat/admin-auth-staff` | ⬜ | |
+| 3 | `feat/schema-core` | ✅ merged | [#4](https://github.com/Sujal85526/solei/pull/4) |
+| 4 | `feat/admin-auth-staff` | 🔄 in review | |
 | 5 | `feat/admin-catalog-inventory` | ⬜ | |
 | 6 | `feat/storefront-shop-cart` | ⬜ | |
 | 7 | `feat/checkout-payments` | ⬜ | |
@@ -24,6 +24,11 @@ Phase 1 milestones (one branch + PR each, in order). See `docs/BUILD_PROMPT.md` 
 | 17 | `chore/hardening` | ⬜ | |
 
 ## Current notes
+- Local admin logins (dev seed only): `owner@solei.test` / `manager@solei.test` / `sales@solei.test`, password
+  `Solei-dev-2026`. Owner TOTP secret `JBSWY3DPEHPK3PXPJBSWY3DPEHPK3PXP` (add to an authenticator app);
+  manager is asked to enrol TOTP on first login. Emails (invites, resets) land in Mailpit: http://127.0.0.1:54324.
+- Local Supabase: analytics disabled and auth rate limits raised in `supabase/config.toml` (dev only — the
+  analytics container restart loop starved GoTrue on Docker for Mac).
 - Schema: `supabase/migrations/2026101400000{1..9}_*.sql`; DB tests `pnpm exec supabase test db`; demo seed is
   generated from `src/modules/content/seed.ts` via `pnpm db:seed:generate`.
 - Local Supabase: `pnpm db:start`; copy keys from `pnpm exec supabase status` into `.env.local` (see `.env.example`).
