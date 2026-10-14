@@ -13,6 +13,8 @@ export const CONTENT_TAGS = {
   catalog: "catalog",
   settings: "settings",
   loyalty: "loyalty",
+  /** Online availability (stock ledger); revalidate after sales, receipts and adjustments. */
+  stock: "stock",
 } as const;
 
 export type HomeDestination = {
