@@ -66,6 +66,8 @@ async function guard(what: string, fn: () => Promise<unknown>) {
 export function notifyOrderPaid(orderId: string) {
   return guard("paid", async () => {
     const o = await loadOrder(orderId);
+    // Booking deposits/balances: the bookings module sends `booking_confirmed` instead.
+    if (o.channel === "booking") return;
     await notify("order_confirmation", { ...refs(o), vars: customerVars(o) });
 
     // POS sales happen in front of the owner's team; alert only for remote orders.

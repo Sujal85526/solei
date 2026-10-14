@@ -183,24 +183,18 @@ alter table public.payment_links
   references public.bookings (id) on delete cascade;
 create index orders_booking_idx on public.orders (booking_id) where booking_id is not null;
 
--- notification_log arrives with the notifications milestone; link it when present.
-do $$
-begin
-  if to_regclass('public.notification_log') is not null then
-    alter table public.notification_log
-      add constraint notification_log_booking_id_fkey foreign key (booking_id)
-      references public.bookings (id) on delete set null;
-  end if;
-  if to_regclass('public.notification_templates') is not null then
-    insert into public.notification_templates (key, audience, name, description, subject, body, variables, sort)
-    values ('booking_message', 'customer', 'Booking message', 'A personal message from the bookings inbox.',
-      'Your Solei event {{booking_ref}}',
-      E'Dear {{customer_name}},\n\n{{message}}\n\nSolei',
-      array['customer_name', 'booking_ref', 'message'], 85)
-    on conflict (key) do nothing;
-  end if;
-end;
-$$;
+alter table public.notification_log
+  add constraint notification_log_booking_id_fkey foreign key (booking_id)
+  references public.bookings (id) on delete set null;
+create index notification_log_booking_idx on public.notification_log (booking_id) where booking_id is not null;
+
+-- Free-form messages from the bookings inbox.
+insert into public.notification_templates (key, audience, name, description, subject, body, variables, sort)
+values ('booking_message', 'customer', 'Booking message', 'A personal message from the bookings inbox.',
+  'Your Solei event {{booking_ref}}',
+  E'Dear {{customer_name}},\n\n{{message}}\n\nSolei',
+  array['customer_name', 'booking_ref', 'message'], 85)
+on conflict (key) do nothing;
 
 -- ---------------------------------------------------------------------------
 -- Triggers: updated_at + audit

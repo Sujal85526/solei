@@ -3,14 +3,12 @@ import { publicEnv } from "@/lib/env";
 import { formatBusinessDate } from "@/lib/dates";
 import { formatAED } from "@/lib/money";
 import { createAdminClient } from "@/lib/supabase/server";
+import { notify, ownerEmail } from "@/modules/notifications/service";
 
 /*
  * Booking emails (templates `booking_received`, `quote_sent`, `booking_confirmed`,
- * `owner_new_booking`, `booking_message`). The template engine + outbox lives in
- * src/modules/notifications (milestone 8). Until that module is on main this adapter only logs,
- * so the booking flow works end to end without it. Swap `deliver` for
- * `notify` from "@/modules/notifications/service" once merged — the call sites stay the same.
- * Never throws: an email problem must not break a submit, quote or payment.
+ * `owner_new_booking`, `booking_message`) through the notifications service (template, outbox,
+ * allow-list). Never throws: an email problem must not break a submit, quote or payment.
  */
 
 export type BookingEmail = {
@@ -19,18 +17,14 @@ export type BookingEmail = {
   customerId?: string | null;
   bookingId?: string | null;
   dedupeKey?: string;
+  dedupeHours?: number;
 };
 
-export type SendResult = { status: "sent" | "failed" | "skipped"; reason?: string };
-
-async function deliver(key: string, input: BookingEmail): Promise<SendResult> {
-  console.info(`[bookings] email ${key} → ${input.to || "—"} (notifications not installed yet)`);
-  return { status: "skipped", reason: "notifications not installed" };
-}
+export type SendResult = Awaited<ReturnType<typeof notify>>;
 
 export async function sendBookingEmail(key: string, input: BookingEmail): Promise<SendResult> {
   try {
-    return await deliver(key, input);
+    return await notify(key, input);
   } catch (e) {
     console.error(`booking email ${key} failed`, e);
     return { status: "failed", reason: e instanceof Error ? e.message : String(e) };
@@ -60,15 +54,6 @@ const refs = (b: BookingRef) => ({
   bookingId: b.id,
 });
 
-async function ownerEmail() {
-  const { data } = await createAdminClient()
-    .from("private_settings")
-    .select("owner_notification_email")
-    .eq("id", 1)
-    .maybeSingle();
-  return data?.owner_notification_email?.trim() || null;
-}
-
 async function loadBooking(id: string): Promise<BookingRef | null> {
   const { data } = await createAdminClient()
     .from("bookings")
@@ -95,6 +80,7 @@ export async function notifyBookingReceived(bookingId: string) {
       bookingId: b.id,
       vars: { ...vars, customer_name: b.contact_name, admin_link: adminBookingUrl(b.id) },
       dedupeKey: b.id,
+      dedupeHours: 24 * 365,
     });
   }
 }
@@ -124,6 +110,7 @@ export async function notifyBookingConfirmed(bookingId: string) {
       event_date: eventDate(b.event_date),
     },
     dedupeKey: b.id,
+    dedupeHours: 24 * 365,
   });
 }
 
