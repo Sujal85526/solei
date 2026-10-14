@@ -1,0 +1,134 @@
+import "server-only";
+import { businessDay, businessDayRange } from "@/lib/dates";
+import { must } from "@/lib/supabase/must";
+import { createClient } from "@/lib/supabase/server";
+import { searchNeedles, type OrderFilters } from "./schema";
+
+export const ORDERS_PAGE_SIZE = 25;
+
+const COLUMNS =
+  "id, number, channel, status, payment_status, total_fils, outstanding_fils, paid_fils, refunded_fils, contact_name, contact_phone, placed_at, item_count, event_name, delivery_emirate, fulfilment";
+
+export async function listOrders(filters: OrderFilters) {
+  const supabase = await createClient();
+  const page = filters.page ?? 1;
+  let q = supabase
+    .from("admin_orders")
+    .select(COLUMNS, { count: "exact" })
+    .order("placed_at", { ascending: false })
+    .range((page - 1) * ORDERS_PAGE_SIZE, page * ORDERS_PAGE_SIZE - 1);
+
+  if (filters.channel) q = q.eq("channel", filters.channel);
+  if (filters.status && filters.status !== "all") q = q.eq("status", filters.status);
+  // Abandoned website checkouts stay out of the default list (searching still finds them).
+  else if (!filters.status && !filters.q) q = q.neq("status", "pending_payment");
+  if (filters.payment) q = q.eq("payment_status", filters.payment);
+  if (filters.event) q = q.eq("event_id", filters.event);
+  if (filters.from) q = q.gte("placed_at", businessDayRange(filters.from).start.toISOString());
+  if (filters.to) q = q.lt("placed_at", businessDayRange(filters.to).end.toISOString());
+  if (filters.q) {
+    const { text, phone } = searchNeedles(filters.q);
+    const ors = [`number.ilike.*${text}*`, `contact_name.ilike.*${text}*`];
+    if (phone) ors.push(`contact_phone.like.*${phone}*`);
+    if (text || phone) q = q.or(ors.join(","));
+  }
+  const res = await q;
+  return { rows: must(res, "orders"), total: res.count ?? 0, page };
+}
+export type OrderListRow = Awaited<ReturnType<typeof listOrders>>["rows"][number];
+
+/** Stat chips: confirmed orders placed today (Asia/Dubai) and the unpaid balance on open orders. */
+export async function orderStats() {
+  const supabase = await createClient();
+  const { start, end } = businessDayRange(businessDay());
+  const [today, outstanding] = await Promise.all([
+    supabase
+      .from("admin_orders")
+      .select("total_fils")
+      .gte("placed_at", start.toISOString())
+      .lt("placed_at", end.toISOString())
+      .not("status", "in", "(pending_payment,cancelled)"),
+    supabase
+      .from("admin_orders")
+      .select("outstanding_fils")
+      .gt("outstanding_fils", 0)
+      .not("status", "in", "(pending_payment,cancelled)"),
+  ]);
+  const todayRows = must(today, "today's orders");
+  const outRows = must(outstanding, "outstanding");
+  return {
+    todayCount: todayRows.length,
+    todayRevenueFils: todayRows.reduce((s, r) => s + (r.total_fils ?? 0), 0),
+    outstandingFils: outRows.reduce((s, r) => s + (r.outstanding_fils ?? 0), 0),
+    outstandingCount: outRows.length,
+  };
+}
+
+/** Events for the list filter (newest first). */
+export async function eventOptions() {
+  const supabase = await createClient();
+  const { data } = await supabase
+    .from("events")
+    .select("id, name, start_date")
+    .order("start_date", { ascending: false })
+    .limit(100);
+  return data ?? [];
+}
+
+/** Everything the order detail page shows. Line costs come back empty without financial access (RLS). */
+export async function getOrder(id: string) {
+  const supabase = await createClient();
+  const { data: order } = await supabase
+    .from("orders")
+    .select(
+      "id, number, channel, status, fulfilment, customer_id, contact_name, contact_phone, contact_email, delivery_address, delivery_emirate, delivery_fee_fils, subtotal_fils, discount_fils, vat_fils, total_fils, vat_rate_bp, prices_include_vat, notes, internal_notes, tracking_number, courier, placed_at, created_at, cancelled_at, cancel_reason, event_id, event_day, staff_id, events(name)",
+    )
+    .eq("id", id)
+    .maybeSingle();
+  if (!order) return null;
+
+  const [lines, summary, payments, history, notifications] = await Promise.all([
+    supabase
+      .from("order_lines")
+      .select(
+        "id, variant_id, product_name, variant_label, sku, qty, list_price_fils, unit_price_fils, price_override_reason, discount_fils, line_total_fils, is_reward, created_at, order_line_costs(unit_cost_fils)",
+      )
+      .eq("order_id", id)
+      .order("created_at"),
+    supabase
+      .from("order_payment_summary")
+      .select("paid_fils, refunded_fils, outstanding_fils, payment_status")
+      .eq("order_id", id)
+      .single(),
+    supabase
+      .from("payments")
+      .select(
+        "id, kind, amount_fils, method, status, provider, reference, note, received_by, received_at, created_at",
+      )
+      .eq("order_id", id)
+      .order("created_at"),
+    supabase
+      .from("order_status_history")
+      .select("id, from_status, to_status, note, changed_by, created_at")
+      .eq("order_id", id)
+      .order("created_at"),
+    supabase
+      .from("notification_log")
+      .select("id, template_key, recipient, subject, status, provider, error, created_at")
+      .eq("order_id", id)
+      .order("created_at", { ascending: false }),
+  ]);
+
+  return {
+    order,
+    lines: must(lines, "order lines").map((l) => ({
+      ...l,
+      unit_cost_fils: l.order_line_costs?.unit_cost_fils ?? null,
+    })),
+    summary: must(summary, "payment summary"),
+    payments: must(payments, "payments"),
+    history: must(history, "status history"),
+    notifications: notifications.data ?? [],
+  };
+}
+export type OrderDetail = NonNullable<Awaited<ReturnType<typeof getOrder>>>;
