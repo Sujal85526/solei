@@ -9,13 +9,19 @@ export const PERMISSIONS = {
   "orders.view": { group: "Sales", description: "View orders and payments" },
   "orders.create": { group: "Sales", description: "Create manual orders" },
   "orders.update": { group: "Sales", description: "Change order status, delivery and notes" },
-  "orders.cancel": { group: "Sales", description: "Cancel orders (returns stock, reverses stamps)" },
+  "orders.cancel": {
+    group: "Sales",
+    description: "Cancel orders (returns stock, reverses stamps)",
+  },
   "orders.refund": { group: "Sales", description: "Record refunds" },
   "orders.price_override": { group: "Sales", description: "Override prices on manual orders" },
   "payments.record": { group: "Sales", description: "Record cash, transfer and terminal payments" },
   "payment_links.create": { group: "Sales", description: "Create and send payment links" },
   "catalog.view": { group: "Catalog", description: "View all products, including inactive" },
-  "catalog.manage": { group: "Catalog", description: "Create and edit products, prices and images" },
+  "catalog.manage": {
+    group: "Catalog",
+    description: "Create and edit products, prices and images",
+  },
   "inventory.view": { group: "Inventory", description: "View stock levels and movements" },
   "inventory.receive": { group: "Inventory", description: "Receive stock" },
   "inventory.adjust": { group: "Inventory", description: "Record damage and corrections" },
@@ -23,17 +29,29 @@ export const PERMISSIONS = {
   "customers.view": { group: "Customers", description: "View customers" },
   "customers.manage": { group: "Customers", description: "Create and edit customers" },
   "events.view": { group: "Events", description: "View the event calendar" },
-  "events.manage": { group: "Events", description: "Create and edit events, expenses and documents" },
+  "events.manage": {
+    group: "Events",
+    description: "Create and edit events, expenses and documents",
+  },
   "bookings.view": { group: "Events", description: "View booking requests" },
   "bookings.manage": { group: "Events", description: "Reply, quote, approve and reject bookings" },
   "loyalty.view": { group: "Loyalty", description: "View passports and stamps" },
-  "loyalty.adjust": { group: "Loyalty", description: "Add or remove stamps manually, issue passports" },
+  "loyalty.adjust": {
+    group: "Loyalty",
+    description: "Add or remove stamps manually, issue passports",
+  },
   "loyalty.manage": { group: "Loyalty", description: "Change loyalty programme rules" },
   "reports.view": { group: "Reports", description: "View sales reports (units, revenue)" },
-  "reports.financial.view": { group: "Reports", description: "See costs, COGS, expenses and profit" },
+  "reports.financial.view": {
+    group: "Reports",
+    description: "See costs, COGS, expenses and profit",
+  },
   "notifications.manage": { group: "Settings", description: "Edit notification templates" },
   "settings.manage": { group: "Settings", description: "Change business settings" },
-  "staff.manage": { group: "Settings", description: "Manage staff accounts, roles and permissions" },
+  "staff.manage": {
+    group: "Settings",
+    description: "Manage staff accounts, roles and permissions",
+  },
   "audit.view": { group: "Settings", description: "View the activity log" },
 } as const;
 
@@ -66,7 +84,10 @@ export const DEFAULT_ROLE_PERMISSIONS: Record<RoleKey, PermissionKey[] | "all"> 
 /** Permissions that expose costs/profit — never granted to sales staff by default. */
 export const FINANCIAL_PERMISSIONS: PermissionKey[] = ["reports.financial.view"];
 
-export function can(granted: ReadonlySet<string> | readonly string[] | "all", key: PermissionKey): boolean {
+export function can(
+  granted: ReadonlySet<string> | readonly string[] | "all",
+  key: PermissionKey,
+): boolean {
   if (granted === "all") return true;
   return Array.isArray(granted) ? granted.includes(key) : (granted as ReadonlySet<string>).has(key);
 }

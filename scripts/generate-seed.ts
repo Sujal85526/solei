@@ -37,7 +37,8 @@ for (const [i, d] of seedDestinations.entries()) {
   const kind = cat === "perfume" ? "Perfume" : "All-over spray";
   const size = seedSizes[cat];
   const sku = `SOL-${cat === "perfume" ? "P" : "S"}-${d.slug.slice(0, 3).toUpperCase()}-${size}`;
-  const productImage = cat === "perfume" ? "/images/products/perfumes-trio.jpg" : "/images/products/sprays-stone.jpg";
+  const productImage =
+    cat === "perfume" ? "/images/products/perfumes-trio.jpg" : "/images/products/sprays-stone.jpg";
   sql += `with p as (
   insert into public.products (category_id, destination_id, name, slug, description, featured, sort)
   select c.id, d.id, ${q(`${d.name} ${kind}`)}, ${q(`${d.slug}-${cat === "perfume" ? "perfume" : "all-over-spray"}`)}, ${q(d.story)}, true, ${i}
