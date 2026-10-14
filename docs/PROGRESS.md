@@ -15,7 +15,7 @@ Phase 1 milestones (one branch + PR each, in order). See `docs/BUILD_PROMPT.md` 
 | 8 | `feat/orders-admin-notifications` | ⬜ | |
 | 9 | `feat/manual-orders-payment-links` | ⬜ | |
 | 10 | `feat/customers` | ⬜ | |
-| 11 | `feat/event-calendar` | ⬜ | |
+| 11 | `feat/event-calendar` | 🔄 in review | |
 | 12 | `feat/event-pos` | ⬜ | |
 | 13 | `feat/event-reports` | ⬜ | |
 | 14 | `feat/event-booking` | ⬜ | |
