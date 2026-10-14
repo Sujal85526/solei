@@ -4,8 +4,8 @@ Phase 1 milestones (one branch + PR each, in order). See `docs/BUILD_PROMPT.md` 
 
 | # | Branch | Status | PR |
 |---|---|---|---|
-| 0 | `chore/bootstrap` | 🔄 in review | |
-| 1 | `feat/design-system` | ⬜ | |
+| 0 | `chore/bootstrap` | ✅ merged | [#1](https://github.com/Sujal85526/solei/pull/1) |
+| 1 | `feat/design-system` | 🔄 in review | |
 | 2 | `feat/homepage` | ⬜ (pause for client screenshots) | |
 | 3 | `feat/schema-core` | ⬜ | |
 | 4 | `feat/admin-auth-staff` | ⬜ | |

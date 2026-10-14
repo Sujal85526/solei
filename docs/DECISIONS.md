@@ -24,3 +24,16 @@ Open client questions are built as configurable defaults. Each row: what we chos
 - **T3 — Money as integer fils, rates as basis points**; inclusive-VAT extraction rounds half-up per amount.
 - **T4 — Phones stored E.164**; local UAE formats normalised; foreign numbers need `+`/`00`.
 - **T5 — Supabase new API keys** (`sb_publishable_…` / `sb_secret_…`) instead of legacy anon/service-role JWTs.
+
+## Design system (milestone 1)
+- **T6 — Palette** (`src/lib/brand/palette.ts`, contrast-tested in `palette.test.ts`): burgundy `#460328` and
+  pink `#F7CDD0` (client); cream paper `#F6EEE8`, sand `#EFE3DA`, gold `#B08D57` (hairlines only), gold-ink
+  `#7A5A2B` (small gold text, 5.5:1), ink `#24030F`, ink-muted `#6A4655`. Pink is never used as text on cream (1.3:1).
+- **T7 — Fonts**: Bodoni Moda (display, stand-in for "Nove") + Inter (UI) via `src/app/fonts.ts` — swap the
+  real font there only.
+- **T8 — Logo**: traced to vector from `ref-3.jpeg` with potrace → `src/components/brand/logo.tsx` (currentColor).
+  ❓ Replace with the designer's original SVG when supplied.
+- **T9 — Imagery**: photos in `public/images/**` are cropped from the company-profile PDF pages (≈ 1000px max,
+  destination cards ≈ 200px source, upscaled). 🔁 **Replace with client photography** (originals) before launch.
+- **T10 — Admin theme**: same palette on brighter surfaces (`.theme-admin`), burgundy sidebar on desktop,
+  bottom nav (4 primary + More) on phone/iPad portrait.
