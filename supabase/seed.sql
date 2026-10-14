@@ -1,0 +1,1 @@
+-- Seed data is added in feat/schema-core.
