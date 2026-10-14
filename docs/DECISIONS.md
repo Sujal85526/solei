@@ -199,3 +199,26 @@ Open client questions are built as configurable defaults. Each row: what we chos
   owner, at most once per SKU per 24 h (`notification_log.dedupe_key`).
 - **T56 — Order list default** hides abandoned website checkouts (`pending_payment`); choose "All" or search
   by number / name / phone to find them. "Outstanding" sums balances of open (non-cancelled, confirmed) orders.
+
+## Customers CRM (milestone 10)
+- **T57 — `customer_summary` view** (`security_invoker`) gives one row per customer with `order_count`,
+  `total_spent_fils`, `first_purchase_at`, `last_purchase_at` — one query for the list (search, filters, sort,
+  pagination) and the CSV export. A **purchase** is any order that is not `pending_payment` (abandoned web
+  checkout) or `cancelled`; **total spent** is money actually received: succeeded payments − succeeded refunds
+  over all the customer's orders (partial payments count for what was paid). Because the caller's RLS applies,
+  totals and order history need `orders.view` as well as `customers.view` (every launch role with one has the
+  other); the UI hides the stats instead of showing zeros when it's missing. Totals are revenue, not cost, so
+  they don't need `reports.financial.view`.
+- **T58 — Search**: phone-looking input is normalised like checkout (`050 123 4567`, `+971 50…`, `00971…` →
+  `+971501234567`) and matched on the digits; a partial local number drops its trunk `0` (`0501` → `501`).
+  Other input matches name or email (`ilike`, trigram indexes); PostgREST filter characters are stripped.
+- **T59 — `CustomerPicker`** (`src/components/admin/customers/customer-picker.tsx`, reused by manual orders and
+  POS): `onSelect(customer)`, optional `source` for customers it creates, `canCreate`. ARIA combobox (↑/↓, Enter,
+  Esc), 250 ms debounced server-action search, inline quick-create. It renders **no `<form>`** so it can live
+  inside another form. Quick-create dedupes like `upsert_customer`: an existing phone (or email when no phone)
+  returns that customer instead of a duplicate.
+- **T60 — Consent**: staff can record consent (channels + timestamp) or an opt-out (`marketing_consent = false`,
+  channels cleared, `unsubscribed_at = now()`; the original consent time is kept for history). The CSV export
+  always includes consent, channels, consent time and unsubscribe time so marketing sends can filter on them;
+  cells are written formula-safe (`=`, `@`, `+`/`-` text prefixed with `'`; phone numbers left intact).
+- The Passport panel on the profile is a placeholder ("Passport launches soon") until milestone 15.
