@@ -1,0 +1,56 @@
+import type { Database } from "@/lib/database.types";
+
+export type PaymentMethod = Database["public"]["Enums"]["payment_method"];
+
+export type CheckoutLine = {
+  name: string;
+  description?: string;
+  unitAmountFils: number;
+  quantity: number;
+  imageUrl?: string;
+};
+
+export type CreateCheckoutInput = {
+  /** Our order id — echoed back in webhooks as metadata. */
+  orderId: string;
+  orderNumber: string;
+  lines: CheckoutLine[];
+  /** Must equal the sum of lines (delivery is passed as a line). */
+  amountFils: number;
+  customerEmail?: string | null;
+  successUrl: string;
+  cancelUrl: string;
+};
+
+export type CheckoutSession = { providerRef: string; url: string; expiresAt?: string };
+
+/** Provider-agnostic outcome of a verified webhook. */
+export type PaymentEvent =
+  | {
+      kind: "succeeded";
+      eventId: string;
+      providerRef: string;
+      amountFils: number;
+      method: PaymentMethod;
+      raw: unknown;
+    }
+  | { kind: "failed"; eventId: string; providerRef: string; reason: string; raw: unknown }
+  | { kind: "ignored"; eventId: string; type: string };
+
+export class WebhookSignatureError extends Error {
+  constructor(message = "Invalid webhook signature") {
+    super(message);
+    this.name = "WebhookSignatureError";
+  }
+}
+
+/**
+ * Card data never touches our servers: every provider uses a hosted payment page.
+ * Swappable (Stripe today; Tap / Network International later) — see docs/DECISIONS.md D12.
+ */
+export interface PaymentProvider {
+  readonly name: string;
+  createCheckout(input: CreateCheckoutInput): Promise<CheckoutSession>;
+  /** Verify the signature and normalise the event. Throws WebhookSignatureError. */
+  parseWebhook(rawBody: string, headers: Headers): Promise<PaymentEvent>;
+}

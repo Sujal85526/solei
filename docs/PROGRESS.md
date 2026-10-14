@@ -10,8 +10,8 @@ Phase 1 milestones (one branch + PR each, in order). See `docs/BUILD_PROMPT.md` 
 | 3 | `feat/schema-core` | ✅ merged | [#4](https://github.com/Sujal85526/solei/pull/4) |
 | 4 | `feat/admin-auth-staff` | ✅ merged | [#5](https://github.com/Sujal85526/solei/pull/5) |
 | 5 | `feat/admin-catalog-inventory` | ✅ merged | [#8](https://github.com/Sujal85526/solei/pull/8) |
-| 6 | `feat/storefront-shop-cart` | 🔄 in review | [#7](https://github.com/Sujal85526/solei/pull/7) |
-| 7 | `feat/checkout-payments` | ⬜ | |
+| 6 | `feat/storefront-shop-cart` | ✅ merged | [#7](https://github.com/Sujal85526/solei/pull/7) |
+| 7 | `feat/checkout-payments` | 🔄 in review | |
 | 8 | `feat/orders-admin-notifications` | ⬜ | |
 | 9 | `feat/manual-orders-payment-links` | ⬜ | |
 | 10 | `feat/customers` | ⬜ | |

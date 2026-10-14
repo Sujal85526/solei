@@ -7,3 +7,5 @@ One line per merged PR (newest first).
 - 2026-10-14 — #4 feat: core schema, RLS, permissions, inventory ledger and orders
 - 2026-10-14 — #5 feat: admin auth with TOTP, staff, roles & permissions, activity log
 - 2026-10-14 — #6 feat: premium motion — loader, smooth scroll, parallax, reveals
+- 2026-10-14 — #8 feat: catalog & inventory admin
+- 2026-10-14 — #7 feat: storefront — shop, destinations, product pages and cart
