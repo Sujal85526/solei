@@ -25,7 +25,7 @@ const columns = "lg:grid-cols-3";
 export default function ShopPage({ searchParams }: PageProps<"/shop">) {
   return (
     <>
-      <CollectionHero image="/images/brand/hero-sprays-arch.jpg" targetId={GRID_ID} />
+      <CollectionHero image="/images/editorial/collection-hero.jpg" targetId={GRID_ID} />
       <section id={GRID_ID} aria-label={t.shop.allFragrances} className="on-blush scroll-mt-16">
         <div className="mx-auto max-w-[96rem] px-6 pb-24 sm:px-10 sm:pb-32 lg:px-14">
           <Suspense
