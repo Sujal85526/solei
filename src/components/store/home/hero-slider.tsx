@@ -3,7 +3,6 @@
 import Image from "next/image";
 import Link from "next/link";
 import { useCallback, useEffect, useRef, useState } from "react";
-import { ArrowLeft, ArrowRight, Pause, Play } from "lucide-react";
 import type { HeroSlide } from "@/content/home";
 import { cn } from "@/lib/utils";
 
@@ -111,14 +110,10 @@ export function HeroSlider({ slides }: { slides: HeroSlide[] }) {
                 tabIndex={active ? 0 : -1}
                 aria-label={`${slide.cta.label} — ${slide.title.join(" ")}`}
                 className={cn(
-                  "group border-pearl/60 text-pearl hover:border-pink hover:bg-pink hover:text-burgundy relative mt-8 flex size-24 items-center justify-center rounded-full border text-[0.6rem] tracking-[0.28em] uppercase transition-all delay-500 duration-1000 ease-(--ease-soft) sm:size-28",
+                  "group border-pearl/50 text-pearl hover:border-pink hover:bg-pink hover:text-burgundy relative mt-9 flex size-24 items-center justify-center rounded-full border text-[0.6rem] tracking-[0.28em] uppercase transition-all delay-500 duration-1000 ease-(--ease-soft) sm:size-28",
                   active ? "scale-100 opacity-100" : "scale-90 opacity-0",
                 )}
               >
-                <span
-                  aria-hidden
-                  className="border-pearl/25 absolute inset-[-7px] rounded-full border [border-style:dashed] transition-transform duration-700 group-hover:scale-110 motion-safe:animate-[spin_18s_linear_infinite]"
-                />
                 {slide.cta.label}
               </Link>
             </div>
@@ -128,61 +123,53 @@ export function HeroSlider({ slides }: { slides: HeroSlide[] }) {
 
       <div aria-hidden className="film-grain pointer-events-none absolute inset-0 z-[15]" />
 
-      {/* Controls */}
+      {/* Counters, as in the brand layout: current slide bottom-start; next + progress +
+          position bottom-end. Hover/focus pauses; the pause toggle appears on keyboard focus. */}
       <div
-        className="absolute inset-x-0 bottom-0 z-20 mx-auto flex max-w-[96rem] items-end justify-between gap-6 px-6 pb-8 sm:px-10 lg:px-14"
+        className="text-pearl/75 absolute inset-x-0 bottom-0 z-20 mx-auto flex max-w-[96rem] items-center justify-between gap-6 px-6 pb-7 text-[0.65rem] tracking-[0.3em] sm:px-10 lg:px-14"
         onMouseEnter={() => setHovering(true)}
         onMouseLeave={() => setHovering(false)}
         onFocus={() => setHovering(true)}
         onBlur={() => setHovering(false)}
       >
-        <div className="text-pearl/80 flex items-center gap-4">
-          <span className="numeric text-[0.7rem] tracking-[0.25em]">
-            {String(index + 1).padStart(2, "0")}{" "}
-            <span className="text-pearl/40">/ {String(count).padStart(2, "0")}</span>
-          </span>
-          <span
-            aria-hidden
-            className="bg-pearl/20 relative hidden h-px w-24 overflow-hidden sm:block"
-          >
-            <span
-              key={`${index}-${playing && !hovering}`}
-              className={cn(
-                "bg-pink absolute inset-y-0 start-0",
-                playing && !hovering ? "animate-[solei-progress_7s_linear_forwards]" : "w-0",
-              )}
-            />
-          </span>
-        </div>
-        <div className="flex items-center gap-2">
+        <button
+          type="button"
+          onClick={() => go(index - 1)}
+          aria-label="Previous slide"
+          className="numeric hover:text-pink min-h-11 transition-colors"
+        >
+          {String(index + 1).padStart(2, "0")}
+        </button>
+        <div className="flex items-center gap-4">
           <button
             type="button"
             onClick={() => setPlaying((p) => !p)}
             aria-label={playing ? "Pause slideshow" : "Play slideshow"}
-            className="border-pearl/30 text-pearl hover:border-pink hover:text-pink flex size-11 items-center justify-center rounded-full border transition-colors"
+            className="sr-only focus:not-sr-only focus:px-2"
           >
-            {playing ? (
-              <Pause className="size-3.5" strokeWidth={1.25} />
-            ) : (
-              <Play className="size-3.5" strokeWidth={1.25} />
-            )}
-          </button>
-          <button
-            type="button"
-            onClick={() => go(index - 1)}
-            aria-label="Previous slide"
-            className="text-pearl hover:text-pink flex size-11 items-center justify-center transition-colors"
-          >
-            <ArrowLeft className="size-5 rtl:rotate-180" strokeWidth={1} />
+            {playing ? "Pause" : "Play"}
           </button>
           <button
             type="button"
             onClick={() => go(index + 1)}
             aria-label="Next slide"
-            className="text-pearl hover:text-pink flex size-11 items-center justify-center transition-colors"
+            className="numeric hover:text-pink min-h-11 transition-colors"
           >
-            <ArrowRight className="size-5 rtl:rotate-180" strokeWidth={1} />
+            {String(((index + 1) % count) + 1).padStart(2, "0")}
           </button>
+          <span aria-hidden className="bg-pearl/25 relative h-px w-16 overflow-hidden sm:w-24">
+            <span
+              key={`${index}-${playing && !hovering}`}
+              className={cn(
+                "bg-pearl absolute inset-y-0 start-0",
+                playing && !hovering ? "animate-[solei-progress_7s_linear_forwards]" : "w-0",
+              )}
+            />
+          </span>
+          <span className="numeric">
+            {String(index + 1).padStart(2, "0")}{" "}
+            <span className="text-pearl/45">/ {String(count).padStart(2, "0")}</span>
+          </span>
         </div>
       </div>
     </section>
