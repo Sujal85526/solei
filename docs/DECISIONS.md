@@ -342,3 +342,16 @@ Open client questions are built as configurable defaults. Each row: what we chos
 - **T89 — Expiry** (when a rule sets `expiry_months`): earned rows get `expires_at`; unused stamps past it are
   written off FIFO the next time the card settles (award, adjustment, reversal) — there is no scheduled job yet
   (M17), so a dormant card shows expired stamps until it next changes.
+
+## Dashboard & exports (milestone 16)
+- **T90 — One `dashboard_summary()` call** returns the whole dashboard as jsonb and trims it by permission:
+  money (revenue, by channel, outstanding, product revenue) needs `reports.view`; low stock needs
+  `inventory.view`; events `events.view`; bookings `bookings.view`. Sales staff therefore see order counts,
+  orders to handle, top products by units, stock, events. Revenue matches event reports (T73): orders not
+  cancelled / awaiting website payment, by Asia/Dubai `placed_at` day, refunds net off on the day made.
+  Each period compares with the same span before it (yesterday; same weekdays last week; same days last month).
+- **T91 — Exports** at `/admin/exports/{orders|payments|customers|stock}?from&to&format=xlsx|csv`, reusing the
+  report Excel/CSV writers (brand header, totals row). Orders/payments default to this month and cap at 366
+  days; data comes from permission-checked `export_*` functions returning one jsonb document (no PostgREST row
+  cap). Payment refunds are negative so the Amount total is money kept (succeeded only).
+- **T92 — No-JS download form** on the dashboard: one GET form, each button sets its own `formAction`.
