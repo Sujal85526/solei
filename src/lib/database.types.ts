@@ -12,6 +12,31 @@ export type Database = {
   __InternalSupabase: {
     PostgrestVersion: "14.18"
   }
+  graphql_public: {
+    Tables: {
+      [_ in never]: never
+    }
+    Views: {
+      [_ in never]: never
+    }
+    Functions: {
+      graphql: {
+        Args: {
+          extensions?: Json
+          operationName?: string
+          query?: string
+          variables?: Json
+        }
+        Returns: Json
+      }
+    }
+    Enums: {
+      [_ in never]: never
+    }
+    CompositeTypes: {
+      [_ in never]: never
+    }
+  }
   public: {
     Tables: {
       audit_log: {
@@ -845,6 +870,45 @@ export type Database = {
           price_fils?: number
           sort?: number
           updated_at?: string
+        }
+        Relationships: []
+      }
+      help_topics: {
+        Row: {
+          body: string
+          created_at: string
+          id: string
+          published: boolean
+          slug: string
+          sort: number
+          title: string
+          updated_at: string
+          updated_by: string | null
+          updated_label: string | null
+        }
+        Insert: {
+          body?: string
+          created_at?: string
+          id?: string
+          published?: boolean
+          slug: string
+          sort?: number
+          title: string
+          updated_at?: string
+          updated_by?: string | null
+          updated_label?: string | null
+        }
+        Update: {
+          body?: string
+          created_at?: string
+          id?: string
+          published?: boolean
+          slug?: string
+          sort?: number
+          title?: string
+          updated_at?: string
+          updated_by?: string | null
+          updated_label?: string | null
         }
         Relationships: []
       }
@@ -3311,6 +3375,9 @@ export type CompositeTypes<
     : never
 
 export const Constants = {
+  graphql_public: {
+    Enums: {},
+  },
   public: {
     Enums: {
       booking_message_channel: ["email", "whatsapp_link", "internal"],
