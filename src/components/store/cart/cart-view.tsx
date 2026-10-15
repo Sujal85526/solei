@@ -2,7 +2,6 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { useEffect, useMemo, useRef, useState, useTransition } from "react";
 import { ArrowLeft, Info, Lock, X } from "lucide-react";
 import { ArchPalm, Eyebrow, OrnamentDivider } from "@/components/brand";
 import { buttonVariants } from "@/components/ui/button";
@@ -10,10 +9,10 @@ import { NativeSelect } from "@/components/ui/native-select";
 import { t } from "@/content/en";
 import { formatAED } from "@/lib/money";
 import { cn } from "@/lib/utils";
-import { getCartDetails } from "@/modules/cart/actions";
-import type { CartDetailLine, CartDetails } from "@/modules/cart/details";
+import type { CartDetailLine } from "@/modules/cart/details";
 import { emirateSchema, MAX_LINE_QTY } from "@/modules/cart/schema";
-import { cart, useCart } from "@/modules/cart/store";
+import { cart } from "@/modules/cart/store";
+import { useCartDetails } from "@/modules/cart/use-cart-details";
 import { freeDeliveryProgress } from "@/modules/orders/pricing";
 import type { DeliveryZone } from "@/modules/storefront/types";
 import { QtyStepper } from "./qty-stepper";
@@ -29,53 +28,14 @@ export function CartView({
   zones: DeliveryZone[];
   freeDeliveryThresholdFils: number | null;
 }) {
-  const state = useCart();
-  const [details, setDetails] = useState<CartDetails | null>(null);
-  const [error, setError] = useState(false);
-  const [notices, setNotices] = useState<string[]>([]);
-  const [pending, startTransition] = useTransition();
-  const [attempt, setAttempt] = useState(0);
-  const request = useRef(0);
-
-  const key = state ? JSON.stringify([state.lines, state.emirate]) : null;
-
-  useEffect(() => {
-    if (!key || !state || !state.lines.length) return;
-    const id = ++request.current;
-    const input = { lines: state.lines, emirate: state.emirate };
-    startTransition(async () => {
-      try {
-        const res = await getCartDetails(input);
-        if (id !== request.current) return;
-        startTransition(() => {
-          setError(false);
-          setDetails(res);
-          const fresh = noticesFor(res.lines);
-          if (fresh.length) setNotices((prev) => [...new Set([...prev, ...fresh])]);
-        });
-        // Clamp / drop lines the server can't fulfil; this re-runs the effect once.
-        const allowed = new Map(
-          res.lines.filter((l) => l.status !== "ok").map((l) => [l.variantId, l.qty]),
-        );
-        if (allowed.size) cart.reconcile(allowed);
-      } catch {
-        if (id === request.current) startTransition(() => setError(true));
-      }
-    });
-    // `state` is derived from `key`; re-run only when the cart content changes.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [key, attempt]);
-
-  const byVariant = useMemo(
-    () => new Map(details?.lines.map((l) => [l.variantId, l]) ?? []),
-    [details],
-  );
+  const { state, details, byVariant, error, notices, stale, retry, dismiss } = useCartDetails({
+    describe: noticesFor,
+  });
 
   if (!state) return <CartSkeleton />;
   if (!state.lines.length) return <EmptyCart notices={notices} />;
 
   const pricing = details?.pricing;
-  const stale = pending || !details;
   const subtotal = pricing?.subtotalFils ?? 0;
   const threshold = details?.settings.freeDeliveryThresholdFils ?? freeDeliveryThresholdFils;
   const itemCount = state.lines.reduce((s, l) => s + l.qty, 0);
@@ -94,7 +54,7 @@ export function CartView({
                 <span className="flex-1">{n}</span>
                 <button
                   type="button"
-                  onClick={() => setNotices((prev) => prev.filter((x) => x !== n))}
+                  onClick={() => dismiss(n)}
                   className="-m-2 inline-flex size-8 items-center justify-center"
                   aria-label={t.cart.dismiss}
                 >
@@ -107,11 +67,7 @@ export function CartView({
         {error ? (
           <div className="bg-pink/10 text-pink mb-8 flex items-center justify-between gap-4 px-4 py-3 text-sm">
             <span>{t.cart.error}</span>
-            <button
-              type="button"
-              className="underline underline-offset-4"
-              onClick={() => setAttempt((a) => a + 1)}
-            >
+            <button type="button" className="underline underline-offset-4" onClick={retry}>
               {t.cart.retry}
             </button>
           </div>
@@ -334,7 +290,7 @@ function CartLineRow({ qty, detail }: { qty: number; detail: CartDetailLine | un
   );
 }
 
-function noticesFor(lines: CartDetailLine[]): string[] {
+export function noticesFor(lines: CartDetailLine[]): string[] {
   return lines.flatMap((l) => {
     if (l.status === "clamped" && l.product) return [t.cart.noticeClamped(l.product.name, l.qty)];
     if (l.status === "sold_out" && l.product) return [t.cart.noticeSoldOut(l.product.name)];

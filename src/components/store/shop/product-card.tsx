@@ -4,19 +4,8 @@ import { QuickAdd } from "@/components/store/cart/quick-add";
 import { t } from "@/content/en";
 import { formatAED } from "@/lib/money";
 import { cn } from "@/lib/utils";
+import { productTypeLabel } from "@/modules/storefront/labels";
 import type { StoreProduct } from "@/modules/storefront/types";
-
-/** "Eau de parfum" / "All over spray" — the line under the destination name. */
-export function productTypeLabel(product: StoreProduct): string {
-  switch (product.category.slug) {
-    case "perfume":
-      return "Eau de parfum";
-    case "all_over_spray":
-      return "All over spray";
-    default:
-      return product.category.name;
-  }
-}
 
 /**
  * Collection card: square photograph, the destination in serif capitals, the product type, a
@@ -70,7 +59,7 @@ export function ProductCard({
           <Link href={href}>{title}</Link>
         </h3>
         <p className="eyebrow text-primary/60 mt-1 text-[0.55rem] sm:text-[0.6rem]">
-          {productTypeLabel(product)}
+          {productTypeLabel(product.category)}
         </p>
         <div className="border-primary/20 mt-3 flex min-h-[3.25rem] items-center justify-between gap-3 border-t pt-3">
           <span className="numeric text-primary text-[0.7rem] tracking-[0.18em] sm:text-xs">

@@ -5,7 +5,6 @@ import { Suspense } from "react";
 import { ArrowRight } from "lucide-react";
 import { SplitHeading } from "@/components/motion/split-heading";
 import { ProductAccordions } from "@/components/store/shop/product-accordions";
-import { productTypeLabel } from "@/components/store/shop/product-card";
 import { ProductGallery } from "@/components/store/shop/product-gallery";
 import { ProductGrid, ProductGridSkeleton } from "@/components/store/shop/product-grid";
 import { PurchasePanel } from "@/components/store/shop/purchase-panel";
@@ -14,6 +13,7 @@ import { t } from "@/content/en";
 import { scentCloseUp } from "@/content/home";
 import { publicEnv } from "@/lib/env";
 import { formatAED } from "@/lib/money";
+import { productTypeLabel } from "@/modules/storefront/labels";
 import { scentAccords } from "@/modules/storefront/scent";
 import {
   availabilityFor,
@@ -58,18 +58,11 @@ export default async function ProductPage({ params }: PageProps<"/products/[slug
   if (!product) notFound();
   const category = categories.find((c) => c.slug === product.category.slug);
   const vatNote = settings.pricesIncludeVat ? t.product.vatIncluded : t.product.vatExcluded;
-  const purchaseProps = {
-    product: {
-      name: product.name,
-      destinationName: product.destination?.name ?? null,
-      image: product.images[0],
-    },
-    variants: product.variants,
-  };
+  const purchaseProps = { variants: product.variants };
   const prices = product.variants.map((v) => v.priceFils);
   const accords = scentAccords(product);
   const title = product.destination
-    ? [product.destination.name, productTypeLabel(product)]
+    ? [product.destination.name, productTypeLabel(product.category)]
     : [product.name];
 
   const notes = [

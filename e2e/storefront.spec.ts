@@ -42,17 +42,15 @@ test.describe("storefront — browse and cart", () => {
     const panel = page.getByTestId("purchase-panel");
     const add = panel.getByTestId("add-to-cart");
     await expect(add).toHaveText(/Add to cart — AED 280/);
-    // One per tap (the cart page changes quantities); add twice.
+    // Adding opens the cart drawer; raise the quantity there, then go to the cart page.
     await add.click();
-    const sheet = page.getByTestId("added-sheet");
-    await expect(sheet.getByText("Added to your cart")).toBeVisible();
-    await page.keyboard.press("Escape");
-    await add.click();
-
-    await expect(sheet.getByText("Added to your cart")).toBeVisible();
-    await expect(sheet.getByText("2 items in your cart")).toBeVisible();
+    const drawer = page.getByRole("dialog", { name: /Your Cart/ });
+    await expect(drawer.getByTestId("drawer-line")).toHaveCount(1);
+    await drawer.getByRole("button", { name: "Increase quantity" }).click();
     await expect(page.getByTestId("cart-count")).toHaveText("2");
-    await sheet.getByRole("link", { name: "View cart" }).click();
+    await expect(drawer.getByTestId("drawer-subtotal")).toHaveText("AED 560");
+    await page.keyboard.press("Escape");
+    await page.goto("/cart");
 
     // Cart: 2 × AED 280 = AED 560, above the AED 500 free-delivery threshold.
     await expect(page).toHaveURL(/\/cart$/);

@@ -1,3 +1,4 @@
+import { productTypeLabel } from "@/modules/storefront/labels";
 import type { Fils } from "@/lib/money";
 import { priceCart, type CartPricing } from "@/modules/orders/pricing";
 import type {
@@ -34,6 +35,8 @@ export type CartDetailLine = {
     slug: string;
     name: string;
     categoryName: string;
+    /** "Eau de parfum" / "All over spray". */
+    typeLabel: string;
     destinationName: string | null;
     image: StoreImage;
   } | null;
@@ -92,6 +95,7 @@ export function resolveCart(
         slug: product.slug,
         name: product.name,
         categoryName: product.category.name,
+        typeLabel: productTypeLabel(product.category),
         destinationName: product.destination?.name ?? null,
         image: product.images[0],
       },

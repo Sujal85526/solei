@@ -2,34 +2,31 @@
 
 import { useRouter } from "next/navigation";
 import { useState } from "react";
-import { AddedSheet, type AddedItem } from "@/components/store/cart/added-sheet";
 import { Button } from "@/components/ui/button";
 import { t } from "@/content/en";
 import { formatAED } from "@/lib/money";
 import { cn } from "@/lib/utils";
 import { qtyOf } from "@/modules/cart/logic";
+import { cartDrawer } from "@/modules/cart/drawer";
 import { cart, useCart } from "@/modules/cart/store";
-import type { Availability, StoreImage, StoreVariant } from "@/modules/storefront/types";
+import type { Availability, StoreVariant } from "@/modules/storefront/types";
 
 /**
- * Size choice (when there is more than one), "Add to cart — AED x" and "Buy now" (adds, then goes
+ * Size choice (when there is more than one), "Add to cart — AED x" (adds and opens the cart
+ * drawer) and "Buy now" (adds, then goes
  * straight to checkout). `availability` is null while it streams in (buttons stay disabled); a
  * size can't be added beyond what's in stock minus what's already in the cart.
  */
 export function PurchasePanel({
-  product,
   variants,
   availability,
 }: {
-  product: { name: string; destinationName: string | null; image: StoreImage };
   variants: StoreVariant[];
   availability: Availability | null;
 }) {
   const router = useRouter();
   const state = useCart();
   const [variantId, setVariantId] = useState(variants[0].id);
-  const [added, setAdded] = useState<AddedItem | null>(null);
-  const [sheetOpen, setSheetOpen] = useState(false);
 
   const variant = variants.find((v) => v.id === variantId) ?? variants[0];
   const known = availability !== null;
@@ -46,16 +43,7 @@ export function PurchasePanel({
   }
 
   function addToCart() {
-    if (!add()) return;
-    setAdded({
-      name: product.name,
-      variantLabel: variant.label,
-      destinationName: product.destinationName,
-      image: product.image,
-      qty: 1,
-      unitPriceFils: variant.priceFils,
-    });
-    setSheetOpen(true);
+    if (add()) cartDrawer.open();
   }
 
   function buyNow() {
@@ -125,7 +113,6 @@ export function PurchasePanel({
       >
         {t.product.buyNow}
       </Button>
-      <AddedSheet item={added} open={sheetOpen} onOpenChange={setSheetOpen} />
     </div>
   );
 }
