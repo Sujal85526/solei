@@ -79,7 +79,14 @@ export async function SiteFooter() {
           <p>
             © <CopyrightYear /> Solei. {t.footer.rights}
           </p>
-          <p className="eyebrow text-pink/80 text-[0.65rem]">{t.brand.promise}</p>
+          <a
+            href="https://cityreachdigital.com"
+            target="_blank"
+            rel="noreferrer"
+            className="eyebrow text-pink/80 hover:text-pink text-[0.65rem] transition-colors"
+          >
+            {t.footer.credit}
+          </a>
         </div>
       </div>
     </footer>
