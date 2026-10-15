@@ -7,6 +7,7 @@ import Link from "next/link";
 import { fieldAria, Field } from "@/components/admin/field";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { PasswordInput } from "@/components/ui/password-input";
 import { loginAction, type FormState } from "@/modules/auth/actions";
 
 export function LoginForm({ next, notice }: { next?: string; notice?: string }) {
@@ -33,9 +34,8 @@ export function LoginForm({ next, notice }: { next?: string; notice?: string }) 
         />
       </Field>
       <Field label="Password" htmlFor="password" error={fe.password}>
-        <Input
+        <PasswordInput
           {...fieldAria("password", fe.password)}
-          type="password"
           autoComplete="current-password"
           className="h-12"
           required

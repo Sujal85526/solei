@@ -29,6 +29,7 @@ export const accountCopy = {
     email: "Email address",
     password: "Password",
     passwordHint: "At least 10 characters, with a letter and a number",
+    confirm: "Confirm password",
     submit: "Verify email",
     switch: "Already have an account? Sign in",
   },

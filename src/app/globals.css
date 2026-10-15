@@ -150,6 +150,7 @@
 /* Blush panel inside the dark storefront (e.g. "Our story"): burgundy on pink. */
 .on-blush {
   --heading: var(--brand-burgundy);
+  --destructive: #a3172d;
   --foreground: var(--brand-ink);
   --muted-foreground: #5c2a3c;
   --border: color-mix(in oklab, var(--brand-burgundy) 22%, transparent);

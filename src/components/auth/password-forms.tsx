@@ -7,6 +7,7 @@ import Link from "next/link";
 import { fieldAria, Field } from "@/components/admin/field";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { PasswordInput } from "@/components/ui/password-input";
 import { forgotPasswordAction, setPasswordAction, type FormState } from "@/modules/auth/actions";
 
 export function ForgotPasswordForm() {
@@ -61,17 +62,15 @@ export function SetPasswordForm() {
         error={fe.password}
         hint="At least 10 characters, with letters and numbers."
       >
-        <Input
+        <PasswordInput
           {...fieldAria("password", fe.password)}
-          type="password"
           autoComplete="new-password"
           className="h-12"
         />
       </Field>
       <Field label="Confirm password" htmlFor="confirm" error={fe.confirm}>
-        <Input
+        <PasswordInput
           {...fieldAria("confirm", fe.confirm)}
-          type="password"
           autoComplete="new-password"
           className="h-12"
         />

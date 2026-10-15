@@ -179,6 +179,14 @@ export function AccountForms({
               error={errors.password}
               className="col-span-2"
             />
+            <TextField
+              label={c.signUp.confirm}
+              name="confirm"
+              type="password"
+              autoComplete="new-password"
+              error={errors.confirm}
+              className="col-span-2"
+            />
             <div className="col-span-2 flex flex-col gap-4">
               <Alert error={formError} notice={notice} />
               <Button type="submit" size="cta" disabled={pending} className="mt-1 h-11 w-full">
@@ -269,6 +277,13 @@ export function AccountForms({
               autoComplete="new-password"
               hint={c.signUp.passwordHint}
               error={errors.password}
+            />
+            <TextField
+              label={c.signUp.confirm}
+              name="confirm"
+              type="password"
+              autoComplete="new-password"
+              error={errors.confirm}
             />
             <Alert error={formError} notice={notice} />
             <Button type="submit" size="cta" disabled={pending} className="mt-1 h-11 w-full">

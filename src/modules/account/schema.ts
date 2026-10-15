@@ -27,13 +27,19 @@ export const signInSchema = z.object({
   password: z.string().min(1, "Enter your password"),
 });
 
-export const signUpSchema = z.object({
-  firstName: z.string().trim().min(1, "Enter your first name").max(40),
-  lastName: z.string().trim().min(1, "Enter your last name").max(40),
-  phone: phoneSchema,
-  email,
-  password,
-});
+const matches = (v: { password: string; confirm: string }) => v.password === v.confirm;
+const mismatch = { path: ["confirm"], message: "Passwords don't match" };
+
+export const signUpSchema = z
+  .object({
+    firstName: z.string().trim().min(1, "Enter your first name").max(40),
+    lastName: z.string().trim().min(1, "Enter your last name").max(40),
+    phone: phoneSchema,
+    email,
+    password,
+    confirm: z.string(),
+  })
+  .refine(matches, mismatch);
 
 export const emailOnlySchema = z.object({ email });
 
@@ -45,7 +51,9 @@ export const codeSchema = z.object({
     .regex(/^\d{6}$/, "Enter the 6-digit code from the email"),
 });
 
-export const resetSchema = codeSchema.extend({ password });
+export const resetSchema = codeSchema
+  .extend({ password, confirm: z.string() })
+  .refine(matches, mismatch);
 
 /** Saved delivery address (account profile; prefilled at checkout). */
 export const addressSchema = z.object({

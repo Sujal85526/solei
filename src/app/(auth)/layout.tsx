@@ -10,13 +10,19 @@ export const metadata: Metadata = {
 export default function AuthLayout({ children }: { children: React.ReactNode }) {
   return (
     <div className="grid min-h-dvh lg:grid-cols-2">
-      <div className="bg-burgundy relative hidden overflow-hidden lg:block">
+      <div className="bg-noir relative hidden overflow-hidden lg:block">
         <Image
-          src="/images/events/booth-florals.jpg"
+          src="/images/products/sprays-stone.jpg"
           alt=""
           fill
+          priority
           sizes="50vw"
-          className="object-cover opacity-50 mix-blend-luminosity"
+          className="object-cover"
+        />
+        {/* Soft fades so the logo (top) and tagline (bottom) stay readable on the photo. */}
+        <div
+          aria-hidden
+          className="from-noir/70 to-noir/75 absolute inset-0 bg-gradient-to-b via-transparent via-45%"
         />
         <div className="text-cream absolute inset-0 flex flex-col justify-between p-12">
           <Logo className="text-pink h-10 self-start" />
