@@ -22,3 +22,4 @@ One line per merged PR (newest first).
 - 2026-10-15 — #31 product page + cart drawer · #32 glass header everywhere, one-line product title, phone thumbnails, lining numerals
 - 2026-10-15 — #33 cart drawer subtotal only · #34 minimal product page (phone dots, no scent section, no view all), cards without type line
 - 2026-10-15 — #35 Add to cart button without the price
+- 2026-10-15 — (direct to main) Plan your event coming soon · customer accounts (sign up with emailed code, header account menu, My account / My orders) · light checkout behind sign-in (address + mobile only, country codes, solid emirate dropdown) · cart page removed (drawer only)
