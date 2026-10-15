@@ -2,7 +2,6 @@ import type { Metadata } from "next";
 import { CinematicImage } from "@/components/motion/cinematic-image";
 import { Reveal } from "@/components/motion/reveal";
 import { SplitHeading } from "@/components/motion/split-heading";
-import { CircleArrowLink } from "@/components/store/home/circle-arrow-link";
 import { MediaSplit } from "@/components/store/home/media-split";
 import { SectionCopy } from "@/components/store/home/section-copy";
 import { storyCopy as c } from "@/content/story";
@@ -10,8 +9,8 @@ import { storyCopy as c } from "@/content/story";
 export const metadata: Metadata = { title: c.meta.title, description: c.meta.description };
 
 /**
- * Our story: a quiet editorial page — hero, the brand line, two image/copy bands and a closing line.
- * Uses the homepage's motion (curtain photos with shimmer loading, rising headings).
+ * Our story — the client's own words: tagline hero, the brand line, About Solei, who we are /
+ * mission / vision, and the founder statement. Homepage motion (curtain photos, rising headings).
  */
 export default function StoryPage() {
   return (
@@ -33,9 +32,6 @@ export default function StoryPage() {
             />
             <Reveal delay={300}>
               <span aria-hidden className="bg-primary/40 mt-8 block h-px w-12" />
-              <p className="font-display text-pearl/85 mt-8 text-xl leading-relaxed italic">
-                {c.hero.lede}
-              </p>
             </Reveal>
           </div>
         </div>
@@ -49,16 +45,16 @@ export default function StoryPage() {
         </div>
       </section>
 
-      <section aria-label="Our belief" className="bg-noir px-6 py-24 sm:py-36">
+      <section aria-label={c.hero.lede} className="bg-noir px-6 py-24 sm:py-36">
         <Reveal className="mx-auto max-w-4xl text-center">
-          <blockquote className="font-display text-shimmer text-pink text-3xl leading-snug italic sm:text-5xl sm:leading-tight">
-            “{c.quote}”
-          </blockquote>
+          <p className="font-display text-shimmer text-pink text-4xl leading-snug italic sm:text-6xl sm:leading-tight">
+            {c.hero.lede}
+          </p>
         </Reveal>
       </section>
 
       <MediaSplit
-        labelledBy="born-title"
+        labelledBy="about-title"
         tone="blush"
         inset
         media={
@@ -69,13 +65,32 @@ export default function StoryPage() {
           />
         }
       >
-        <SectionCopy id="born-title" eyebrow={c.born.eyebrow} title={[...c.born.title]}>
-          {c.born.body}
+        <SectionCopy id="about-title" eyebrow={c.about.eyebrow} title={[...c.about.title]}>
+          {c.about.body.map((p) => (
+            <p key={p.slice(0, 20)} className="mt-4 first:mt-0">
+              {p}
+            </p>
+          ))}
         </SectionCopy>
       </MediaSplit>
 
+      <section
+        aria-label={c.pillars.map((p) => p.title).join(", ")}
+        className="bg-noir mx-auto max-w-[96rem] px-6 py-20 sm:px-10 sm:py-28 lg:px-14"
+      >
+        <ul className="grid gap-12 sm:grid-cols-3 sm:gap-10">
+          {c.pillars.map((p, i) => (
+            <Reveal as="li" key={p.title} delay={i * 120} className="flex flex-col gap-5">
+              <span aria-hidden className="bg-primary/40 block h-px w-12" />
+              <h2 className="text-3xl italic">{p.title}</h2>
+              <p className="text-pearl/75 max-w-sm text-sm leading-relaxed">{p.body}</p>
+            </Reveal>
+          ))}
+        </ul>
+      </section>
+
       <MediaSplit
-        labelledBy="house-title"
+        labelledBy="founder-title"
         mediaSide="end"
         media={
           <CinematicImage
@@ -85,22 +100,14 @@ export default function StoryPage() {
           />
         }
       >
-        <SectionCopy
-          id="house-title"
-          eyebrow={c.house.eyebrow}
-          title={[...c.house.title]}
-          action={<CircleArrowLink href="/shop">{c.house.cta}</CircleArrowLink>}
-        >
-          {c.house.body}
+        <SectionCopy id="founder-title" eyebrow={c.founder.eyebrow} title={[...c.founder.title]}>
+          {c.founder.body.map((p) => (
+            <p key={p.slice(0, 20)} className="mt-4 first:mt-0">
+              {p}
+            </p>
+          ))}
         </SectionCopy>
       </MediaSplit>
-
-      <section aria-label={c.close} className="bg-noir border-pink/10 border-t px-6 py-24 sm:py-32">
-        <Reveal className="mx-auto flex max-w-xl flex-col items-center gap-10 text-center">
-          <p className="font-display text-pink text-3xl italic sm:text-4xl">{c.close}</p>
-          <CircleArrowLink href="/destinations">{c.closeCta}</CircleArrowLink>
-        </Reveal>
-      </section>
     </>
   );
 }
