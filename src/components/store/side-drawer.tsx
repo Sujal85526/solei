@@ -18,29 +18,34 @@ export function SideDrawer({
   title,
   header,
   closeLabel,
+  className,
   children,
 }: {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   side: "start" | "end";
-  /** The button that opens the drawer (rendered as the dialog trigger). */
-  trigger: { label: string; icon: ReactNode; className?: string };
+  /** The button that opens the drawer; omit when it is opened from elsewhere (controlled). */
+  trigger?: { label: string; icon: ReactNode; className?: string };
   /** Accessible title (also shown when no `header` is given). */
   title: string;
   /** Optional visual header in place of the title (e.g. the logo). */
   header?: ReactNode;
   closeLabel: string;
+  /** Extra classes for the panel (width, padding). */
+  className?: string;
   children: ReactNode;
 }) {
   return (
     <Dialog.Root open={open} onOpenChange={onOpenChange}>
-      <Dialog.Trigger
-        aria-label={trigger.label}
-        title={trigger.label}
-        className={trigger.className}
-      >
-        {trigger.icon}
-      </Dialog.Trigger>
+      {trigger ? (
+        <Dialog.Trigger
+          aria-label={trigger.label}
+          title={trigger.label}
+          className={trigger.className}
+        >
+          {trigger.icon}
+        </Dialog.Trigger>
+      ) : null}
       <Dialog.Portal>
         <Dialog.Backdrop className="side-drawer-backdrop bg-noir/60 fixed inset-0 z-50 backdrop-blur-[2px]" />
         <Dialog.Popup
@@ -48,6 +53,7 @@ export function SideDrawer({
           className={cn(
             "side-drawer on-blush bg-pink text-burgundy fixed inset-y-0 z-50 flex w-[82vw] max-w-xs flex-col px-7 pt-6 pb-8 shadow-2xl shadow-black/40 outline-none",
             side === "start" ? "start-0" : "end-0",
+            className,
           )}
         >
           <div className="flex items-center justify-between">

@@ -1,10 +1,10 @@
 import Link from "next/link";
 import { UserRound } from "lucide-react";
-import { BagIcon, Logo } from "@/components/brand";
+import { Logo } from "@/components/brand";
 import { t } from "@/content/en";
 import { cn } from "@/lib/utils";
 import { storeNav } from "@/content/site";
-import { CartCount } from "./cart/cart-count";
+import { CartButton } from "./cart/cart-button";
 import { HeaderShell } from "./header-shell";
 import { SiteMenu } from "./site-menu";
 import { SiteMenuDrawer } from "./site-menu-drawer";
@@ -46,13 +46,7 @@ export function SiteHeader() {
             <UserRound className="size-[1.15rem]" strokeWidth={1.25} aria-hidden />
             <span className="sr-only">{t.nav.account}</span>
           </Link>
-          <Link href="/cart" className={iconLink} title={t.nav.cart}>
-            <span className="relative">
-              <BagIcon className="size-[1.3rem]" />
-              <CartCount />
-            </span>
-            <span className="sr-only">{t.nav.cart}</span>
-          </Link>
+          <CartButton className={iconLink} />
           <SiteMenu className={cn(iconLink, "hidden lg:inline-flex")} />
         </div>
       </div>
