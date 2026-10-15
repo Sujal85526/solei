@@ -12,7 +12,7 @@ import { cart, useCart } from "@/modules/cart/store";
 import type { Availability, StoreVariant } from "@/modules/storefront/types";
 
 /**
- * Size choice (when there is more than one), "Add to cart — AED x" (adds and opens the cart
+ * Size choice (when there is more than one), "Add to cart" (adds and opens the cart
  * drawer) and "Buy now" (adds, then goes
  * straight to checkout). `availability` is null while it streams in (buttons stay disabled); a
  * size can't be added beyond what's in stock minus what's already in the cart.
@@ -50,14 +50,13 @@ export function PurchasePanel({
     if (add() || allInCart) router.push("/checkout");
   }
 
-  const price = formatAED(variant.priceFils);
   const label = !known
     ? t.product.checking
     : soldOut
       ? t.product.soldOut
       : allInCart
         ? t.product.allInCart
-        : `${t.product.addToCart} — ${price}`;
+        : t.product.addToCart;
 
   return (
     <div className="flex flex-col gap-3" data-testid="purchase-panel">

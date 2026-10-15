@@ -41,7 +41,7 @@ test.describe("storefront — browse and cart", () => {
 
     const panel = page.getByTestId("purchase-panel");
     const add = panel.getByTestId("add-to-cart");
-    await expect(add).toHaveText(/Add to cart — AED 280/);
+    await expect(add).toHaveText(/Add to cart/);
     // Adding opens the cart drawer; raise the quantity there, then go to the cart page.
     await add.click();
     const drawer = page.getByRole("dialog", { name: /Your Cart/ });
