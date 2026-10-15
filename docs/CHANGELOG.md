@@ -30,3 +30,4 @@ One line per merged PR (newest first).
 - 2026-10-15 — (direct to main) Destinations pages removed (redirect to the collection); menu, footer and homepage links updated
 - 2026-10-16 — (direct to main) password eye toggles, confirm password on sign-up and reset, new admin login photo, readable errors on pink; Vercel bot comments silenced
 - 2026-10-16 — (direct to main) admin sign-in photo slideshow with crossfade and slow zoom
+- 2026-10-16 — (direct to main) admin: collapsible sidebar, burgundy + baby-pink theme; perf: pages 7–9× lighter (no inlined CSS, shared logo sprite), DB-side admin stats, parallel/bulk queries, debounced cart
