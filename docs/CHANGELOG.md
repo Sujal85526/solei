@@ -25,3 +25,4 @@ One line per merged PR (newest first).
 - 2026-10-15 — (direct to main) Plan your event coming soon · customer accounts (sign up with emailed code, header account menu, My account / My orders) · light checkout behind sign-in (address + mobile only, country codes, solid emirate dropdown) · cart page removed (drawer only)
 - 2026-10-15 — (direct to main) Our story page · redesigned Solei Passport (account sign-in) · Contact page + Admin → Settings → Contact details
 - 2026-10-15 — (direct to main) Our story in the client's wording · Contact us (pink) · menu ✕ icon · Help centre (policies from the PDF, editable in Admin → Settings → Help & policies) · pink account pages
+- 2026-10-15 — (direct to main) client answers: AED 30 flat UAE delivery, publish-ready policies (no legal details), Ziina payment provider ready (inactive until API key)
