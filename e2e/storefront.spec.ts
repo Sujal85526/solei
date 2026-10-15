@@ -69,21 +69,18 @@ test.describe("storefront — browse and cart", () => {
     await expect(page.getByTestId("cart-count")).toHaveText("0");
   });
 
-  test("category and destination pages, and 404s for unknown slugs", async ({ page }) => {
+  test("category pages, removed destination pages redirect, and 404s for unknown slugs", async ({
+    page,
+  }) => {
     await page.goto("/shop/all_over_spray");
     await expect(page.getByRole("heading", { level: 1, name: "All-over sprays" })).toBeVisible();
     await expect(page.getByRole("link", { name: /Soho All-over spray/ })).toBeVisible();
     await expect(page.getByRole("link", { name: /Cannes Perfume/ })).toHaveCount(0);
 
-    await page.goto("/destinations");
-    await expect(page.locator('a[href^="/destinations/"]')).toHaveCount(8);
-    await page.locator('a[href="/destinations/capri"]').click();
-    await expect(page.getByRole("heading", { level: 1, name: "Capri" })).toBeVisible();
-    await expect(page.getByRole("link", { name: "Capri Perfume" })).toBeVisible();
-    await expect(page).toHaveURL(/\/destinations\/capri$/);
-    await page.waitForLoadState("networkidle");
+    await page.goto("/destinations/capri");
+    await expect(page).toHaveURL(/\/shop$/);
 
-    for (const path of ["/products/nope", "/destinations/nope", "/shop/nope"]) {
+    for (const path of ["/products/nope", "/shop/nope"]) {
       const res = await page.goto(path);
       expect(res?.status(), path).toBe(404);
     }

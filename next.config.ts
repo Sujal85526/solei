@@ -17,6 +17,9 @@ const nextConfig: NextConfig = {
       { source: "/policies/privacy", destination: "/help?tab=privacy", permanent: true },
       { source: "/policies/terms", destination: "/help?tab=terms", permanent: true },
       { source: "/policies/:path*", destination: "/help", permanent: true },
+      // The destinations pages were removed (client): old links land on the collection.
+      { source: "/destinations", destination: "/shop", permanent: true },
+      { source: "/destinations/:path*", destination: "/shop", permanent: true },
     ];
   },
   experimental: {

@@ -28,7 +28,7 @@ export function DestinationsBand({ image }: { image: string }) {
         id="destinations-title"
         eyebrow="The destinations"
         title={["Different places.", "Same feeling."]}
-        action={<CircleArrowLink href="/destinations">Explore</CircleArrowLink>}
+        action={<CircleArrowLink href="/shop">Explore</CircleArrowLink>}
       />
     </MediaSplit>
   );
