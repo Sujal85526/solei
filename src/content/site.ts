@@ -16,7 +16,7 @@ export const siteDefaults = {
  */
 export const storeNav: readonly {
   href: string;
-  key: "home" | "collections" | "events" | "story" | "destinations" | "passport";
+  key: "home" | "collections" | "events" | "story" | "destinations" | "passport" | "contact";
   soon?: boolean;
 }[] = [
   { href: "/", key: "home" },
@@ -25,4 +25,5 @@ export const storeNav: readonly {
   { href: "/story", key: "story" },
   { href: "/destinations", key: "destinations" },
   { href: "/passport", key: "passport" },
+  { href: "/contact", key: "contact" },
 ];

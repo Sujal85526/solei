@@ -1,23 +1,18 @@
 import Link from "next/link";
 import { cacheLife } from "next/cache";
-import { MapPin, Mail } from "lucide-react";
+import { MapPin, Mail, MessageCircle } from "lucide-react";
 import { InstagramIcon } from "@/components/brand/icons";
 import { Logo, PostmarkWaves } from "@/components/brand";
-import { siteDefaults, storeNav } from "@/content/site";
+import { storeNav } from "@/content/site";
+import { formatPhone, waNumber } from "@/lib/phone";
+import { getContactDetails } from "@/modules/settings/queries";
 import { t } from "@/content/en";
 import { SoonTag } from "./soon-tag";
 
-export type FooterContact = {
-  email?: string;
-  whatsappUrl?: string;
-  instagramHandle?: string;
-  instagramUrl?: string;
-};
-
-export function SiteFooter({ contact = {} }: { contact?: FooterContact }) {
-  const email = contact.email ?? siteDefaults.email;
-  const igHandle = contact.instagramHandle ?? siteDefaults.instagram.handle;
-  const igUrl = contact.instagramUrl ?? siteDefaults.instagram.url;
+/** Store footer; contact channels come from Admin → Settings → Contact details (only those set). */
+export async function SiteFooter() {
+  const contact = await getContactDetails();
+  const link = "text-cream/85 hover:text-pink flex items-center gap-3 text-sm";
   return (
     <footer className="border-pink/10 bg-noir text-pearl border-t">
       <div className="mx-auto grid max-w-[90rem] gap-12 px-5 py-16 sm:px-8 md:grid-cols-12 lg:px-12">
@@ -51,30 +46,32 @@ export function SiteFooter({ contact = {} }: { contact?: FooterContact }) {
             <MapPin className="text-pink mt-0.5 size-4 shrink-0" strokeWidth={1.5} />
             {t.footer.location}
           </li>
-          <li>
-            <a
-              href={`mailto:${email}`}
-              className="text-cream/85 hover:text-pink flex items-center gap-3 text-sm"
-            >
-              <Mail className="text-pink size-4 shrink-0" strokeWidth={1.5} />
-              {email}
-            </a>
-          </li>
-          <li>
-            <a
-              href={igUrl}
-              target="_blank"
-              rel="noreferrer"
-              className="text-cream/85 hover:text-pink flex items-center gap-3 text-sm"
-            >
-              <InstagramIcon className="text-pink size-4 shrink-0" strokeWidth={1.5} />
-              {igHandle}
-            </a>
-          </li>
-          {contact.whatsappUrl ? (
+          {contact.whatsapp ? (
             <li>
-              <a href={contact.whatsappUrl} className="text-cream/85 hover:text-pink text-sm">
-                WhatsApp
+              <a
+                href={`https://wa.me/${waNumber(contact.whatsapp)}`}
+                target="_blank"
+                rel="noreferrer"
+                className={link}
+              >
+                <MessageCircle className="text-pink size-4 shrink-0" strokeWidth={1.5} />
+                {formatPhone(contact.whatsapp)}
+              </a>
+            </li>
+          ) : null}
+          {contact.email ? (
+            <li>
+              <a href={`mailto:${contact.email}`} className={link}>
+                <Mail className="text-pink size-4 shrink-0" strokeWidth={1.5} />
+                {contact.email}
+              </a>
+            </li>
+          ) : null}
+          {contact.instagramHandle && contact.instagramUrl ? (
+            <li>
+              <a href={contact.instagramUrl} target="_blank" rel="noreferrer" className={link}>
+                <InstagramIcon className="text-pink size-4 shrink-0" strokeWidth={1.5} />
+                {contact.instagramHandle}
               </a>
             </li>
           ) : null}

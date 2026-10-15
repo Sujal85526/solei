@@ -512,9 +512,9 @@
 .arch {
   border-radius: 9999px 9999px 0.25rem 0.25rem;
   overflow: hidden;
+  /* WebKit: own compositing layer so transformed (parallax) children stay inside the curve. */
   isolation: isolate;
-  /* WebKit: keep transformed (parallax) children inside the rounded corners. */
-  -webkit-mask-image: -webkit-radial-gradient(white, black);
+  transform: translateZ(0);
 }
 
 /* CTA sheen: a soft light sweep across the button on hover (pointer devices only). */

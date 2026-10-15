@@ -18,6 +18,7 @@ export const en = {
     destinations: "Destinations",
     events: "Plan your event",
     passport: "Solei Passport",
+    contact: "Contact",
     story: "Our story",
     cart: "Cart",
     account: "Your account & passport",
