@@ -42,18 +42,20 @@ async function OrderView({ params, searchParams }: PageProps<"/order/[number]">)
     .eq("number", number.toUpperCase())
     .maybeSingle();
   if (!order || !verifyOrderToken(order.id, token, orderLinkSecret())) notFound();
-  const { data: summary } = await admin
-    .from("order_payment_summary")
-    .select("payment_status, outstanding_fils")
-    .eq("order_id", order.id)
-    .single();
-  const { data: lastPayment } = await admin
-    .from("payments")
-    .select("status")
-    .eq("order_id", order.id)
-    .order("created_at", { ascending: false })
-    .limit(1)
-    .maybeSingle();
+  const [{ data: summary }, { data: lastPayment }] = await Promise.all([
+    admin
+      .from("order_payment_summary")
+      .select("payment_status, outstanding_fils")
+      .eq("order_id", order.id)
+      .single(),
+    admin
+      .from("payments")
+      .select("status")
+      .eq("order_id", order.id)
+      .order("created_at", { ascending: false })
+      .limit(1)
+      .maybeSingle(),
+  ]);
 
   const paid = summary?.payment_status === "paid";
   const justReturned = sp.paid === "1";

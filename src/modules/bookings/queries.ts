@@ -130,12 +130,13 @@ export async function listBookings(opts: { status?: BookingStatus | "open"; q?: 
 
 export async function bookingStatusCounts(): Promise<Record<BookingStatus, number>> {
   const supabase = await createClient();
-  const rows = must(await supabase.from("bookings").select("status"), "booking counts");
+  // Grouped in the database: one small row per status, however many bookings there are.
+  const rows = must(await supabase.rpc("booking_status_counts"), "booking counts");
   const counts = Object.fromEntries(BOOKING_STATUSES.map((s) => [s, 0])) as Record<
     BookingStatus,
     number
   >;
-  for (const r of rows) counts[r.status] += 1;
+  for (const r of rows) counts[r.status as BookingStatus] = Number(r.n);
   return counts;
 }
 
@@ -159,17 +160,15 @@ type RawQuoteLine = { label: string; qty: number; unit_price_fils: number; total
 
 export async function getBooking(id: string) {
   const supabase = await createClient();
-  const { data: booking, error } = await supabase
-    .from("bookings")
-    .select(
-      "*, booking_event_types(name), booking_packages(name, base_price_fils), booth_designs(name, photos), flower_options(name, hex)",
-    )
-    .eq("id", id)
-    .maybeSingle();
-  if (error) throw new Error(`booking failed: ${error.message}`);
-  if (!booking) return null;
-
-  const [quotes, messages, services] = await Promise.all([
+  // Quotes and messages only need `id`: start them alongside the booking itself.
+  const [{ data: booking, error }, quotes, messages] = await Promise.all([
+    supabase
+      .from("bookings")
+      .select(
+        "*, booking_event_types(name), booking_packages(name, base_price_fils), booth_designs(name, photos), flower_options(name, hex)",
+      )
+      .eq("id", id)
+      .maybeSingle(),
     supabase.from("booking_quotes").select("*").eq("booking_id", id).order("version", {
       ascending: false,
     }),
@@ -178,10 +177,16 @@ export async function getBooking(id: string) {
       .select("id, direction, channel, body, created_at, created_by")
       .eq("booking_id", id)
       .order("created_at", { ascending: false }),
-    booking.service_type_ids.length
-      ? supabase.from("booking_service_types").select("id, name").in("id", booking.service_type_ids)
-      : Promise.resolve({ data: [] as { id: string; name: string }[], error: null }),
   ]);
+  if (error) throw new Error(`booking failed: ${error.message}`);
+  if (!booking) return null;
+
+  const services = booking.service_type_ids.length
+    ? await supabase
+        .from("booking_service_types")
+        .select("id, name")
+        .in("id", booking.service_type_ids)
+    : { data: [] as { id: string; name: string }[], error: null };
 
   return {
     ...booking,

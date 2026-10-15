@@ -43,22 +43,27 @@ export const resolveStaff = cache(async (): Promise<GateResult> => {
   if (!user) return { status: "signed_out" };
   const email = user.email ?? "";
 
-  const { data: profile } = await supabase
-    .from("staff_profiles")
-    .select("full_name, active, roles(key, name, requires_mfa)")
-    .eq("user_id", user.id)
-    .maybeSingle();
+  // Profile, permissions and MFA level only need the session — fetch them together.
+  const [{ data: profile }, permsRes, aalRes] = await Promise.all([
+    supabase
+      .from("staff_profiles")
+      .select("full_name, active, roles(key, name, requires_mfa)")
+      .eq("user_id", user.id)
+      .maybeSingle(),
+    supabase.rpc("my_permissions"),
+    supabase.auth.mfa.getAuthenticatorAssuranceLevel(),
+  ]);
   if (!profile || !profile.roles) return { status: "not_staff", email };
   if (!profile.active) return { status: "inactive", email };
 
   if (profile.roles.requires_mfa) {
-    const { data: aal } = await supabase.auth.mfa.getAuthenticatorAssuranceLevel();
+    const aal = aalRes.data;
     if (aal?.currentLevel !== "aal2") {
       return { status: aal?.nextLevel === "aal2" ? "mfa_verify" : "mfa_enroll", email };
     }
   }
 
-  const { data: perms, error } = await supabase.rpc("my_permissions");
+  const { data: perms, error } = permsRes;
   if (error) throw new Error(`Could not load permissions: ${error.message}`);
 
   return {

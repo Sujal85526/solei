@@ -47,20 +47,27 @@ export async function stockMatrix(): Promise<{
         "id, label, sku, active, low_stock_threshold, products(id, name, sort, destinations(name))",
       )
       .order("sku"),
-    supabase.from("stock_levels").select("variant_id, location_id, on_hand"),
+    fetchAllStockLevels(supabase),
     listLocations(),
     supabase.from("private_settings").select("low_stock_default").maybeSingle(),
   ]);
   const defaultThreshold = privateSettings.data?.low_stock_default ?? 5;
   const eventLocations = new Set(locations.filter((l) => l.kind === "event").map((l) => l.id));
-  const levelRows = must(levels, "stock levels");
+  // Index levels by variant once (instead of scanning every level for every variant).
+  const levelsByVariant = new Map<string, typeof levels>();
+  for (const l of levels) {
+    if (!l.variant_id) continue;
+    const list = levelsByVariant.get(l.variant_id);
+    if (list) list.push(l);
+    else levelsByVariant.set(l.variant_id, [l]);
+  }
 
   const rows = must(variants, "variants")
     .map((v) => {
       const byLocation: Record<string, number> = {};
       let total = 0;
-      for (const l of levelRows) {
-        if (l.variant_id !== v.id || !l.location_id) continue;
+      for (const l of levelsByVariant.get(v.id) ?? []) {
+        if (!l.location_id) continue;
         byLocation[l.location_id] = l.on_hand ?? 0;
         if (!eventLocations.has(l.location_id)) total += l.on_hand ?? 0;
       }
@@ -142,4 +149,27 @@ export async function variantOptions() {
       (a, b) =>
         Number(b.active) - Number(a.active) || a.sort - b.sort || a.label.localeCompare(b.label),
     );
+}
+
+/**
+ * Every stock level, read in pages of 1,000 (the API's per-request cap) so large catalogues with
+ * many event locations are never silently truncated.
+ */
+async function fetchAllStockLevels(supabase: Awaited<ReturnType<typeof createClient>>) {
+  const PAGE = 1000;
+  const all: { variant_id: string | null; location_id: string | null; on_hand: number | null }[] =
+    [];
+  for (let from = 0; ; from += PAGE) {
+    const page = must(
+      await supabase
+        .from("stock_levels")
+        .select("variant_id, location_id, on_hand")
+        .order("variant_id")
+        .order("location_id")
+        .range(from, from + PAGE - 1),
+      "stock levels",
+    );
+    all.push(...page);
+    if (page.length < PAGE) return all;
+  }
 }

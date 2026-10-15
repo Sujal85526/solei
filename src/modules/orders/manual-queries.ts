@@ -15,19 +15,22 @@ export type SellableVariant = {
 /** Active variants with on-hand at the online/default stock locations, for the manual order form. */
 export async function sellableVariants(): Promise<SellableVariant[]> {
   const supabase = await createClient();
-  const [variants, locations, levels] = await Promise.all([
+  const [variants, locations] = await Promise.all([
     supabase
       .from("product_variants")
       .select("id, label, sku, price_fils, products!inner(name, active, sort, destinations(name))")
       .eq("active", true)
       .eq("products.active", true),
     supabase.from("stock_locations").select("id").eq("sells_online", true).eq("active", true),
-    supabase.from("stock_levels").select("variant_id, location_id, on_hand"),
   ]);
-  const online = new Set((locations.data ?? []).map((l) => l.id));
+  const online = (locations.data ?? []).map((l) => l.id);
+  // Only the online locations' levels (bounded: variants × a few locations), not every level.
+  const levels = online.length
+    ? await supabase.from("stock_levels").select("variant_id, on_hand").in("location_id", online)
+    : { data: [] };
   const onHand = new Map<string, number>();
   for (const l of levels.data ?? []) {
-    if (!l.variant_id || !online.has(l.location_id ?? "")) continue;
+    if (!l.variant_id) continue;
     onHand.set(l.variant_id, (onHand.get(l.variant_id) ?? 0) + (l.on_hand ?? 0));
   }
   return must(variants, "variants")

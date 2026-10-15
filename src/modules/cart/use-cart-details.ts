@@ -11,6 +11,8 @@ import { cart, useCart } from "./store";
  * are clamped/dropped and reported as `notices`. Shared by the cart page and the cart drawer.
  * Pass `enabled: false` to skip fetching (e.g. while the drawer is closed).
  */
+const DEBOUNCE_MS = 250;
+
 export function useCartDetails({
   enabled = true,
   describe,
@@ -33,25 +35,31 @@ export function useCartDetails({
     if (!enabled || !key || !state || !state.lines.length) return;
     const id = ++request.current;
     const input = { lines: state.lines, emirate: state.emirate };
-    startTransition(async () => {
-      try {
-        const res = await getCartDetails(input);
-        if (id !== request.current) return;
-        startTransition(() => {
-          setError(false);
-          setDetails(res);
-          const fresh = describe(res.lines);
-          if (fresh.length) setNotices((prev) => [...new Set([...prev, ...fresh])]);
-        });
-        // Clamp / drop lines the server can't fulfil; this re-runs the effect once.
-        const allowed = new Map(
-          res.lines.filter((l) => l.status !== "ok").map((l) => [l.variantId, l.qty]),
-        );
-        if (allowed.size) cart.reconcile(allowed);
-      } catch {
-        if (id === request.current) startTransition(() => setError(true));
-      }
-    });
+    // Let rapid quantity clicks settle, then send one request for the final cart.
+    const timer = setTimeout(
+      () =>
+        startTransition(async () => {
+          try {
+            const res = await getCartDetails(input);
+            if (id !== request.current) return;
+            startTransition(() => {
+              setError(false);
+              setDetails(res);
+              const fresh = describe(res.lines);
+              if (fresh.length) setNotices((prev) => [...new Set([...prev, ...fresh])]);
+            });
+            // Clamp / drop lines the server can't fulfil; this re-runs the effect once.
+            const allowed = new Map(
+              res.lines.filter((l) => l.status !== "ok").map((l) => [l.variantId, l.qty]),
+            );
+            if (allowed.size) cart.reconcile(allowed);
+          } catch {
+            if (id === request.current) startTransition(() => setError(true));
+          }
+        }),
+      DEBOUNCE_MS,
+    );
+    return () => clearTimeout(timer);
     // `state` is derived from `key`; re-run only when the cart content changes.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [key, attempt, enabled]);

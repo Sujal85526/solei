@@ -2702,6 +2702,15 @@ export type Database = {
           status: Database["public"]["Enums"]["booking_status"]
         }[]
       }
+      admin_order_stats: {
+        Args: { p_day_end: string; p_day_start: string }
+        Returns: {
+          outstanding_count: number
+          outstanding_fils: number
+          today_count: number
+          today_revenue_fils: number
+        }[]
+      }
       after_order_cancelled: {
         Args: { p_order_id: string }
         Returns: undefined
@@ -2717,6 +2726,13 @@ export type Database = {
       booking_payment_order: {
         Args: { p_booking_id: string; p_kind: string }
         Returns: string
+      }
+      booking_status_counts: {
+        Args: never
+        Returns: {
+          n: number
+          status: Database["public"]["Enums"]["booking_status"]
+        }[]
       }
       business_day: { Args: { ts: string }; Returns: string }
       business_today: { Args: never; Returns: string }

@@ -41,26 +41,19 @@ export type OrderListRow = Awaited<ReturnType<typeof listOrders>>["rows"][number
 export async function orderStats() {
   const supabase = await createClient();
   const { start, end } = businessDayRange(businessDay());
-  const [today, outstanding] = await Promise.all([
-    supabase
-      .from("admin_orders")
-      .select("total_fils")
-      .gte("placed_at", start.toISOString())
-      .lt("placed_at", end.toISOString())
-      .not("status", "in", "(pending_payment,cancelled)"),
-    supabase
-      .from("admin_orders")
-      .select("outstanding_fils")
-      .gt("outstanding_fils", 0)
-      .not("status", "in", "(pending_payment,cancelled)"),
-  ]);
-  const todayRows = must(today, "today's orders");
-  const outRows = must(outstanding, "outstanding");
+  // One aggregate in the database (exact beyond the API's 1,000-row cap).
+  const { data, error } = await supabase
+    .rpc("admin_order_stats", {
+      p_day_start: start.toISOString(),
+      p_day_end: end.toISOString(),
+    })
+    .single();
+  if (error) throw new Error(`order stats failed: ${error.message}`);
   return {
-    todayCount: todayRows.length,
-    todayRevenueFils: todayRows.reduce((s, r) => s + (r.total_fils ?? 0), 0),
-    outstandingFils: outRows.reduce((s, r) => s + (r.outstanding_fils ?? 0), 0),
-    outstandingCount: outRows.length,
+    todayCount: Number(data.today_count),
+    todayRevenueFils: Number(data.today_revenue_fils),
+    outstandingFils: Number(data.outstanding_fils),
+    outstandingCount: Number(data.outstanding_count),
   };
 }
 
@@ -78,16 +71,17 @@ export async function eventOptions() {
 /** Everything the order detail page shows. Line costs come back empty without financial access (RLS). */
 export async function getOrder(id: string) {
   const supabase = await createClient();
-  const { data: order } = await supabase
+  // The order and its child rows only need `id`, so all six requests run at once.
+  const orderQuery = supabase
     .from("orders")
     .select(
       "id, number, channel, status, fulfilment, customer_id, contact_name, contact_phone, contact_email, delivery_address, delivery_emirate, delivery_fee_fils, subtotal_fils, discount_fils, vat_fils, total_fils, vat_rate_bp, prices_include_vat, notes, internal_notes, tracking_number, courier, placed_at, created_at, cancelled_at, cancel_reason, event_id, event_day, staff_id, events(name)",
     )
     .eq("id", id)
     .maybeSingle();
-  if (!order) return null;
 
-  const [lines, summary, payments, history, notifications] = await Promise.all([
+  const [{ data: order }, lines, summary, payments, history, notifications] = await Promise.all([
+    orderQuery,
     supabase
       .from("order_lines")
       .select(
@@ -118,6 +112,7 @@ export async function getOrder(id: string) {
       .eq("order_id", id)
       .order("created_at", { ascending: false }),
   ]);
+  if (!order) return null;
 
   return {
     order,

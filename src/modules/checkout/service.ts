@@ -93,13 +93,15 @@ export async function placeOrder(
     throw new Error(`create_web_order failed: ${error.message}`);
   }
 
-  await rememberOrder(account.user, created.order_id);
-  if (v.saveAddress) {
-    const { line1, line2, area, city, emirate } = v;
-    await saveAddress({ line1, line2, area, city, emirate }).catch((e) =>
-      console.error("save address failed", e),
-    );
-  }
+  const { line1, line2, area, city, emirate } = v;
+  await Promise.all([
+    rememberOrder(account.user, created.order_id),
+    v.saveAddress
+      ? saveAddress({ line1, line2, area, city, emirate }).catch((e) =>
+          console.error("save address failed", e),
+        )
+      : null,
+  ]);
 
   const lines: CheckoutLine[] = cart.lines.map((l) => ({
     name: l.product?.name ?? "Solei",
@@ -138,17 +140,11 @@ export async function startPayment(
   } = {},
 ): Promise<string> {
   const admin = createAdminClient();
-  const { data: order } = await admin
-    .from("orders")
-    .select("id, number, status, contact_email")
-    .eq("id", orderId)
-    .single();
+  const [{ data: order }, { data: summary }] = await Promise.all([
+    admin.from("orders").select("id, number, status, contact_email").eq("id", orderId).single(),
+    admin.from("order_payment_summary").select("outstanding_fils").eq("order_id", orderId).single(),
+  ]);
   if (!order) throw new UserError("Order not found.");
-  const { data: summary } = await admin
-    .from("order_payment_summary")
-    .select("outstanding_fils")
-    .eq("order_id", orderId)
-    .single();
   const outstanding = summary?.outstanding_fils ?? 0;
   if (order.status === "cancelled") throw new UserError("This order was cancelled.");
   if (outstanding <= 0) throw new UserError("This order is already paid.");
