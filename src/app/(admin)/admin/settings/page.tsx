@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { ChevronRight, Mail, MessageCircle } from "lucide-react";
+import { ChevronRight, FileText, Mail, MessageCircle } from "lucide-react";
 import { PageHeader } from "@/components/admin/page-header";
 import { requireStaff } from "@/lib/auth/session";
 import { can } from "@/lib/permissions";
@@ -17,6 +17,13 @@ export default async function SettingsPage() {
       title: "Contact details",
       description: "WhatsApp, email and Instagram shown on the Contact page and footer.",
       icon: MessageCircle,
+      allowed: can(staff.permissions, "settings.manage"),
+    },
+    {
+      href: "/admin/settings/help",
+      title: "Help & policies",
+      description: "Shipping, returns, passport terms, terms of service, privacy and cookies.",
+      icon: FileText,
       allowed: can(staff.permissions, "settings.manage"),
     },
     {

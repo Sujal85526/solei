@@ -13,6 +13,7 @@ const nextConfig: NextConfig = {
     return [
       { source: "/policies/delivery", destination: "/help?tab=shipping", permanent: true },
       { source: "/policies/returns", destination: "/help?tab=returns", permanent: true },
+      { source: "/policies/cookies", destination: "/help?tab=cookies", permanent: true },
       { source: "/policies/privacy", destination: "/help?tab=privacy", permanent: true },
       { source: "/policies/terms", destination: "/help?tab=terms", permanent: true },
       { source: "/policies/:path*", destination: "/help", permanent: true },

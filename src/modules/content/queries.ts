@@ -5,6 +5,8 @@
 export const CONTENT_TAGS = {
   catalog: "catalog",
   settings: "settings",
+  /** Help centre topics (policies). */
+  help: "help",
   loyalty: "loyalty",
   /** Online availability (stock ledger); revalidate after sales, receipts and adjustments. */
   stock: "stock",
