@@ -355,3 +355,22 @@ Open client questions are built as configurable defaults. Each row: what we chos
   days; data comes from permission-checked `export_*` functions returning one jsonb document (no PostgREST row
   cap). Payment refunds are negative so the Amount total is money kept (succeeded only).
 - **T92 — No-JS download form** on the dashboard: one GET form, each button sets its own `formAction`.
+
+## Customer accounts & checkout (client feedback, 2026-10-15)
+- **T93 — Checkout needs an account** (client request; replaces guest checkout, D5). Signed-out visitors
+  can browse and fill the bag; `/checkout` opens on "Create an account / Sign in", then the delivery form
+  (prefilled from the account). `placeOrder` rejects without a verified session and uses the account email.
+- **T94 — Accounts are Supabase Auth users; email verified by a 6-digit code we send** through our email
+  provider (Resend; dev logs it): sign-up creates an unconfirmed user (admin API), the code is a Supabase
+  recovery OTP (`generateLink`), entering it confirms the email and signs in. The same code flow handles
+  first sign-in of an unverified account and "forgot password". Hosted Supabase has no SMTP of its own, so
+  Supabase never emails customers. Unverified accounts can't sign in, so `link_customer_account()`
+  (passport) only ever links verified emails. Code emails are system emails (not owner-editable).
+- **T95 — Profile in `user_metadata`** (first/last name, mobile, saved address); **order history** = orders
+  placed while signed in (`app_metadata.order_ids`, server-written) + orders of the linked customer record.
+  No schema change.
+- **T96 — Light checkout**: own layout (`app/(checkout)`, logo + "Secure checkout" only), `.theme-light`
+  (warm white, ink, burgundy). Steps Bag / Account / Delivery / Payment; order summary column (folds on
+  phones). Account page and sign-in drawer use the same light theme.
+- **T97 — "Plan your event" is locked** (`soon: true` in `storeNav`): greyed with a "Soon" tag in the header,
+  menu and footer; `/events` shows a Coming soon card. Booking code and quote links are untouched.

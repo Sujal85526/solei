@@ -55,6 +55,13 @@ admin-editable later, so avoid extra sections). Current storefront:
 - **Product page**: photo (desktop thumbnail column, phone dot pill) beside a blush panel — one-line name
   ("Cannes *Eau de parfum*"), price, Add to cart (no price on the button), Buy now, Fragrance notes / Shipping &
   returns / Details (description lives in Details); then You may also like (no View all). No scent section.
+- **Plan your event**: locked — "Soon" tag in nav/menu/footer, `/events` is a Coming soon card (T97).
+- **Accounts** (T93–T95): header person icon → dropdown (Welcome / Solei · Sign in · Create account; signed in:
+  name · My account · Orders · Sign out). Sign in / create account open a light drawer from the right; sign-up
+  verifies the email with a 6-digit code (in the `pnpm dev` log until Resend is set up). `/account`: compact —
+  order history, details and address rows with Edit.
+- **Checkout** (T96): light page with its own minimal header; sign in / create account first, then the
+  prefilled delivery form ("Save this address", delivery note on demand) → hosted payment.
 - **Cart drawer** (`cart-drawer.tsx`): Your Cart (n), free-shipping progress, lines with − n + and bin, Subtotal,
   Shipping "Calculated at checkout" (no Total), Proceed to checkout, trust row. No gift note.
 - Product photos in the DB are light studio renders; the client's references use dark editorial shots — waiting
@@ -66,6 +73,12 @@ admin-editable later, so avoid extra sections). Current storefront:
   Keychain `solei-client-test-password`); 2FA is OFF on the dev DB (see carry-over below).
 
 ## Carry-overs
+- **Resend (account codes + notifications):** set `RESEND_API_KEY` and `EMAIL_FROM` (client's domain, verified
+  in Resend) locally and on Vercel; until then codes only appear in the server log. Outside production only
+  `EMAIL_ALLOWLIST` recipients get real email (`EMAIL_ALLOW_ALL=1` for client testing).
+- **M17 (accounts):** rate-limit sign-up / resend-code / forgot-password per email and IP (codes are
+  admin-generated, so Supabase's own email limits don't apply). Dev DB test account:
+  `ui-test-1792066208809@solei.test` / `Solei-test-2026` (one mock order) — delete before launch.
 - **M17 (security) — re-enable 2FA:** on 2026-10-15 two-factor was switched off for the owner and manager roles on
   the hosted dev DB so the client can test (`update roles set requires_mfa = false where key in ('owner','manager')`).
   Turn it back on before launch (Admin → Staff → roles, or set `requires_mfa = true`). Client test login:
