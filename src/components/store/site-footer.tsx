@@ -29,7 +29,7 @@ export function SiteFooter({ contact = {} }: { contact?: FooterContact }) {
         <FooterColumn title={t.footer.explore} className="md:col-span-2">
           {storeNav.map((item) =>
             item.soon ? (
-              <li key={item.href} aria-disabled className="text-cream/45 text-sm">
+              <li key={item.href} className="text-cream/45 text-sm">
                 {t.nav[item.key]} <SoonTag />
               </li>
             ) : (
