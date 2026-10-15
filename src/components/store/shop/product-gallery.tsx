@@ -7,9 +7,8 @@ import { cn } from "@/lib/utils";
 import type { StoreImage } from "@/modules/storefront/types";
 
 /**
- * Product gallery on the dark side of the product page: photographs crossfade in place, chosen from
- * thumbnails (a column over the photo on wide screens, a row along its foot on phones) or by
- * swiping on touch screens.
+ * Product gallery: photographs crossfade in place, chosen from thumbnails (a column over the photo
+ * on wide screens, a plain row beneath it on phones) or by swiping on touch screens.
  */
 export function ProductGallery({ images, name }: { images: StoreImage[]; name: string }) {
   const [active, setActive] = useState(0);
@@ -21,58 +20,90 @@ export function ProductGallery({ images, name }: { images: StoreImage[]; name: s
     <div
       aria-label={t.product.gallery}
       aria-roledescription={many ? "carousel" : undefined}
-      className="bg-noir relative h-full min-h-[inherit] overflow-hidden"
-      onTouchStart={(e) => (touchX.current = e.touches[0].clientX)}
-      onTouchEnd={(e) => {
-        if (touchX.current === null || !many) return;
-        const dx = e.changedTouches[0].clientX - touchX.current;
-        if (Math.abs(dx) > 40) go(active + (dx < 0 ? 1 : -1));
-        touchX.current = null;
-      }}
+      className="bg-noir flex h-full flex-col"
     >
-      {images.map((img, i) => (
-        <div
-          key={`${img.url}-${i}`}
-          aria-hidden={i !== active}
-          className={cn(
-            "absolute inset-0 transition-opacity duration-700 ease-(--ease-soft)",
-            i === active ? "opacity-100" : "opacity-0",
-          )}
-        >
-          <Image
-            src={img.url}
-            alt={img.alt || name}
-            fill
-            preload={i === 0}
-            sizes="(min-width: 1024px) 58vw, 100vw"
+      <div
+        className="relative aspect-[4/5] overflow-hidden sm:aspect-[4/3] lg:aspect-auto lg:flex-1"
+        onTouchStart={(e) => (touchX.current = e.touches[0].clientX)}
+        onTouchEnd={(e) => {
+          if (touchX.current === null || !many) return;
+          const dx = e.changedTouches[0].clientX - touchX.current;
+          if (Math.abs(dx) > 40) go(active + (dx < 0 ? 1 : -1));
+          touchX.current = null;
+        }}
+      >
+        {images.map((img, i) => (
+          <div
+            key={`${img.url}-${i}`}
+            aria-hidden={i !== active}
             className={cn(
-              "object-cover transition-transform duration-[2400ms] ease-(--ease-soft)",
-              i === active ? "scale-100" : "scale-[1.04]",
+              "absolute inset-0 transition-opacity duration-700 ease-(--ease-soft)",
+              i === active ? "opacity-100" : "opacity-0",
             )}
+          >
+            <Image
+              src={img.url}
+              alt={img.alt || name}
+              fill
+              preload={i === 0}
+              sizes="(min-width: 1024px) 58vw, 100vw"
+              className={cn(
+                "object-cover transition-transform duration-[2400ms] ease-(--ease-soft)",
+                i === active ? "scale-100" : "scale-[1.04]",
+              )}
+            />
+          </div>
+        ))}
+        {many ? (
+          <Thumbs
+            images={images}
+            active={active}
+            onPick={go}
+            className="absolute start-8 top-24 hidden w-16 flex-col gap-3 lg:flex"
           />
-        </div>
-      ))}
-
+        ) : null}
+      </div>
       {many ? (
-        <ul className="absolute inset-x-4 bottom-4 z-10 flex gap-2 lg:inset-x-auto lg:start-8 lg:top-8 lg:bottom-auto lg:w-16 lg:flex-col lg:gap-3">
-          {images.map((img, i) => (
-            <li key={`${img.url}-${i}`} className="flex-1 lg:flex-none">
-              <button
-                type="button"
-                onClick={() => go(i)}
-                aria-label={t.product.showImage(i + 1)}
-                aria-current={i === active ? "true" : undefined}
-                className={cn(
-                  "relative block aspect-[4/3] w-full overflow-hidden rounded-[2px] border transition-all duration-300 lg:aspect-square",
-                  i === active ? "border-pearl" : "border-pearl/25 opacity-70 hover:opacity-100",
-                )}
-              >
-                <Image src={img.url} alt="" fill sizes="96px" className="object-cover" />
-              </button>
-            </li>
-          ))}
-        </ul>
+        <Thumbs
+          images={images}
+          active={active}
+          onPick={go}
+          className="flex gap-2 px-4 py-3 lg:hidden"
+        />
       ) : null}
     </div>
+  );
+}
+
+function Thumbs({
+  images,
+  active,
+  onPick,
+  className,
+}: {
+  images: StoreImage[];
+  active: number;
+  onPick: (i: number) => void;
+  className: string;
+}) {
+  return (
+    <ul className={cn("z-10", className)}>
+      {images.map((img, i) => (
+        <li key={`${img.url}-${i}`} className="w-16 shrink-0">
+          <button
+            type="button"
+            onClick={() => onPick(i)}
+            aria-label={t.product.showImage(i + 1)}
+            aria-current={i === active ? "true" : undefined}
+            className={cn(
+              "relative block aspect-square w-full overflow-hidden border transition-all duration-300",
+              i === active ? "border-pearl" : "border-pearl/20 opacity-60 hover:opacity-100",
+            )}
+          >
+            <Image src={img.url} alt="" fill sizes="64px" className="object-cover" />
+          </button>
+        </li>
+      ))}
+    </ul>
   );
 }

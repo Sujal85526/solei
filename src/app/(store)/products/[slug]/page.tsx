@@ -3,7 +3,6 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Suspense } from "react";
 import { ArrowRight } from "lucide-react";
-import { SplitHeading } from "@/components/motion/split-heading";
 import { ProductAccordions } from "@/components/store/shop/product-accordions";
 import { ProductGallery } from "@/components/store/shop/product-gallery";
 import { ProductGrid, ProductGridSkeleton } from "@/components/store/shop/product-grid";
@@ -127,6 +126,7 @@ export default async function ProductPage({ params }: PageProps<"/products/[slug
             <dt className="eyebrow text-primary/60 pt-0.5 text-[0.58rem]">{t.product.size}</dt>
             <dd>{product.variants.map((v) => v.label).join(" · ")}</dd>
           </div>
+          {product.description ? <p className="mt-2">{product.description}</p> : null}
           {product.destination ? (
             <p className="mt-2">{t.product.stampNote(product.destination.name)}</p>
           ) : null}
@@ -138,27 +138,18 @@ export default async function ProductPage({ params }: PageProps<"/products/[slug
   return (
     <>
       <section aria-labelledby="product-title" className="grid lg:grid-cols-12">
-        <div className="relative aspect-[4/5] sm:aspect-[4/3] lg:sticky lg:top-16 lg:col-span-7 lg:aspect-auto lg:h-[calc(100svh-4rem)]">
+        {/* data-hero: the glass header floats over the photograph. */}
+        <div data-hero className="relative lg:sticky lg:top-0 lg:col-span-7 lg:h-svh">
           <ProductGallery images={product.images} name={product.name} />
         </div>
-        <div className="on-blush flex flex-col px-6 pt-10 pb-14 sm:px-12 lg:col-span-5 lg:justify-center lg:px-14 lg:py-16">
+        <div className="on-blush flex flex-col px-6 pt-8 pb-14 sm:px-12 lg:col-span-5 lg:justify-center lg:px-14 lg:pt-24 lg:pb-16">
           <div className="lg:max-w-md">
-            {product.destination ? (
-              <Link
-                href={`/destinations/${product.destination.slug}`}
-                className="eyebrow text-primary/70 hover:text-primary text-[0.62rem] transition-colors"
-              >
-                {product.destination.name} · {product.destination.region}
-              </Link>
-            ) : null}
-            <SplitHeading
-              as="h1"
-              id="product-title"
-              lines={title}
-              className="mt-4 text-4xl leading-[1.04] sm:text-5xl"
-            />
+            <h1 id="product-title" className="display hero-rise text-3xl leading-tight sm:text-4xl">
+              {title[0]}
+              {title[1] ? <span className="italic"> {title[1]}</span> : null}
+            </h1>
             <p
-              className="numeric text-primary mt-6 text-sm tracking-[0.22em]"
+              className="numeric text-primary mt-4 text-sm tracking-[0.22em]"
               data-testid="product-price"
             >
               {new Set(prices).size > 1 ? `${t.shop.from} ` : ""}
@@ -166,11 +157,6 @@ export default async function ProductPage({ params }: PageProps<"/products/[slug
             </p>
             <p className="text-primary/55 mt-1 text-[0.7rem]">{vatNote}</p>
             <span aria-hidden className="border-primary/20 mt-6 block border-t" />
-            {product.description ? (
-              <p className="text-foreground/80 mt-6 text-sm leading-relaxed">
-                {product.description}
-              </p>
-            ) : null}
             <div className="mt-8">
               <Suspense fallback={<PurchasePanel {...purchaseProps} availability={null} />}>
                 <Purchase product={product} purchaseProps={purchaseProps} />
