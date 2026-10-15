@@ -17,3 +17,5 @@ const res = await fetch("https://api-v2.ziina.com/api/webhook", {
   body: JSON.stringify({ url }),
 });
 console.log(res.status, await res.text(), "→", url);
+
+export {};
