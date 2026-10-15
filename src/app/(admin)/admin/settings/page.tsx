@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { ChevronRight, Mail } from "lucide-react";
+import { ChevronRight, Mail, MessageCircle } from "lucide-react";
 import { PageHeader } from "@/components/admin/page-header";
 import { requireStaff } from "@/lib/auth/session";
 import { can } from "@/lib/permissions";
@@ -13,6 +13,13 @@ export default async function SettingsPage() {
   const staff = await requireStaff();
   const sections = [
     {
+      href: "/admin/settings/contact",
+      title: "Contact details",
+      description: "WhatsApp, email and Instagram shown on the Contact page and footer.",
+      icon: MessageCircle,
+      allowed: can(staff.permissions, "settings.manage"),
+    },
+    {
       href: "/admin/settings/notifications",
       title: "Notifications",
       description: "Customer and owner emails: wording, on/off, test sends and the outbox.",
@@ -20,7 +27,7 @@ export default async function SettingsPage() {
       allowed: can(staff.permissions, "notifications.manage"),
     },
   ].filter((s) => s.allowed);
-  if (!sections.length) redirect("/admin/forbidden?need=notifications.manage");
+  if (!sections.length) redirect("/admin/forbidden?need=settings.manage");
 
   return (
     <>
