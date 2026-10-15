@@ -13,7 +13,22 @@ async function stockOf(sku: string) {
   return data![0].available as number;
 }
 
+/** A verified storefront account (checkout requires one), created directly for the test. */
+async function customerAccount() {
+  const email = `layla.e2e+${Date.now()}@solei.test`;
+  const password = "Solei-e2e-2026";
+  const { error } = await adminClient().auth.admin.createUser({
+    email,
+    password,
+    email_confirm: true,
+    user_metadata: { first_name: "Layla", last_name: "Test" },
+  });
+  if (error) throw error;
+  return { email, password };
+}
+
 async function checkoutCapri(page: Page, qty: number, phone: string) {
+  const account = await customerAccount();
   await page.goto("/products/capri-perfume");
   for (let i = 1; i < qty; i++)
     await page
@@ -22,15 +37,21 @@ async function checkoutCapri(page: Page, qty: number, phone: string) {
       .click();
   await page.getByRole("button", { name: /add to cart/i }).click();
   await page.goto("/checkout");
-  await page.getByLabel("Full name").fill("Layla Test");
-  await page.getByLabel("Mobile number").fill(phone);
-  await page.getByLabel("Email").fill("layla.e2e@solei.test");
-  await page.getByLabel("Street, building or villa").fill("Villa 12, Street 4");
+  // Signed-out visitors sign in (or create an account) before the delivery form.
+  await page.getByRole("button", { name: /already have an account/i }).click();
+  await page.getByLabel("Email address").fill(account.email);
+  await page.getByLabel("Password").fill(account.password);
+  await page.getByRole("button", { name: "Sign in" }).click();
+  await expect(page.getByText(`Signed in as ${account.email}`)).toBeVisible();
+  await expect(page.getByLabel("First name")).toHaveValue("Layla");
+  await page.getByLabel("Mobile").fill(phone);
+  await page.getByLabel("Emirate").selectOption("abu_dhabi");
+  await page.getByLabel("Street address").fill("Villa 12, Street 4");
   await page.getByLabel("Area").fill("Al Bateen");
   await page.getByLabel("City").fill("Abu Dhabi");
-  await page.getByLabel("Emirate").selectOption("abu_dhabi");
-  await expect(page.getByRole("button", { name: /^Pay AED/ })).toBeEnabled();
-  await page.getByRole("button", { name: /^Pay AED/ }).click();
+  const pay = page.getByRole("button", { name: /continue to payment/i });
+  await expect(pay).toBeEnabled();
+  await pay.click();
   await expect(page.getByText("Test payment · no real card")).toBeVisible();
 }
 
