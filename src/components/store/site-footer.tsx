@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { cacheLife } from "next/cache";
-import { MapPin, Mail, MessageCircle } from "lucide-react";
+import { Mail, MessageCircle } from "lucide-react";
 import { InstagramIcon } from "@/components/brand/icons";
 import { Logo, PostmarkWaves } from "@/components/brand";
 import { storeNav } from "@/content/site";
@@ -43,10 +43,6 @@ export async function SiteFooter() {
           <FooterLink href="/help?tab=terms">{t.footer.policies.terms}</FooterLink>
         </FooterColumn>
         <FooterColumn title={t.footer.contact} className="md:col-span-3">
-          <li className="text-cream/85 flex items-start gap-3 text-sm">
-            <MapPin className="text-pink mt-0.5 size-4 shrink-0" strokeWidth={1.5} />
-            {t.footer.location}
-          </li>
           {contact.whatsapp ? (
             <li>
               <a

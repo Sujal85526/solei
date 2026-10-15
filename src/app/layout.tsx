@@ -8,7 +8,7 @@ export const metadata: Metadata = {
   metadataBase: new URL(publicEnv.NEXT_PUBLIC_SITE_URL),
   title: { default: "Solei — A destination in scent", template: "%s · Solei" },
   description:
-    "Solei is a destination-led fragrance house from Abu Dhabi. Perfumes and all-over sprays inspired by Cannes, Capri, Santorini and more. Made to remain.",
+    "Solei is a UAE-based fragrance brand with eight destination-inspired scents and a signature physical loyalty passport.",
   openGraph: { siteName: "Solei", locale: "en_AE", type: "website" },
   appleWebApp: { capable: true, title: "Solei POS", statusBarStyle: "black-translucent" },
   icons: { apple: "/icons/apple-touch-icon.png" },

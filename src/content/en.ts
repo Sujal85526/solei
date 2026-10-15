@@ -29,7 +29,6 @@ export const en = {
     skipToContent: "Skip to content",
   },
   footer: {
-    location: "Abu Dhabi, United Arab Emirates",
     explore: "Explore",
     help: "Help",
     helpCentre: "Help centre",
