@@ -134,7 +134,9 @@ export function CartDrawer() {
                   : t.cart.shippingAtCheckout}
               </dd>
             </div>
-            <p className="text-burgundy/55 mt-1 text-xs">{t.cart.inclVat}</p>
+            {details?.settings.vatRateBp ? (
+              <p className="text-burgundy/55 mt-1 text-xs">{t.cart.inclVat}</p>
+            ) : null}
           </dl>
 
           <Link

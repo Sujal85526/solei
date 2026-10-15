@@ -133,10 +133,12 @@ async function OrderView({ params, searchParams }: PageProps<"/order/[number]">)
           <dt>Delivery</dt>
           <dd>{order.delivery_fee_fils ? formatAED(order.delivery_fee_fils) : "Free"}</dd>
         </div>
-        <div className="text-pearl-muted flex justify-between">
-          <dt>{order.prices_include_vat ? "Includes VAT" : "VAT"}</dt>
-          <dd>{formatAED(order.vat_fils)}</dd>
-        </div>
+        {order.vat_fils ? (
+          <div className="text-pearl-muted flex justify-between">
+            <dt>{order.prices_include_vat ? "Includes VAT" : "VAT"}</dt>
+            <dd>{formatAED(order.vat_fils)}</dd>
+          </div>
+        ) : null}
         <div className="font-display text-pink flex justify-between text-xl">
           <dt>Total</dt>
           <dd>{formatAED(order.total_fils)}</dd>

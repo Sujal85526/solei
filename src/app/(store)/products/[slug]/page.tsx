@@ -52,7 +52,12 @@ export default async function ProductPage({ params }: PageProps<"/products/[slug
   ]);
   if (!product) notFound();
   const category = categories.find((c) => c.slug === product.category.slug);
-  const vatNote = settings.pricesIncludeVat ? t.product.vatIncluded : t.product.vatExcluded;
+  // No VAT note while the business isn't VAT-registered (rate 0 in Admin settings).
+  const vatNote = !settings.vatRateBp
+    ? null
+    : settings.pricesIncludeVat
+      ? t.product.vatIncluded
+      : t.product.vatExcluded;
   const purchaseProps = { variants: product.variants };
   const prices = product.variants.map((v) => v.priceFils);
   const title = product.destination
@@ -150,7 +155,7 @@ export default async function ProductPage({ params }: PageProps<"/products/[slug
               {new Set(prices).size > 1 ? `${t.shop.from} ` : ""}
               {formatAED(Math.min(...prices))}
             </p>
-            <p className="text-primary/55 mt-1 text-[0.7rem]">{vatNote}</p>
+            {vatNote ? <p className="text-primary/55 mt-1 text-[0.7rem]">{vatNote}</p> : null}
             <span aria-hidden className="border-primary/20 mt-6 block border-t" />
             <div className="mt-8">
               <Suspense fallback={<PurchasePanel {...purchaseProps} availability={null} />}>
