@@ -5,17 +5,17 @@ Open client questions are built as configurable defaults. Each row: what we chos
 | # | Topic | Default chosen | Status | Where configurable |
 |---|---|---|---|---|
 | D1 | VAT | 5%, prices **inclusive**; stored as basis points (500) | ❓ confirm TRN / registration | `settings.vat_rate`, `settings.prices_include_vat` |
-| D2 | Language | English only, RTL-ready (logical CSS, copy dictionary) | ❓ confirm Arabic need | — |
-| D3 | Delivery zones/fees | Per-emirate fee table + free-delivery threshold | ❓ client to give fees | `settings` (admin) |
-| D4 | Refund / return policy | Placeholder policy page | ❓ client to supply | CMS/settings |
+| D2 | Language | English only, RTL-ready (logical CSS, copy dictionary) | ✅ client 2026-10-15: no Arabic | — |
+| D3 | Delivery zones/fees | AED 30 flat, UAE only, no free-delivery threshold | ✅ client 2026-10-15 (handover §04) | `delivery_zones`, `settings` (admin) |
+| D4 | Refund / return policy | Handover §04 wording (7 days, unopened) on the Help page | ✅ client 2026-10-15 | Admin → Settings → Help & policies |
 | D5 | Customer accounts | Guest checkout + magic-link passport page | ❓ confirm | — |
 | D6 | Perfume vs spray split | Perfumes: Cannes, Marbella, Verona, Capri, Santorini; sprays: Soho, Monaco, Mayfair (inferred from profile) | ❓ confirm | product catalog |
 | D7 | Dukhoon products | Category exists, no products seeded | ❓ client to list | product catalog |
 | D8 | Booking deposit | 50% | ❓ confirm | settings / per quote |
 | D9 | Booth availability limits | Overlap **warning**, no hard block | ❓ confirm | — |
 | D10 | Package prices | Placeholder prices | ❓ client to supply | booking packages admin |
-| D11 | Brand font "Nove" | Web substitute via CSS variables until a web licence is supplied | ❓ licence + files | `src/app/fonts.ts` (milestone 1) |
-| D12 | Payment gateway | Stripe (test mode) behind `PaymentProvider`; Tap / Network International remain swappable | ❓ confirm | `src/providers/payment` |
+| D11 | Brand font "Nove" | Keep the web substitutes (Cormorant Garamond + Jost) | ✅ client 2026-10-15: use current | `src/app/fonts.ts` |
+| D12 | Payment gateway | Ziina (client 2026-10-15) behind `PaymentProvider`; Stripe/mock remain for tests | ⏳ Ziina API key | `src/providers/payment` |
 
 ## Technical decisions
 - **T1 — Next.js 16 (App Router) with `cacheComponents`** as scaffolded by `create-next-app`; local docs in
@@ -374,3 +374,12 @@ Open client questions are built as configurable defaults. Each row: what we chos
   phones). Account page and sign-in drawer use the same light theme.
 - **T97 — "Plan your event" is locked** (`soon: true` in `storeNav`): greyed with a "Soon" tag in the header,
   menu and footer; `/events` shows a Coming soon card. Booking code and quote links are untouched.
+
+## Client answers (2026-10-15)
+- **T98 — Legal seller details are not published** (client): Terms/Privacy name "Solei" only; no
+  licence, address or legal entity. Policies point to the Contact us page until the support email and
+  WhatsApp are supplied (then set in Admin → Settings → Contact details).
+- **T99 — Policies publish-ready**: handover §04 wording with the "to confirm" items resolved from the
+  client's answers (returns 7 days; passport after two products in one order; essential cookies only).
+  Migration `20261015000002_client_answers.sql`; owner edits continue in Admin → Settings → Help & policies.
+- **T100 — Email via Resend** once the domain DNS is available; photography comes last.
