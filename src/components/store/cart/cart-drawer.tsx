@@ -19,7 +19,8 @@ import { QtyStepper } from "./qty-stepper";
 
 /**
  * Slide-in cart from the right (header bag, "Add to cart"): free-delivery progress, lines with
- * quantity and remove, subtotal / total and the way to checkout. Totals come from the server.
+ * quantity and remove, the subtotal (shipping is worked out at checkout) and the way to checkout.
+ * Prices come from the server.
  */
 export function CartDrawer() {
   const open = useCartDrawerOpen();
@@ -133,13 +134,7 @@ export function CartDrawer() {
                   : t.cart.shippingAtCheckout}
               </dd>
             </div>
-            <div className="border-burgundy/15 mt-3 flex justify-between gap-4 border-t pt-4">
-              <dt className="font-medium">{t.cart.total}</dt>
-              <dd className="numeric font-medium">
-                {pricing ? formatAED(pricing.subtotalFils) : "—"}
-              </dd>
-            </div>
-            <p className="text-burgundy/55 text-xs">{t.cart.inclVat}</p>
+            <p className="text-burgundy/55 mt-1 text-xs">{t.cart.inclVat}</p>
           </dl>
 
           <Link
