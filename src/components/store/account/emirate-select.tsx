@@ -1,9 +1,11 @@
-import { ChevronDown } from "lucide-react";
+"use client";
+
 import { cn } from "@/lib/utils";
+import { LightSelect } from "./light-select";
 
-export type ZoneOption = { emirate: string; name: string; feeLabel?: string };
+export type ZoneOption = { emirate: string; name: string };
 
-/** Light-theme emirate dropdown, styled like `TextField`. */
+/** Emirate dropdown for addresses, styled like `TextField`. */
 export function EmirateSelect({
   zones,
   error,
@@ -19,7 +21,6 @@ export function EmirateSelect({
   onChange?: (value: string) => void;
   className?: string;
 }) {
-  const controlled = value !== undefined;
   return (
     <div className={cn("flex min-w-0 flex-col gap-1.5", className)}>
       <label
@@ -28,34 +29,19 @@ export function EmirateSelect({
       >
         Emirate
       </label>
-      <div className="relative">
-        <select
-          id="f-emirate"
-          name="emirate"
-          {...(controlled ? { value } : { defaultValue })}
-          onChange={(e) => onChange?.(e.target.value)}
-          aria-invalid={error ? true : undefined}
-          aria-describedby={error ? "f-emirate-error" : undefined}
-          className="border-input focus:border-primary aria-invalid:border-destructive h-10 w-full min-w-0 appearance-none rounded-sm border bg-white ps-3 pe-9 text-sm transition-colors outline-none"
-        >
-          <option value="" disabled>
-            Choose your emirate
-          </option>
-          {zones.map((z) => (
-            <option key={z.emirate} value={z.emirate}>
-              {z.name}
-              {z.feeLabel ? ` — ${z.feeLabel}` : ""}
-            </option>
-          ))}
-        </select>
-        <ChevronDown
-          aria-hidden
-          className="text-muted-foreground pointer-events-none absolute end-3 top-1/2 size-3.5 -translate-y-1/2"
-          strokeWidth={1.5}
-        />
-      </div>
+      <LightSelect
+        id="f-emirate"
+        name="emirate"
+        options={zones.map((z) => ({ value: z.emirate, label: z.name }))}
+        placeholder="Choose your emirate"
+        value={value}
+        defaultValue={defaultValue}
+        onChange={onChange}
+        invalid={!!error}
+        describedBy={error ? "f-emirate-error" : undefined}
+      />
       {error ? (
-        <p id="f-emirate-error" className="text-destructive text-xs">
+        <p id="f-emirate-error" className="text-destructive text-[0.7rem]">
           {error}
         </p>
       ) : null}

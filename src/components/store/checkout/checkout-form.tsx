@@ -8,12 +8,11 @@ import { ChevronDown, Lock } from "lucide-react";
 import { AccountGate } from "@/components/store/account/account-gate";
 import type { ZoneOption } from "@/components/store/account/emirate-select";
 import { AddressFields } from "@/components/store/account/profile-forms";
-import { TextField } from "@/components/store/account/text-field";
+import { PhoneField } from "@/components/store/account/phone-field";
 import { refreshAccount } from "@/components/store/account/use-account";
 import { Button } from "@/components/ui/button";
 import { t } from "@/content/en";
 import { formatAED } from "@/lib/money";
-import { formatPhone } from "@/lib/phone";
 import { cn } from "@/lib/utils";
 import { signOutAction } from "@/modules/account/actions";
 import type { SavedAddress } from "@/modules/account/schema";
@@ -193,7 +192,6 @@ function DeliveryForm({
   const [formError, setFormError] = useState<string | null>(null);
   const [submitting, startSubmit] = useTransition();
   const [signingOut, startSignOut] = useTransition();
-  const [noteOpen, setNoteOpen] = useState(false);
   // Idempotency key for this checkout, created on first submit (re-submits reuse it).
   const clientUuid = useRef<string | null>(null);
   const pricing = details?.pricing;
@@ -267,20 +265,6 @@ function DeliveryForm({
         >
           {c.delivery}
         </h2>
-        <TextField
-          label={c.firstName}
-          name="firstName"
-          autoComplete="given-name"
-          defaultValue={account.firstName}
-          error={errors.firstName}
-        />
-        <TextField
-          label={c.lastName}
-          name="lastName"
-          autoComplete="family-name"
-          defaultValue={account.lastName}
-          error={errors.lastName}
-        />
         <AddressFields
           initial={account.address}
           zones={zones}
@@ -288,50 +272,17 @@ function DeliveryForm({
           emirate={state.emirate ?? ""}
           onEmirateChange={(v) => cart.setEmirate((v || null) as Emirate | null)}
         />
-        <TextField
+        <PhoneField
           label={c.phone}
-          name="phone"
-          type="tel"
-          inputMode="tel"
-          autoComplete="tel"
-          placeholder="050 123 4567"
-          defaultValue={account.phone ? formatPhone(account.phone) : ""}
+          defaultValue={account.phone}
           hint={c.phoneHint}
           error={errors.phone}
           className="col-span-2"
         />
-        <div className="col-span-2">
-          {noteOpen ? (
-            <div className="flex flex-col gap-2">
-              <label
-                htmlFor="f-notes"
-                className="text-muted-foreground text-[0.6rem] tracking-[0.2em] uppercase"
-              >
-                {c.notes}
-              </label>
-              <textarea
-                id="f-notes"
-                name="notes"
-                rows={3}
-                maxLength={500}
-                className="border-input focus:border-primary w-full rounded-sm border bg-white px-3 py-2.5 text-sm outline-none"
-              />
-            </div>
-          ) : (
-            <button
-              type="button"
-              onClick={() => setNoteOpen(true)}
-              className="text-muted-foreground hover:text-primary text-xs underline underline-offset-4"
-            >
-              + {c.addNote}
-            </button>
-          )}
-        </div>
         <div className="col-span-2 flex flex-col gap-3 pt-1">
           <Check name="saveAddress" defaultChecked>
             {c.saveAddress}
           </Check>
-          <Check name="marketingConsent">{c.consent}</Check>
         </div>
       </section>
 
@@ -443,11 +394,6 @@ function Summary({ details }: { details: CartDetails | null }) {
             {pricing ? formatAED(pricing.totalFils).replace(/^AED\s*/, "") : "—"}
           </dd>
         </div>
-        {pricing ? (
-          <p className="text-muted-foreground text-xs">
-            {pricing.vatIncluded ? c.vatIncluded : c.vat} {formatAED(pricing.vatFils)}
-          </p>
-        ) : null}
       </dl>
     </div>
   );

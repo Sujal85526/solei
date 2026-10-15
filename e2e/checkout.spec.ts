@@ -43,9 +43,9 @@ async function checkoutCapri(page: Page, qty: number, phone: string) {
   await page.getByLabel("Password").fill(account.password);
   await page.getByRole("button", { name: "Sign in" }).click();
   await expect(page.getByText(`Signed in as ${account.email}`)).toBeVisible();
-  await expect(page.getByLabel("First name")).toHaveValue("Layla");
   await page.getByLabel("Mobile").fill(phone);
-  await page.getByLabel("Emirate").selectOption("abu_dhabi");
+  await page.getByLabel("Emirate").click();
+  await page.getByRole("option", { name: "Abu Dhabi" }).click();
   await page.getByLabel("Street address").fill("Villa 12, Street 4");
   await page.getByLabel("Area").fill("Al Bateen");
   await page.getByLabel("City").fill("Abu Dhabi");

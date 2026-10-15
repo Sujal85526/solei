@@ -3,7 +3,6 @@ import { connection } from "next/server";
 import { Suspense } from "react";
 import { CheckoutFlow } from "@/components/store/checkout/checkout-form";
 import { t } from "@/content/en";
-import { formatAED } from "@/lib/money";
 import { currentAccount } from "@/modules/account/service";
 import { getCartSettings } from "@/modules/storefront/queries";
 
@@ -21,11 +20,7 @@ export default function CheckoutPage() {
 async function Checkout() {
   await connection();
   const [account, settings] = await Promise.all([currentAccount(), getCartSettings()]);
-  const zones = settings.zones.map((z) => ({
-    emirate: z.emirate,
-    name: z.name,
-    feeLabel: z.feeFils ? formatAED(z.feeFils) : t.checkout.free,
-  }));
+  const zones = settings.zones.map((z) => ({ emirate: z.emirate, name: z.name }));
   return (
     <CheckoutFlow
       zones={zones}

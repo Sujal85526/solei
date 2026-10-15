@@ -31,7 +31,13 @@ export async function placeOrder(
 ): Promise<{ redirectUrl: string; orderNumber: string }> {
   const account = await currentAccount();
   if (!account) throw new UserError("Please sign in to check out.");
-  const v = checkoutSchema.parse({ ...(input as object), email: account.user.email });
+  // Name and email come from the account; the delivery form only asks for address and mobile.
+  const v = checkoutSchema.parse({
+    ...(input as object),
+    email: account.user.email,
+    firstName: account.meta.first_name || account.user.email!.split("@")[0],
+    lastName: account.meta.last_name ?? "",
+  });
   const name = fullName(v);
   const ids = [...new Set(v.lines.map((l) => l.variantId))];
   const [products, availability, settings] = await Promise.all([

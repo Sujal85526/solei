@@ -12,6 +12,7 @@ import {
   signUpAction,
   verifyCodeAction,
 } from "@/modules/account/actions";
+import { PhoneField } from "./phone-field";
 import { TextField } from "./text-field";
 
 export type AccountMode = "signIn" | "signUp";
@@ -158,16 +159,7 @@ export function AccountForms({
               autoComplete="family-name"
               error={errors.lastName}
             />
-            <TextField
-              label={c.signUp.phone}
-              name="phone"
-              type="tel"
-              inputMode="tel"
-              autoComplete="tel"
-              placeholder="050 123 4567"
-              error={errors.phone}
-              className="col-span-2"
-            />
+            <PhoneField label={c.signUp.phone} error={errors.phone} className="col-span-2" />
             <TextField
               label={c.signUp.email}
               name="email"

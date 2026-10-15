@@ -9,6 +9,7 @@ import { formatPhone } from "@/lib/phone";
 import { saveAddressAction, saveProfileAction, signOutAction } from "@/modules/account/actions";
 import type { SavedAddress } from "@/modules/account/schema";
 import { EmirateSelect, type ZoneOption } from "./emirate-select";
+import { PhoneField } from "./phone-field";
 import { TextField } from "./text-field";
 import { refreshAccount } from "./use-account";
 
@@ -96,13 +97,9 @@ export function ProfileForm({
         defaultValue={initial.lastName}
         error={errors.lastName}
       />
-      <TextField
+      <PhoneField
         label={c.signUp.phone}
-        name="phone"
-        type="tel"
-        inputMode="tel"
-        autoComplete="tel"
-        defaultValue={initial.phone ? formatPhone(initial.phone) : ""}
+        defaultValue={initial.phone}
         error={errors.phone}
         className="col-span-2"
       />
