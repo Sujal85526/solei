@@ -22,10 +22,8 @@ const nextConfig: NextConfig = {
       { source: "/destinations/:path*", destination: "/shop", permanent: true },
     ];
   },
-  experimental: {
-    // Tailwind output is small and atomic; inlining removes the render-blocking stylesheet request.
-    inlineCss: true,
-  },
+  // CSS ships as one cached stylesheet. (experimental.inlineCss copied the whole sheet into every
+  // page's HTML and its RSC payload — ~740 KB per page — so it was turned off.)
   images: {
     formats: ["image/avif", "image/webp"],
     remotePatterns: [

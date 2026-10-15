@@ -14,7 +14,7 @@ export function IntroLoader() {
     >
       <div className="intro-loader__bg bg-burgundy absolute inset-0" />
       <div className="intro-loader__mark relative">
-        <Logo className="text-pink h-16 sm:h-20" title="" />
+        <Logo className="text-pink h-16 sm:h-20" title="" inline />
       </div>
     </div>
   );

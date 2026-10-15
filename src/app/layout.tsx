@@ -32,6 +32,8 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
     >
       <head>
         <script dangerouslySetInnerHTML={{ __html: motionScript }} />
+        {/* The logo sprite every <Logo> points to — fetch it early so the wordmark never pops in. */}
+        <link rel="preload" href="/images/brand/logo-sprite.svg" as="image" type="image/svg+xml" />
       </head>
       <body className="flex min-h-full flex-col">{children}</body>
     </html>
