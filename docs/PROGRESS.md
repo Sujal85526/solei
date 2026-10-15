@@ -39,6 +39,10 @@ Phase 1 milestones (one branch + PR each, in order). See `docs/BUILD_PROMPT.md` 
 - Local Supabase: `pnpm db:start`; copy keys from `pnpm exec supabase status` into `.env.local` (see `.env.example`).
 
 ## Carry-overs
+- **M17 (security) — re-enable 2FA:** on 2026-10-15 two-factor was switched off for the owner and manager roles on
+  the hosted dev DB so the client can test (`update roles set requires_mfa = false where key in ('owner','manager')`).
+  Turn it back on before launch (Admin → Staff → roles, or set `requires_mfa = true`). Client test login:
+  `client@solei.test` (password in Keychain `solei-client-test-password`).
 - **M13 (reports):** hosted dev DB keeps three demo events named "Report Test — …" (POS-style sales, refunds, a
   cancelled sale, stock allocation/close-out, expenses) for trying the reports. `/admin/reports` will gain
   dashboard-style reports in M16; the POS (M12) only needs to stamp `event_id` / `event_day` / cost snapshots.
