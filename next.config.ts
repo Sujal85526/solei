@@ -6,6 +6,8 @@ const supabase = new URL(process.env.NEXT_PUBLIC_SUPABASE_URL ?? "http://127.0.0
 const nextConfig: NextConfig = {
   cacheComponents: true,
   partialPrefetching: true,
+  // Dev only: let the in-app preview browser (which opens 127.0.0.1) load dev assets and hydrate.
+  allowedDevOrigins: ["127.0.0.1"],
   experimental: {
     // Tailwind output is small and atomic; inlining removes the render-blocking stylesheet request.
     inlineCss: true,
