@@ -23,7 +23,7 @@ export function StorySplit({ image }: { image: string }) {
         id="story-title"
         eyebrow="Our philosophy"
         title={["Scents are memories", "in another form."]}
-        action={<CircleArrowLink href="/destinations">Our story</CircleArrowLink>}
+        action={<CircleArrowLink href="/story">Our story</CircleArrowLink>}
       >
         Inspired by travel, every Solei fragrance captures the atmosphere, emotion and essence of a
         destination — turning it into an experience you can make your own.

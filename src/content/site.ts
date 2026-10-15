@@ -16,12 +16,13 @@ export const siteDefaults = {
  */
 export const storeNav: readonly {
   href: string;
-  key: "home" | "collections" | "events" | "destinations" | "passport";
+  key: "home" | "collections" | "events" | "story" | "destinations" | "passport";
   soon?: boolean;
 }[] = [
   { href: "/", key: "home" },
   { href: "/shop", key: "collections" },
   { href: "/events", key: "events", soon: true },
+  { href: "/story", key: "story" },
   { href: "/destinations", key: "destinations" },
   { href: "/passport", key: "passport" },
 ];

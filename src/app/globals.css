@@ -477,6 +477,43 @@
   }
 }
 
+/* Shimmer text: a slow pearl light gliding across a pink (or burgundy, on blush) headline. */
+.text-shimmer {
+  background-image: linear-gradient(
+    105deg,
+    currentColor 0%,
+    currentColor 40%,
+    color-mix(in oklab, currentColor, white 55%) 50%,
+    currentColor 60%,
+    currentColor 100%
+  );
+  background-size: 250% 100%;
+  background-position: 100% 0;
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+@media (prefers-reduced-motion: no-preference) {
+  .text-shimmer {
+    animation: solei-text-shimmer 6s var(--ease-soft) infinite;
+  }
+}
+@keyframes solei-text-shimmer {
+  0%,
+  35% {
+    background-position: 100% 0;
+  }
+  100% {
+    background-position: -50% 0;
+  }
+}
+
+/* Arch frame (brand motif): a photo with a rounded top, like the palm arch on the packaging. */
+.arch {
+  border-radius: 999px 999px 0.25rem 0.25rem / 50% 50% 0.25rem 0.25rem;
+  overflow: hidden;
+}
+
 /* CTA sheen: a soft light sweep across the button on hover (pointer devices only). */
 @layer components {
   .sheen {
