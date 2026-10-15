@@ -20,3 +20,4 @@ One line per merged PR (newest first).
 - 2026-10-15 — #29 collection hero on the new sprays photograph (phone layout keeps the sprays whole)
 - 2026-10-15 — #30 simpler collection filters (category + price), phone filter drawer, compact phone banner
 - 2026-10-15 — #31 product page + cart drawer · #32 glass header everywhere, one-line product title, phone thumbnails, lining numerals
+- 2026-10-15 — #33 cart drawer subtotal only · #34 minimal product page (phone dots, no scent section, no view all), cards without type line
