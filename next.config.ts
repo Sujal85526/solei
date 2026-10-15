@@ -8,6 +8,16 @@ const nextConfig: NextConfig = {
   partialPrefetching: true,
   // Dev only: let the in-app preview browser (which opens 127.0.0.1) load dev assets and hydrate.
   allowedDevOrigins: ["127.0.0.1"],
+  // Policies live on one Help page; keep old links working.
+  async redirects() {
+    return [
+      { source: "/policies/delivery", destination: "/help?tab=shipping", permanent: true },
+      { source: "/policies/returns", destination: "/help?tab=returns", permanent: true },
+      { source: "/policies/privacy", destination: "/help?tab=privacy", permanent: true },
+      { source: "/policies/terms", destination: "/help?tab=terms", permanent: true },
+      { source: "/policies/:path*", destination: "/help", permanent: true },
+    ];
+  },
   experimental: {
     // Tailwind output is small and atomic; inlining removes the render-blocking stylesheet request.
     inlineCss: true,

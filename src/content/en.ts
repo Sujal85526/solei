@@ -32,6 +32,7 @@ export const en = {
     location: "Abu Dhabi, United Arab Emirates",
     explore: "Explore",
     help: "Help",
+    helpCentre: "Help centre",
     follow: "Follow",
     contact: "Contact us",
     policies: {

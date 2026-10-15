@@ -574,9 +574,12 @@
     background-color 0.5s var(--ease-soft),
     backdrop-filter 0.5s var(--ease-soft);
 }
-/* Over light pages (account) the glass would wash out: keep the bar near-solid. */
-body:has(main .theme-light) .site-header {
-  background-color: color-mix(in oklab, var(--brand-noir) 94%, transparent);
+/*
+ * Pages that open on a pink or light panel (account, contact): a deeper glass so the pink logo
+ * and links stay readable — still frosted, just darker than over the dark pages.
+ */
+body:has(main [data-solid-header]) .site-header {
+  background-color: color-mix(in oklab, var(--brand-noir) 88%, transparent);
 }
 body:has([data-hero]) .site-header {
   position: fixed;

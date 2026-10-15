@@ -92,10 +92,10 @@ export default async function ProductPage({ params }: PageProps<"/products/[slug
               : ""}
           </p>
           <p className="flex gap-5">
-            <Link href="/policies/delivery" className="underline underline-offset-4">
+            <Link href="/help?tab=shipping" className="underline underline-offset-4">
               {t.product.deliveryPolicy}
             </Link>
-            <Link href="/policies/returns" className="underline underline-offset-4">
+            <Link href="/help?tab=returns" className="underline underline-offset-4">
               {t.product.returnsPolicy}
             </Link>
           </p>

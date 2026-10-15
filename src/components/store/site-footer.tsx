@@ -35,11 +35,12 @@ export async function SiteFooter() {
           )}
         </FooterColumn>
         <FooterColumn title={t.footer.help} className="md:col-span-3">
+          <FooterLink href="/help">{t.footer.helpCentre}</FooterLink>
           <FooterLink href="/track">{t.nav.trackOrder}</FooterLink>
-          <FooterLink href="/policies/delivery">{t.footer.policies.delivery}</FooterLink>
-          <FooterLink href="/policies/returns">{t.footer.policies.returns}</FooterLink>
-          <FooterLink href="/policies/privacy">{t.footer.policies.privacy}</FooterLink>
-          <FooterLink href="/policies/terms">{t.footer.policies.terms}</FooterLink>
+          <FooterLink href="/help?tab=shipping">{t.footer.policies.delivery}</FooterLink>
+          <FooterLink href="/help?tab=returns">{t.footer.policies.returns}</FooterLink>
+          <FooterLink href="/help?tab=privacy">{t.footer.policies.privacy}</FooterLink>
+          <FooterLink href="/help?tab=terms">{t.footer.policies.terms}</FooterLink>
         </FooterColumn>
         <FooterColumn title={t.footer.contact} className="md:col-span-3">
           <li className="text-cream/85 flex items-start gap-3 text-sm">
