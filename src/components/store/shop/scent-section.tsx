@@ -14,7 +14,7 @@ const tierLabel = (tier: Accord["tier"]) =>
         : null;
 
 /**
- * "The scent": a close crop of the bottle beside the mood line and its accords as round motifs.
+ * "The scent": a dark close-up of the bottle beside the mood line and its accords as round motifs.
  * Burgundy band between the purchase panel and the recommendations.
  */
 export function ScentSection({
@@ -34,7 +34,7 @@ export function ScentSection({
           alt={image.alt}
           fill
           sizes="(min-width: 1024px) 50vw, 100vw"
-          className="scale-[1.6] object-cover object-[50%_40%]"
+          className="object-cover"
         />
       </div>
       <div className="flex flex-col justify-center px-6 py-14 sm:px-12 lg:col-span-6 lg:px-16 lg:py-20">

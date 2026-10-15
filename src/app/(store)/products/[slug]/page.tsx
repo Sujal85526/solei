@@ -11,6 +11,7 @@ import { ProductGrid, ProductGridSkeleton } from "@/components/store/shop/produc
 import { PurchasePanel } from "@/components/store/shop/purchase-panel";
 import { ScentSection } from "@/components/store/shop/scent-section";
 import { t } from "@/content/en";
+import { scentCloseUp } from "@/content/home";
 import { publicEnv } from "@/lib/env";
 import { formatAED } from "@/lib/money";
 import { scentAccords } from "@/modules/storefront/scent";
@@ -190,7 +191,11 @@ export default async function ProductPage({ params }: PageProps<"/products/[slug
       </section>
 
       {product.destination?.mood ? (
-        <ScentSection image={product.images[0]} mood={product.destination.mood} accords={accords} />
+        <ScentSection
+          image={scentCloseUp(product.category.slug)}
+          mood={product.destination.mood}
+          accords={accords}
+        />
       ) : null}
 
       <section aria-labelledby="related-title" className="on-blush py-16 sm:py-24">
