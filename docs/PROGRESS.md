@@ -38,6 +38,33 @@ Phase 1 milestones (one branch + PR each, in order). See `docs/BUILD_PROMPT.md` 
   generated from `src/modules/content/seed.ts` via `pnpm db:seed:generate`.
 - Local Supabase: `pnpm db:start`; copy keys from `pnpm exec supabase status` into `.env.local` (see `.env.example`).
 
+## Handoff — storefront design state (2026-10-15)
+Client feedback rounds after the milestones (PRs #22–#35). The client wants it **minimal** (content will be made
+admin-editable later, so avoid extra sections). Current storefront:
+- **Header** (`site-header.tsx`): frosted glass on every page; left Home · Collection · Plan your event (desktop),
+  menu icon on the left on phones (baby-pink drawer from the left, `site-menu-drawer.tsx`); right: account, bag
+  (opens the cart drawer), menu (desktop dropdown). Shared `SideDrawer` for phone menu, shop filters and cart.
+- **Intro loader**: every homepage load; burgundy panel with the wordmark, dissolves into the hero (Overlay-style).
+- **Home** (`app/(store)/page.tsx`): pinned single-image hero (Cannes bottle) → Our philosophy (Soho portrait) →
+  Different places, Same feeling (sunset window) → Signature Scents shelf (one photo cut into Capri / Marbella /
+  Verona tiles, each links to its product) → More than a fragrance (bag photo + early-access sign-up). No ticker,
+  pop-ups, events or passport bands.
+- **Collection** (`/shop`): sprays-and-flowers hero (compact on phones), "All fragrances — 08" + Filter
+  (category + price sort only); phones get a filter icon → drawer from the right. Cards: square photo, serif
+  name, hairline, price, round + (no type line).
+- **Product page**: photo (desktop thumbnail column, phone dot pill) beside a blush panel — one-line name
+  ("Cannes *Eau de parfum*"), price, Add to cart (no price on the button), Buy now, Fragrance notes / Shipping &
+  returns / Details (description lives in Details); then You may also like (no View all). No scent section.
+- **Cart drawer** (`cart-drawer.tsx`): Your Cart (n), free-shipping progress, lines with − n + and bin, Subtotal,
+  Shipping "Calculated at checkout" (no Total), Proceed to checkout, trust row. No gift note.
+- Product photos in the DB are light studio renders; the client's references use dark editorial shots — waiting
+  on dark product photography. Lining numerals for the serif (old-style "1" looked like "I").
+- **Working style**: one change at a time, commit locally, deploy only when the user says "deploy"
+  (`~/.solei-tools/ship.sh "<title>" <body.md>` → PR → squash-merge → Vercel auto-deploys main). Restart
+  `pnpm dev` with `rm -rf .next` if CSS changes don't show (Turbopack served stale CSS several times).
+- **Admin for client testing**: https://solei-rust.vercel.app/admin/login — `client@solei.test` (password in
+  Keychain `solei-client-test-password`); 2FA is OFF on the dev DB (see carry-over below).
+
 ## Carry-overs
 - **M17 (security) — re-enable 2FA:** on 2026-10-15 two-factor was switched off for the owner and manager roles on
   the hosted dev DB so the client can test (`update roles set requires_mfa = false where key in ('owner','manager')`).
