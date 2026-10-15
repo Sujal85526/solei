@@ -197,6 +197,7 @@ export const en = {
   checkout: {
     title: "Checkout",
     secure: "Secure checkout",
+    continueShopping: "Continue shopping",
     steps: { bag: "Bag", account: "Account", delivery: "Delivery", payment: "Payment" },
     contact: "Contact",
     signedInAs: "Signed in as",
