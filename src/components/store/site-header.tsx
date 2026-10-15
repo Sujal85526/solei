@@ -1,9 +1,9 @@
 import Link from "next/link";
-import { UserRound } from "lucide-react";
 import { Logo } from "@/components/brand";
 import { t } from "@/content/en";
 import { cn } from "@/lib/utils";
 import { storeNav } from "@/content/site";
+import { AccountMenu } from "./account/account-menu";
 import { CartButton } from "./cart/cart-button";
 import { HeaderShell } from "./header-shell";
 import { SiteMenu } from "./site-menu";
@@ -52,10 +52,7 @@ export function SiteHeader() {
           <Logo className="text-pink h-6 sm:h-8" />
         </Link>
         <div className="-me-2.5 flex items-center justify-end">
-          <Link href="/passport" className={iconLink} title={t.nav.account}>
-            <UserRound className="size-[1.15rem]" strokeWidth={1.25} aria-hidden />
-            <span className="sr-only">{t.nav.account}</span>
-          </Link>
+          <AccountMenu className={iconLink} />
           <CartButton className={iconLink} />
           <SiteMenu className={cn(iconLink, "hidden lg:inline-flex")} />
         </div>

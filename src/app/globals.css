@@ -162,6 +162,35 @@
   color-scheme: light;
 }
 
+/*
+ * Light storefront surfaces (checkout, sign-in / account drawer): warm white paper, ink text,
+ * burgundy headings and buttons. Keeps checkout calm and form-friendly inside the dark store.
+ */
+.theme-light {
+  --background: #fbf8f5;
+  --foreground: var(--brand-ink);
+  --card: #ffffff;
+  --card-foreground: var(--brand-ink);
+  --popover: #ffffff;
+  --popover-foreground: var(--brand-ink);
+  --primary: var(--brand-burgundy);
+  --primary-foreground: var(--brand-cream);
+  --secondary: var(--brand-pink);
+  --secondary-foreground: var(--brand-burgundy);
+  --muted: #f3ece6;
+  --muted-foreground: var(--brand-ink-muted);
+  --accent: var(--brand-pink-wash);
+  --accent-foreground: var(--brand-burgundy);
+  --destructive: #a3172d;
+  --border: color-mix(in oklab, var(--brand-burgundy) 12%, transparent);
+  --input: color-mix(in oklab, var(--brand-burgundy) 20%, transparent);
+  --ring: var(--brand-burgundy);
+  --heading: var(--brand-burgundy);
+  background-color: var(--background);
+  color: var(--foreground);
+  color-scheme: light;
+}
+
 /* Admin works on brighter surfaces for long data sessions. */
 .theme-admin {
   --background: #faf7f5;
