@@ -65,8 +65,11 @@ export function AccountMenu({ className }: { className?: string }) {
                 <Link href="/account" onClick={() => setOpen(false)} className={item}>
                   {c.menu.myAccount}
                 </Link>
-                <Link href="/account#orders" onClick={() => setOpen(false)} className={item}>
+                <Link href="/account/orders" onClick={() => setOpen(false)} className={item}>
                   {c.menu.orders}
+                </Link>
+                <Link href="/passport" onClick={() => setOpen(false)} className={item}>
+                  {c.menu.passport}
                 </Link>
                 <button
                   type="button"

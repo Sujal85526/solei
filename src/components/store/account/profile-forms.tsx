@@ -240,12 +240,14 @@ export function EditableRow({
   );
 }
 
-/** Details and saved address as two compact rows, each editable in place. */
+/** Everything we hold for the customer: details (editable), email and saved address (editable). */
 export function AccountDetails({
+  email,
   profile,
   address,
   zones,
 }: {
+  email: string;
   profile: { firstName: string; lastName: string; phone: string };
   address: SavedAddress | null;
   zones: ZoneOption[];
@@ -257,12 +259,14 @@ export function AccountDetails({
       <EditableRow
         label={c.page.details}
         summary={
-          <p>
-            {name || "—"}
-            {profile.phone ? (
-              <span className="text-muted-foreground"> · {formatPhone(profile.phone)}</span>
-            ) : null}
-          </p>
+          <dl className="grid grid-cols-[6rem_1fr] gap-y-2">
+            <dt className="text-muted-foreground">{c.page.name}</dt>
+            <dd>{name || "—"}</dd>
+            <dt className="text-muted-foreground">{c.page.email}</dt>
+            <dd className="break-all">{email}</dd>
+            <dt className="text-muted-foreground">{c.page.mobile}</dt>
+            <dd>{profile.phone ? formatPhone(profile.phone) : "—"}</dd>
+          </dl>
         }
       >
         {(close) => <ProfileForm initial={profile} onDone={close} />}
