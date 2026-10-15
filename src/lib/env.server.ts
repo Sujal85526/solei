@@ -5,7 +5,13 @@ import { z } from "zod";
 const serverSchema = z
   .object({
     SUPABASE_SECRET_KEY: z.string().min(1),
-    PAYMENT_PROVIDER: z.enum(["stripe", "mock"]).optional(),
+    PAYMENT_PROVIDER: z.enum(["stripe", "ziina", "mock"]).optional(),
+    /** Ziina (client's gateway): API key with write_payment_intents; ZIINA_TEST_MODE=1 for test payments. */
+    ZIINA_API_KEY: z
+      .string()
+      .optional()
+      .or(z.literal("").transform(() => undefined)),
+    ZIINA_TEST_MODE: z.enum(["0", "1"]).optional(),
     STRIPE_SECRET_KEY: z
       .string()
       .startsWith("sk_test_", "Only Stripe test keys are allowed in Phase 1")
@@ -40,7 +46,9 @@ const serverSchema = z
   })
   .transform((env) => ({
     ...env,
-    PAYMENT_PROVIDER: env.PAYMENT_PROVIDER ?? (env.STRIPE_SECRET_KEY ? "stripe" : "mock"),
+    PAYMENT_PROVIDER:
+      env.PAYMENT_PROVIDER ??
+      (env.ZIINA_API_KEY ? "ziina" : env.STRIPE_SECRET_KEY ? "stripe" : "mock"),
   }))
   .superRefine((env, ctx) => {
     if (

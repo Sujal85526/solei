@@ -46,7 +46,7 @@ export class WebhookSignatureError extends Error {
 
 /**
  * Card data never touches our servers: every provider uses a hosted payment page.
- * Swappable (Stripe today; Tap / Network International later) — see docs/DECISIONS.md D12.
+ * Swappable (Ziina for the client; Stripe and a mock for tests) — see docs/DECISIONS.md D12.
  */
 export interface PaymentProvider {
   readonly name: string;

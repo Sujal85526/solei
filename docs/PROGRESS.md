@@ -73,6 +73,10 @@ admin-editable later, so avoid extra sections). Current storefront:
   Keychain `solei-client-test-password`); 2FA is OFF on the dev DB (see carry-over below).
 
 ## Carry-overs
+- **Ziina payments (client's gateway):** code is ready (`src/providers/payment/ziina.ts`). To go live, set on
+  Vercel `PAYMENT_PROVIDER=ziina`, `ZIINA_API_KEY=…` (token with `write_payment_intents`; `ZIINA_TEST_MODE=1`
+  first for test payments), then run once `ZIINA_API_KEY=… pnpm ziina:webhook https://<site>`. Until then the
+  site keeps the mock test checkout.
 - **Account test code (remove at launch):** until Resend is set up, `ACCOUNT_TEST_CODE=123456` (local
   `.env.local` + Vercel production) verifies any sign-up / reset — so emails aren't really verified and a
   passport could be claimed by email. It switches off automatically once `RESEND_API_KEY` is set; delete the
