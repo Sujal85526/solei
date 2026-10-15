@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { Lock } from "lucide-react";
 import { Logo } from "@/components/brand";
+import { CartDrawer } from "@/components/store/cart/cart-drawer";
 import { t } from "@/content/en";
 
 /** Checkout: a calm, light page with only the logo and a secure note — no store navigation. */
@@ -21,6 +22,10 @@ export default function CheckoutLayout({ children }: { children: React.ReactNode
       <main id="main" className="flex flex-1 flex-col">
         {children}
       </main>
+      {/* "Bag" / "Return to bag" open the same side drawer as in the store. */}
+      <div className="theme-store">
+        <CartDrawer />
+      </div>
     </div>
   );
 }

@@ -14,7 +14,7 @@ import { MAX_LINE_QTY } from "@/modules/cart/schema";
 import { cart } from "@/modules/cart/store";
 import { useCartDetails } from "@/modules/cart/use-cart-details";
 import { freeDeliveryProgress } from "@/modules/orders/pricing";
-import { noticesFor } from "./cart-view";
+import { noticesFor } from "./cart-notices";
 import { QtyStepper } from "./qty-stepper";
 
 /**

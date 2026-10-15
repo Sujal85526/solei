@@ -20,6 +20,7 @@ import { getCartDetails } from "@/modules/cart/actions";
 import type { CartDetails } from "@/modules/cart/details";
 import type { Emirate } from "@/modules/cart/schema";
 import type { CartState } from "@/modules/cart/logic";
+import { cartDrawer } from "@/modules/cart/drawer";
 import { cart, useCart } from "@/modules/cart/store";
 import { placeOrderAction } from "@/modules/checkout/actions";
 
@@ -145,9 +146,13 @@ function Steps({ current }: { current: "account" | "delivery" }) {
         {steps.map((s, i) => (
           <li key={s.key} className="flex items-center gap-2">
             {s.key === "bag" ? (
-              <Link href="/cart" className="text-muted-foreground hover:text-primary">
+              <button
+                type="button"
+                onClick={cartDrawer.open}
+                className="text-muted-foreground hover:text-primary uppercase"
+              >
                 {s.label}
-              </Link>
+              </button>
             ) : (
               <span
                 aria-current={i === at ? "step" : undefined}
@@ -302,12 +307,13 @@ function DeliveryForm({
           {submitting || redirecting ? c.paying : c.pay}
         </Button>
         <p className="text-muted-foreground text-xs leading-relaxed">{c.payNote}</p>
-        <Link
-          href="/cart"
+        <button
+          type="button"
+          onClick={cartDrawer.open}
           className="text-muted-foreground hover:text-primary self-start text-xs underline-offset-4 hover:underline"
         >
           ← {c.backToBag}
-        </Link>
+        </button>
       </div>
     </form>
   );

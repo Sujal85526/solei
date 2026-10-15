@@ -42,50 +42,30 @@ test.describe("storefront — browse and cart", () => {
     const panel = page.getByTestId("purchase-panel");
     const add = panel.getByTestId("add-to-cart");
     await expect(add).toHaveText(/Add to cart/);
-    // Adding opens the cart drawer; raise the quantity there, then go to the cart page.
+    // Adding opens the cart drawer (the only cart — there is no cart page).
     await add.click();
     const drawer = page.getByRole("dialog", { name: /Your Cart/ });
     await expect(drawer.getByTestId("drawer-line")).toHaveCount(1);
     await drawer.getByRole("button", { name: "Increase quantity" }).click();
     await expect(page.getByTestId("cart-count")).toHaveText("2");
+    // 2 × AED 280 = AED 560, above the AED 500 free-delivery threshold.
     await expect(drawer.getByTestId("drawer-subtotal")).toHaveText("AED 560");
-    await page.keyboard.press("Escape");
-    await page.goto("/cart");
+    await expect(drawer.getByText("You've unlocked free delivery.")).toBeVisible();
 
-    // Cart: 2 × AED 280 = AED 560, above the AED 500 free-delivery threshold.
-    await expect(page).toHaveURL(/\/cart$/);
-    await expect(page.getByTestId("cart-line")).toHaveCount(1);
-    await expect(page.getByTestId("summary-total")).toHaveText("AED 560");
-    await expect(page.getByTestId("summary-delivery")).toHaveText("Free");
-    await expect(page.getByText("You've unlocked free delivery.")).toBeVisible();
-    await expect(page.getByTestId("summary-vat")).toHaveText("Includes AED 26.67 VAT");
+    // Down to 1 → the free-delivery nudge comes back.
+    await drawer.getByRole("button", { name: "Decrease quantity" }).click();
+    await expect(drawer.getByTestId("drawer-subtotal")).toHaveText("AED 280");
+    await expect(drawer.getByText(/AED 220/)).toBeVisible();
 
-    // Emirate selection → still free above the threshold.
-    await page.getByTestId("emirate-select").selectOption("abu_dhabi");
-    await expect(page.getByTestId("summary-delivery")).toHaveText("Free");
-
-    // Down to 1 → the Abu Dhabi fee applies and the nudge appears.
-    await page.getByTestId("cart-line").getByRole("button", { name: "Decrease quantity" }).click();
-    await expect(page.getByTestId("summary-subtotal")).toHaveText("AED 280");
-    await expect(page.getByTestId("summary-delivery")).toHaveText("AED 20");
-    await expect(page.getByTestId("summary-total")).toHaveText("AED 300");
-    await expect(page.getByText("AED 220 away from free delivery")).toBeVisible();
-
-    // Dubai costs more.
-    await page.getByTestId("emirate-select").selectOption("dubai");
-    await expect(page.getByTestId("summary-total")).toHaveText("AED 305");
-
-    // Persists across reload (lines and emirate).
+    // Persists across reload; the header bag reopens the drawer.
     await page.reload();
-    await expect(page.getByTestId("cart-line")).toHaveCount(1);
-    await expect(page.getByTestId("summary-total")).toHaveText("AED 305");
-    await expect(page.getByTestId("emirate-select")).toHaveValue("dubai");
     await expect(page.getByTestId("cart-count")).toHaveText("1");
+    await page.getByRole("button", { name: "Cart" }).click();
+    await expect(drawer.getByTestId("drawer-line")).toHaveCount(1);
 
     // Remove → empty state.
-    await page.getByRole("button", { name: "Remove Cannes Perfume" }).click();
-    await expect(page.getByTestId("cart-empty")).toBeVisible();
-    await expect(page.getByRole("link", { name: "Explore the collection" })).toBeVisible();
+    await drawer.getByRole("button", { name: "Remove Cannes Perfume" }).click();
+    await expect(drawer.getByText("Your cart is empty")).toBeVisible();
     await expect(page.getByTestId("cart-count")).toHaveText("0");
   });
 
@@ -168,8 +148,8 @@ test.describe("storefront — sold out", () => {
         ),
       variantId,
     );
-    await page.goto("/cart");
+    await page.reload();
+    await page.getByRole("button", { name: "Cart" }).click();
     await expect(page.getByText("E2E Sold Out has just sold out")).toBeVisible();
-    await expect(page.getByTestId("cart-empty")).toBeVisible();
   });
 });

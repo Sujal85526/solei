@@ -70,7 +70,8 @@ test.describe("checkout & payments", () => {
     expect(await stockOf("SOL-P-CAP-50")).toBe(before - 2);
 
     // Cart cleared after payment.
-    await page.goto("/cart");
+    await page.goto("/shop");
+    await page.getByRole("button", { name: "Cart" }).click();
     await expect(page.getByText("Your cart is empty")).toBeVisible();
   });
 
