@@ -46,7 +46,7 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
           </p>
         </div>
       </div>
-      <main id="main" className="bg-cream flex items-center justify-center px-5 py-12">
+      <main id="main" className="bg-pink flex items-center justify-center px-5 py-12">
         <div className="w-full max-w-sm">
           <Logo className="text-burgundy mb-10 h-9 lg:hidden" />
           {children}

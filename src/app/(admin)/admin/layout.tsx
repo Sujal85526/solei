@@ -36,7 +36,7 @@ async function AdminGate({ children }: { children: React.ReactNode }) {
 
 function AdminLoading() {
   return (
-    <div className="flex min-h-dvh items-center justify-center bg-[#faf7f5]">
+    <div className="bg-pink flex min-h-dvh items-center justify-center">
       <Logo className="text-burgundy/40 h-8 animate-pulse" />
     </div>
   );

@@ -192,12 +192,18 @@
   color-scheme: light;
 }
 
-/* Admin works on brighter surfaces for long data sessions. */
+/*
+ * Admin: brand colours throughout — burgundy sidebar, baby-pink workspace, soft blush cards
+ * (no plain white). Text stays ink/burgundy for long data sessions.
+ */
 .theme-admin {
-  --background: #faf7f5;
-  --card: #ffffff;
-  --popover: #ffffff;
-  --muted: #f3ece7;
+  --background: var(--brand-pink);
+  --card: #fdf0f1;
+  --popover: #fdf0f1;
+  --muted: #f6dfe2;
+  --accent: #fae3e6;
+  --border: color-mix(in oklab, var(--brand-burgundy) 14%, transparent);
+  --input: color-mix(in oklab, var(--brand-burgundy) 24%, transparent);
 }
 
 @layer base {
