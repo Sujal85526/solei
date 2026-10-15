@@ -8,7 +8,7 @@ import type { StoreImage } from "@/modules/storefront/types";
 
 /**
  * Product gallery: photographs crossfade in place, chosen from thumbnails (a column over the photo
- * on wide screens, a plain row beneath it on phones) or by swiping on touch screens.
+ * on wide screens), from dots or by swiping (phones).
  */
 export function ProductGallery({ images, name }: { images: StoreImage[]; name: string }) {
   const [active, setActive] = useState(0);
@@ -55,22 +55,50 @@ export function ProductGallery({ images, name }: { images: StoreImage[]; name: s
           </div>
         ))}
         {many ? (
-          <Thumbs
-            images={images}
-            active={active}
-            onPick={go}
-            className="absolute start-8 top-24 hidden w-16 flex-col gap-3 lg:flex"
-          />
+          <>
+            <Thumbs
+              images={images}
+              active={active}
+              onPick={go}
+              className="absolute start-8 top-24 hidden w-16 flex-col gap-3 lg:flex"
+            />
+            <Dots count={images.length} active={active} onPick={go} />
+          </>
         ) : null}
       </div>
-      {many ? (
-        <Thumbs
-          images={images}
-          active={active}
-          onPick={go}
-          className="flex gap-2 px-4 py-3 lg:hidden"
-        />
-      ) : null}
+    </div>
+  );
+}
+
+/** Phones: a small frosted pill of dots on the photo; the active dot stretches. */
+function Dots({
+  count,
+  active,
+  onPick,
+}: {
+  count: number;
+  active: number;
+  onPick: (i: number) => void;
+}) {
+  return (
+    <div className="bg-noir/35 absolute bottom-4 left-1/2 z-10 flex -translate-x-1/2 items-center gap-1 rounded-full px-2 py-1.5 backdrop-blur-md lg:hidden">
+      {Array.from({ length: count }, (_, i) => (
+        <button
+          key={i}
+          type="button"
+          onClick={() => onPick(i)}
+          aria-label={t.product.showImage(i + 1)}
+          aria-current={i === active ? "true" : undefined}
+          className="flex h-4 items-center justify-center px-0.5"
+        >
+          <span
+            className={cn(
+              "block h-1.5 rounded-full transition-all duration-300",
+              i === active ? "bg-pearl w-5" : "bg-pearl/50 w-1.5",
+            )}
+          />
+        </button>
+      ))}
     </div>
   );
 }

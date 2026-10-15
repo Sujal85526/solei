@@ -32,19 +32,6 @@ export function homeImages() {
   };
 }
 
-/** "The scent" close-up on the product page: a dark editorial crop per kind of bottle. */
-export function scentCloseUp(categorySlug: string): { url: string; alt: string } {
-  return categorySlug === "all_over_spray"
-    ? {
-        url: "/images/editorial/scent-spray.jpg",
-        alt: "A Solei all-over spray leaning on travertine among burgundy flowers",
-      }
-    : {
-        url: "/images/editorial/scent-perfume.jpg",
-        alt: "A Solei perfume bottle on a travertine ledge in late-afternoon light",
-      };
-}
-
 /**
  * Signature Scents shelf: three bottles cut from one photograph, so side by side they read as the
  * original shelf while each opens its own product page.

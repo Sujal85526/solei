@@ -2,18 +2,14 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Suspense } from "react";
-import { ArrowRight } from "lucide-react";
 import { ProductAccordions } from "@/components/store/shop/product-accordions";
 import { ProductGallery } from "@/components/store/shop/product-gallery";
 import { ProductGrid, ProductGridSkeleton } from "@/components/store/shop/product-grid";
 import { PurchasePanel } from "@/components/store/shop/purchase-panel";
-import { ScentSection } from "@/components/store/shop/scent-section";
 import { t } from "@/content/en";
-import { scentCloseUp } from "@/content/home";
 import { publicEnv } from "@/lib/env";
 import { formatAED } from "@/lib/money";
 import { productTypeLabel } from "@/modules/storefront/labels";
-import { scentAccords } from "@/modules/storefront/scent";
 import {
   availabilityFor,
   getCartSettings,
@@ -59,7 +55,6 @@ export default async function ProductPage({ params }: PageProps<"/products/[slug
   const vatNote = settings.pricesIncludeVat ? t.product.vatIncluded : t.product.vatExcluded;
   const purchaseProps = { variants: product.variants };
   const prices = product.variants.map((v) => v.priceFils);
-  const accords = scentAccords(product);
   const title = product.destination
     ? [product.destination.name, productTypeLabel(product.category)]
     : [product.name];
@@ -169,30 +164,12 @@ export default async function ProductPage({ params }: PageProps<"/products/[slug
         </div>
       </section>
 
-      {product.destination?.mood ? (
-        <ScentSection
-          image={scentCloseUp(product.category.slug)}
-          mood={product.destination.mood}
-          accords={accords}
-        />
-      ) : null}
-
       <section aria-labelledby="related-title" className="on-blush py-16 sm:py-24">
         <div className="mx-auto max-w-[96rem] px-6 sm:px-10 lg:px-14">
-          <div className="mb-8 flex items-center justify-between gap-4 sm:mb-12">
+          <div className="mb-8 sm:mb-12">
             <h2 id="related-title" className="eyebrow text-primary text-[0.62rem]">
               {t.product.youMayAlsoLike}
             </h2>
-            <Link
-              href="/shop"
-              className="eyebrow group text-primary inline-flex items-center gap-3 text-[0.62rem]"
-            >
-              {t.product.viewAll}
-              <ArrowRight
-                className="size-3.5 transition-transform group-hover:translate-x-1 rtl:rotate-180"
-                strokeWidth={1.25}
-              />
-            </Link>
           </div>
           <Suspense fallback={<ProductGridSkeleton count={3} columns={relatedColumns} />}>
             <Related slug={product.slug} />

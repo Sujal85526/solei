@@ -4,12 +4,11 @@ import { QuickAdd } from "@/components/store/cart/quick-add";
 import { t } from "@/content/en";
 import { formatAED } from "@/lib/money";
 import { cn } from "@/lib/utils";
-import { productTypeLabel } from "@/modules/storefront/labels";
 import type { StoreProduct } from "@/modules/storefront/types";
 
 /**
- * Collection card: square photograph, the destination in serif capitals, the product type, a
- * hairline, then the price and a one-tap add. Colours follow the surrounding theme.
+ * Collection card: square photograph, the destination in serif capitals, a hairline, then the
+ * price and a one-tap add. Colours follow the surrounding theme.
  */
 export function ProductCard({
   product,
@@ -58,9 +57,6 @@ export function ProductCard({
         <h3 className="font-display text-primary text-lg leading-tight tracking-[0.06em] uppercase sm:text-xl">
           <Link href={href}>{title}</Link>
         </h3>
-        <p className="eyebrow text-primary/60 mt-1 text-[0.55rem] sm:text-[0.6rem]">
-          {productTypeLabel(product.category)}
-        </p>
         <div className="border-primary/20 mt-3 flex min-h-[3.25rem] items-center justify-between gap-3 border-t pt-3">
           <span className="numeric text-primary text-[0.7rem] tracking-[0.18em] sm:text-xs">
             {varies ? `${t.shop.from} ` : ""}
