@@ -18,7 +18,7 @@ export const en = {
     destinations: "Destinations",
     events: "Plan your event",
     passport: "Solei Passport",
-    contact: "Contact",
+    contact: "Contact us",
     story: "Our story",
     cart: "Cart",
     account: "Your account & passport",
@@ -33,7 +33,7 @@ export const en = {
     explore: "Explore",
     help: "Help",
     follow: "Follow",
-    contact: "Contact",
+    contact: "Contact us",
     policies: {
       delivery: "Delivery",
       returns: "Returns & refunds",

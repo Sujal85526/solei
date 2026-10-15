@@ -1,11 +1,11 @@
 /** Copy for the Contact page (English). From the client's brand & policies document. */
 export const contactCopy = {
   meta: {
-    title: "Contact",
+    title: "Contact us",
     description:
       "Questions about an order, a destination or the Solei Passport? Reach Solei on WhatsApp, email or Instagram.",
   },
-  eyebrow: "Contact",
+  eyebrow: "Contact us",
   title: ["We're here", "to help."],
   lede: "Have a question about your order, a destination or the Solei Passport? Reach us using the details below — and include your order number if your message is about a purchase.",
   whatsapp: "WhatsApp",

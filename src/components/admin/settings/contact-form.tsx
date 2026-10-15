@@ -45,7 +45,7 @@ export function ContactForm({ contact }: { contact: ContactDetails }) {
           name="contactEmail"
           type="email"
           defaultValue={contact.email ?? ""}
-          placeholder="hello@solei.ae"
+          placeholder="The confirmed support email"
           className="h-11"
         />
       </Field>
