@@ -3,6 +3,7 @@ import { publicEnv } from "@/lib/env";
 import { orderLinkSecret } from "@/lib/env.server";
 import { UserError } from "@/lib/action-result";
 import { createAdminClient } from "@/lib/supabase/server";
+import { currentAccount, rememberOrder, saveAddress } from "@/modules/account/service";
 import { resolveCart } from "@/modules/cart/details";
 import {
   fetchAvailability,
@@ -12,7 +13,7 @@ import {
 import { paymentProvider } from "@/providers/payment";
 import type { CheckoutLine } from "@/providers/payment/types";
 import { orderToken } from "./order-link";
-import { checkoutSchema } from "./schema";
+import { checkoutSchema, fullName } from "./schema";
 
 const site = () => publicEnv.NEXT_PUBLIC_SITE_URL;
 
@@ -21,13 +22,17 @@ export function orderUrl(orderId: string, number: string, extra = "") {
 }
 
 /**
- * Place a website order and return the hosted payment page URL.
- * The cart is re-resolved server-side (prices, stock, delivery fee); nothing from the client is trusted.
+ * Place a website order for the signed-in customer and return the hosted payment page URL.
+ * The cart is re-resolved server-side (prices, stock, delivery fee); nothing from the client is
+ * trusted. The contact email is the account's verified email.
  */
 export async function placeOrder(
   input: unknown,
 ): Promise<{ redirectUrl: string; orderNumber: string }> {
-  const v = checkoutSchema.parse(input);
+  const account = await currentAccount();
+  if (!account) throw new UserError("Please sign in to check out.");
+  const v = checkoutSchema.parse({ ...(input as object), email: account.user.email });
+  const name = fullName(v);
   const ids = [...new Set(v.lines.map((l) => l.variantId))];
   const [products, availability, settings] = await Promise.all([
     fetchProductsForVariants(ids),
@@ -61,7 +66,7 @@ export async function placeOrder(
         emirate: v.emirate,
         notes: v.notes,
         marketing_consent: v.marketingConsent,
-        contact: { name: v.name, phone: v.phone, email: v.email },
+        contact: { name, phone: v.phone, email: v.email },
         address: { line1: v.line1, line2: v.line2, area: v.area, city: v.city, emirate: v.emirate },
         lines: cart.lines.map((l) => ({
           variant_id: l.variantId,
@@ -80,6 +85,14 @@ export async function placeOrder(
   if (error) {
     if (error.code === "P0001") throw new UserError(capitalise(error.message));
     throw new Error(`create_web_order failed: ${error.message}`);
+  }
+
+  await rememberOrder(account.user, created.order_id);
+  if (v.saveAddress) {
+    const { line1, line2, area, city, emirate } = v;
+    await saveAddress({ line1, line2, area, city, emirate }).catch((e) =>
+      console.error("save address failed", e),
+    );
   }
 
   const lines: CheckoutLine[] = cart.lines.map((l) => ({

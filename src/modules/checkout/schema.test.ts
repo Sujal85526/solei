@@ -3,7 +3,8 @@ import { checkoutSchema } from "./schema";
 
 const base = {
   clientUuid: "8d6f0a2e-3a1b-4c55-9e1f-1d2b3c4d5e6f",
-  name: "Layla Ahmed",
+  firstName: "Layla",
+  lastName: "Ahmed",
   phone: "050 123 4567",
   email: "Layla@Example.com",
   line1: "Villa 12, Street 4",

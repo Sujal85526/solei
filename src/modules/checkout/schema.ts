@@ -2,13 +2,22 @@ import { z } from "zod";
 import { normalizePhone } from "@/lib/phone";
 import { cartLineSchema, emirateSchema, MAX_LINES } from "@/modules/cart/schema";
 
+const checkbox = z
+  .union([z.boolean(), z.literal("on"), z.literal("")])
+  .optional()
+  .transform((v) => v === true || v === "on");
+
 const required = (label: string, max = 120) =>
   z.string().trim().min(1, `Enter your ${label}`).max(max);
 
-/** Guest checkout: name, UAE-format mobile, email, full address and emirate are required (§6.2). */
+/**
+ * Checkout (signed-in customers): name, UAE-format mobile, full address and emirate are required
+ * (§6.2). The email comes from the account; first and last name are joined into `name`.
+ */
 export const checkoutSchema = z.object({
   clientUuid: z.uuid(),
-  name: z.string().trim().min(2, "Enter your full name").max(80),
+  firstName: z.string().trim().min(1, "Enter your first name").max(40),
+  lastName: z.string().trim().max(40).optional().default(""),
   phone: z
     .string()
     .trim()
@@ -27,12 +36,13 @@ export const checkoutSchema = z.object({
   city: required("city", 80),
   emirate: emirateSchema,
   notes: z.string().trim().max(500).optional().default(""),
-  marketingConsent: z
-    .union([z.boolean(), z.literal("on"), z.literal("")])
-    .optional()
-    .transform((v) => v === true || v === "on"),
+  marketingConsent: checkbox,
+  saveAddress: checkbox,
   lines: z.array(cartLineSchema).min(1, "Your cart is empty").max(MAX_LINES),
 });
 
 export type CheckoutInput = z.input<typeof checkoutSchema>;
+
+export const fullName = (v: { firstName: string; lastName: string }) =>
+  [v.firstName, v.lastName].filter(Boolean).join(" ");
 export type CheckoutData = z.output<typeof checkoutSchema>;
