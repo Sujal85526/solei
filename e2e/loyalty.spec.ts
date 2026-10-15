@@ -90,12 +90,12 @@ test.describe("Solei Passport", () => {
     await expect(page.getByRole("dialog").getByText(/Redeemed on order SOL-/)).toBeVisible();
   });
 
-  test("passport page explains the programme and offers email sign-in", async ({ page }) => {
+  test("passport page explains the programme and offers account sign-in", async ({ page }) => {
     await page.goto("/passport");
-    await expect(page.getByRole("heading", { name: "How it works" })).toBeVisible();
     await expect(page.getByText("12 stamps, one gift")).toBeVisible();
-    await page.getByLabel("Email").fill("not-a-customer@example.com");
-    await page.getByRole("button", { name: "Email me a link" }).click();
-    await expect(page.getByText(/a sign-in link is on its way/)).toBeVisible();
+    const card = page.locator("#your-passport");
+    await expect(card.getByRole("heading", { name: "Open your passport" })).toBeVisible();
+    await expect(card.getByLabel("Email address")).toBeVisible();
+    await expect(card.getByRole("button", { name: "Sign in" })).toBeVisible();
   });
 });

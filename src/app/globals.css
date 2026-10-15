@@ -510,8 +510,11 @@
 
 /* Arch frame (brand motif): a photo with a rounded top, like the palm arch on the packaging. */
 .arch {
-  border-radius: 999px 999px 0.25rem 0.25rem / 50% 50% 0.25rem 0.25rem;
+  border-radius: 9999px 9999px 0.25rem 0.25rem;
   overflow: hidden;
+  isolation: isolate;
+  /* WebKit: keep transformed (parallax) children inside the rounded corners. */
+  -webkit-mask-image: -webkit-radial-gradient(white, black);
 }
 
 /* CTA sheen: a soft light sweep across the button on hover (pointer devices only). */

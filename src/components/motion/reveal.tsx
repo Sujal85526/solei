@@ -9,7 +9,7 @@ import { useEffect, useRef, type HTMLAttributes, type ReactNode } from "react";
  * get the content instantly (the CSS hidden state only applies with `no-preference`).
  */
 
-type Tag = "div" | "ul" | "ol" | "header" | "p";
+type Tag = "div" | "ul" | "ol" | "li" | "header" | "p";
 
 const STAGGER_STEP_MS = 90;
 let observer: IntersectionObserver | null = null;

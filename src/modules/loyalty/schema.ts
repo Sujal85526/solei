@@ -174,10 +174,6 @@ export const redeemRewardSchema = z.object({
   note: z.string().trim().max(300).optional().default(""),
 });
 
-export const passportEmailSchema = z.object({
-  email: z.email("Enter the email you shop with").trim().toLowerCase().max(200),
-});
-
 /** Human summary of a reward config, e.g. "AED 50 off" / "10% off". */
 export function rewardValueText(type: RewardType, config: Record<string, unknown>) {
   if (type === "fixed_amount") return `${formatAED(Number(config.amount_fils ?? 0))} off`;
