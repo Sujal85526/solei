@@ -73,6 +73,10 @@ admin-editable later, so avoid extra sections). Current storefront:
   Keychain `solei-client-test-password`); 2FA is OFF on the dev DB (see carry-over below).
 
 ## Carry-overs
+- **Account test code (remove at launch):** until Resend is set up, `ACCOUNT_TEST_CODE=123456` (local
+  `.env.local` + Vercel production) verifies any sign-up / reset — so emails aren't really verified and a
+  passport could be claimed by email. It switches off automatically once `RESEND_API_KEY` is set; delete the
+  variable then.
 - **Resend (account codes + notifications):** set `RESEND_API_KEY` and `EMAIL_FROM` (client's domain, verified
   in Resend) locally and on Vercel; until then codes only appear in the server log. Outside production only
   `EMAIL_ALLOWLIST` recipients get real email (`EMAIL_ALLOW_ALL=1` for client testing).

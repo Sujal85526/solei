@@ -2,6 +2,7 @@ import "server-only";
 import type { User } from "@supabase/supabase-js";
 import { UserError } from "@/lib/action-result";
 import { createAdminClient, createClient } from "@/lib/supabase/server";
+import { serverEnv } from "@/lib/env.server";
 import { emailProvider, recipientAllowed } from "@/providers/email";
 import { accountCodeEmail } from "./emails";
 import {
@@ -23,6 +24,12 @@ import {
  * Accounts are only usable once verified, so `link_customer_account()` (passport) stays safe.
  */
 
+/** Fixed test code while no email provider is configured (see ACCOUNT_TEST_CODE). */
+function testCode(): string | null {
+  const env = serverEnv();
+  return env.RESEND_API_KEY ? null : (env.ACCOUNT_TEST_CODE ?? null);
+}
+
 export type SignInResult = { status: "signed_in" } | { status: "verify"; email: string };
 
 async function sendCode(kind: "verify" | "reset", email: string, firstName?: string) {
@@ -34,6 +41,7 @@ async function sendCode(kind: "verify" | "reset", email: string, firstName?: str
     if (error.code === "user_not_found") return; // same answer either way
     throw new Error(`generateLink failed: ${error.message}`);
   }
+  if (testCode()) return; // testing: the fixed code is entered instead
   const msg = accountCodeEmail(kind, data.properties.email_otp, firstName);
   if (!recipientAllowed(email)) {
     console.info(`[account] code email to ${email} skipped (not on EMAIL_ALLOWLIST)`);
@@ -102,10 +110,23 @@ async function findUser(email: string): Promise<User | null> {
 /** Enter the emailed code: verifies the email and signs the customer in. */
 export async function verifyCode(input: unknown) {
   const v = codeSchema.parse(input);
+  let token = v.code;
+  const fixed = testCode();
+  if (fixed) {
+    if (v.code !== fixed)
+      throw new UserError("That code is wrong or has expired. Ask for a new one.");
+    // Swap the test code for a fresh real one so Supabase still confirms and signs in.
+    const { data, error } = await createAdminClient().auth.admin.generateLink({
+      type: "recovery",
+      email: v.email,
+    });
+    if (error) throw new UserError("That code is wrong or has expired. Ask for a new one.");
+    token = data.properties.email_otp;
+  }
   const supabase = await createClient();
   const { error } = await supabase.auth.verifyOtp({
     email: v.email,
-    token: v.code,
+    token,
     type: "recovery",
   });
   if (error) throw new UserError("That code is wrong or has expired. Ask for a new one.");

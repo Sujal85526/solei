@@ -28,6 +28,15 @@ const serverSchema = z
     /** Production switch to send to every customer (set on the live deployment only). */
     EMAIL_ALLOW_ALL: z.enum(["0", "1"]).optional(),
     EMAIL_FROM: z.string().default("Solei <hello@example.com>"),
+    /**
+     * Testing only, until Resend is set up: a fixed 6-digit code that verifies sign-ups and
+     * password resets. Ignored once RESEND_API_KEY is set (real emailed codes take over).
+     */
+    ACCOUNT_TEST_CODE: z
+      .string()
+      .regex(/^\d{6}$/)
+      .optional()
+      .or(z.literal("").transform(() => undefined)),
   })
   .transform((env) => ({
     ...env,
