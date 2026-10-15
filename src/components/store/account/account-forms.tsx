@@ -89,16 +89,16 @@ export function AccountForms({
     });
 
   const link =
-    "text-muted-foreground hover:text-primary text-[0.7rem] tracking-[0.18em] uppercase underline-offset-4 transition-colors hover:underline";
+    "text-muted-foreground hover:text-primary text-[0.62rem] tracking-[0.18em] uppercase underline-offset-4 transition-colors hover:underline";
 
   return (
-    <div className="flex flex-col gap-7">
+    <div className="flex flex-col gap-6">
       {step === "signIn" ? (
         <>
           <Heading title={c.signIn.title} lede={c.signIn.lede} />
           <form
             noValidate
-            className="flex flex-col gap-5"
+            className="flex flex-col gap-4"
             onSubmit={(e) =>
               submit(e, signInAction, (r, input) => {
                 if (r.status === "signed_in") onSignedIn();
@@ -128,7 +128,7 @@ export function AccountForms({
               }
             />
             <Alert error={formError} notice={notice} />
-            <Button type="submit" size="cta" disabled={pending} className="mt-1 w-full">
+            <Button type="submit" size="cta" disabled={pending} className="mt-1 h-11 w-full">
               {c.signIn.submit}
             </Button>
           </form>
@@ -143,7 +143,7 @@ export function AccountForms({
           <Heading title={c.signUp.title} lede={c.signUp.lede} />
           <form
             noValidate
-            className="grid grid-cols-[minmax(0,1fr)_minmax(0,1fr)] gap-x-4 gap-y-5"
+            className="grid grid-cols-[minmax(0,1fr)_minmax(0,1fr)] gap-x-3 gap-y-4"
             onSubmit={(e) => submit(e, signUpAction, (r) => codeSent(r.email, "verify"))}
           >
             <TextField
@@ -187,9 +187,9 @@ export function AccountForms({
               error={errors.password}
               className="col-span-2"
             />
-            <div className="col-span-2 flex flex-col gap-5">
+            <div className="col-span-2 flex flex-col gap-4">
               <Alert error={formError} notice={notice} />
-              <Button type="submit" size="cta" disabled={pending} className="mt-1 w-full">
+              <Button type="submit" size="cta" disabled={pending} className="mt-1 h-11 w-full">
                 {c.signUp.submit}
               </Button>
             </div>
@@ -205,12 +205,12 @@ export function AccountForms({
           <Heading title={c.verify.title} lede={c.verify.lede(email)} />
           <form
             noValidate
-            className="flex flex-col gap-5"
+            className="flex flex-col gap-4"
             onSubmit={(e) => submit(e, verifyCodeAction, () => onSignedIn())}
           >
             <CodeField error={errors.code} />
             <Alert error={formError} notice={notice} />
-            <Button type="submit" size="cta" disabled={pending} className="mt-1 w-full">
+            <Button type="submit" size="cta" disabled={pending} className="mt-1 h-11 w-full">
               {c.verify.submit}
             </Button>
           </form>
@@ -236,7 +236,7 @@ export function AccountForms({
           <Heading title={c.forgot.title} lede={c.forgot.lede} />
           <form
             noValidate
-            className="flex flex-col gap-5"
+            className="flex flex-col gap-4"
             onSubmit={(e) =>
               submit(e, requestResetAction, (_, input) => codeSent(String(input.email), "reset"))
             }
@@ -251,7 +251,7 @@ export function AccountForms({
               error={errors.email}
             />
             <Alert error={formError} notice={notice} />
-            <Button type="submit" size="cta" disabled={pending} className="mt-1 w-full">
+            <Button type="submit" size="cta" disabled={pending} className="mt-1 h-11 w-full">
               {c.forgot.submit}
             </Button>
           </form>
@@ -266,7 +266,7 @@ export function AccountForms({
           <Heading title={c.reset.title} lede={c.reset.lede(email)} />
           <form
             noValidate
-            className="flex flex-col gap-5"
+            className="flex flex-col gap-4"
             onSubmit={(e) => submit(e, resetPasswordAction, () => onSignedIn())}
           >
             <CodeField error={errors.code} />
@@ -279,7 +279,7 @@ export function AccountForms({
               error={errors.password}
             />
             <Alert error={formError} notice={notice} />
-            <Button type="submit" size="cta" disabled={pending} className="mt-1 w-full">
+            <Button type="submit" size="cta" disabled={pending} className="mt-1 h-11 w-full">
               {c.reset.submit}
             </Button>
           </form>
@@ -305,9 +305,9 @@ export function AccountForms({
 
 function Heading({ title, lede }: { title: string; lede: string }) {
   return (
-    <div className="flex flex-col gap-2">
-      <h2 className="text-3xl italic">{title}</h2>
-      <p className="text-muted-foreground text-sm leading-relaxed">{lede}</p>
+    <div className="flex flex-col gap-1.5">
+      <h2 className="text-2xl italic">{title}</h2>
+      <p className="text-muted-foreground text-[0.8rem] leading-relaxed">{lede}</p>
     </div>
   );
 }
@@ -322,7 +322,7 @@ function CodeField({ error }: { error?: string }) {
       maxLength={6}
       placeholder="••••••"
       error={error}
-      className="[&_input]:text-center [&_input]:text-xl [&_input]:tracking-[0.6em]"
+      className="[&_input]:text-center [&_input]:text-base [&_input]:tracking-[0.5em]"
     />
   );
 }
@@ -330,13 +330,13 @@ function CodeField({ error }: { error?: string }) {
 function Alert({ error, notice }: { error: string | null; notice: string | null }) {
   if (error)
     return (
-      <p role="alert" className="bg-destructive/8 text-destructive px-4 py-3 text-sm">
+      <p role="alert" className="bg-destructive/8 text-destructive px-3 py-2.5 text-[0.8rem]">
         {error}
       </p>
     );
   if (notice)
     return (
-      <p role="status" className="bg-muted px-4 py-3 text-sm">
+      <p role="status" className="bg-muted px-3 py-2.5 text-[0.8rem]">
         {notice}
       </p>
     );

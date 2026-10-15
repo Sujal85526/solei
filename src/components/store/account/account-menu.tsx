@@ -103,9 +103,9 @@ export function AccountMenu({ className }: { className?: string }) {
         title={drawer === "signUp" ? c.menu.createAccount : c.menu.signIn}
         header={<span />}
         closeLabel="Close"
-        className="theme-light w-[92vw] max-w-md overflow-y-auto px-7 sm:px-10"
+        className="theme-light w-[90vw] max-w-sm overflow-y-auto px-7 sm:px-8"
       >
-        <div className="mt-6 pb-4">
+        <div className="mt-4 pb-4">
           {drawer ? (
             <AccountForms
               key={drawer}

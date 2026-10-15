@@ -12,7 +12,7 @@ import { EmirateSelect, type ZoneOption } from "./emirate-select";
 import { TextField } from "./text-field";
 import { refreshAccount } from "./use-account";
 
-function useSave(action: (input: unknown) => Promise<ActionResult>) {
+function useSave(action: (input: unknown) => Promise<ActionResult>, onSaved?: () => void) {
   const router = useRouter();
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [status, setStatus] = useState<string | null>(null);
@@ -28,6 +28,7 @@ function useSave(action: (input: unknown) => Promise<ActionResult>) {
         setStatus(c.page.saved);
         await refreshAccount();
         router.refresh();
+        onSaved?.();
       } else {
         setErrors(res.fieldErrors ?? {});
         if (!res.fieldErrors) setStatus(res.error);
@@ -37,12 +38,29 @@ function useSave(action: (input: unknown) => Promise<ActionResult>) {
   return { errors, status, pending, onSubmit };
 }
 
-function SaveRow({ pending, status }: { pending: boolean; status: string | null }) {
+function SaveRow({
+  pending,
+  status,
+  onCancel,
+}: {
+  pending: boolean;
+  status: string | null;
+  onCancel?: () => void;
+}) {
   return (
     <div className="col-span-2 flex items-center gap-4">
-      <Button type="submit" variant="outline" disabled={pending} className="h-11 px-6">
+      <Button type="submit" disabled={pending} className="h-9 px-5 text-xs">
         {c.page.save}
       </Button>
+      {onCancel ? (
+        <button
+          type="button"
+          onClick={onCancel}
+          className="text-muted-foreground hover:text-primary text-xs"
+        >
+          {c.page.cancel}
+        </button>
+      ) : null}
       {status ? (
         <p role="status" className="text-muted-foreground text-xs">
           {status}
@@ -52,14 +70,16 @@ function SaveRow({ pending, status }: { pending: boolean; status: string | null 
   );
 }
 
-const grid = "mt-6 grid grid-cols-[minmax(0,1fr)_minmax(0,1fr)] gap-x-4 gap-y-5";
+const grid = "mt-4 grid grid-cols-[minmax(0,1fr)_minmax(0,1fr)] gap-x-3 gap-y-4";
 
 export function ProfileForm({
   initial,
+  onDone,
 }: {
   initial: { firstName: string; lastName: string; phone: string };
+  onDone?: () => void;
 }) {
-  const { errors, status, pending, onSubmit } = useSave(saveProfileAction);
+  const { errors, status, pending, onSubmit } = useSave(saveProfileAction, onDone);
   return (
     <form noValidate onSubmit={onSubmit} className={grid}>
       <TextField
@@ -86,7 +106,7 @@ export function ProfileForm({
         error={errors.phone}
         className="col-span-2"
       />
-      <SaveRow pending={pending} status={status} />
+      <SaveRow pending={pending} status={status} onCancel={onDone} />
     </form>
   );
 }
@@ -94,18 +114,17 @@ export function ProfileForm({
 export function AddressForm({
   initial,
   zones,
+  onDone,
 }: {
   initial: SavedAddress | null;
   zones: ZoneOption[];
+  onDone?: () => void;
 }) {
-  const { errors, status, pending, onSubmit } = useSave(saveAddressAction);
+  const { errors, status, pending, onSubmit } = useSave(saveAddressAction, onDone);
   return (
     <form noValidate onSubmit={onSubmit} className={grid}>
-      {!initial ? (
-        <p className="text-muted-foreground col-span-2 -mt-2 text-sm">{c.page.noAddress}</p>
-      ) : null}
       <AddressFields initial={initial} zones={zones} errors={errors} />
-      <SaveRow pending={pending} status={status} />
+      <SaveRow pending={pending} status={status} onCancel={onDone} />
     </form>
   );
 }
@@ -185,9 +204,88 @@ export function SignOutLink() {
           router.refresh();
         })
       }
-      className="text-muted-foreground hover:text-primary text-[0.7rem] tracking-[0.2em] uppercase underline-offset-4 hover:underline"
+      className="text-muted-foreground hover:text-primary text-[0.62rem] tracking-[0.2em] uppercase underline-offset-4 hover:underline"
     >
       {c.menu.signOut}
     </button>
+  );
+}
+
+/** A compact account row: label, a one-line summary and Edit, which opens the form in place. */
+export function EditableRow({
+  label,
+  summary,
+  children,
+}: {
+  label: string;
+  summary: React.ReactNode;
+  children: (close: () => void) => React.ReactNode;
+}) {
+  const [editing, setEditing] = useState(false);
+  return (
+    <div className="border-border border-b py-5">
+      <div className="flex items-baseline justify-between gap-4">
+        <h2 className="text-muted-foreground font-sans text-[0.6rem] tracking-[0.25em] uppercase">
+          {label}
+        </h2>
+        {!editing ? (
+          <button
+            type="button"
+            onClick={() => setEditing(true)}
+            className="text-muted-foreground hover:text-primary text-xs underline-offset-4 hover:underline"
+          >
+            {c.page.edit}
+          </button>
+        ) : null}
+      </div>
+      {editing ? children(() => setEditing(false)) : <div className="mt-2 text-sm">{summary}</div>}
+    </div>
+  );
+}
+
+/** Details and saved address as two compact rows, each editable in place. */
+export function AccountDetails({
+  profile,
+  address,
+  zones,
+}: {
+  profile: { firstName: string; lastName: string; phone: string };
+  address: SavedAddress | null;
+  zones: ZoneOption[];
+}) {
+  const name = [profile.firstName, profile.lastName].filter(Boolean).join(" ");
+  const zone = zones.find((z) => z.emirate === address?.emirate)?.name;
+  return (
+    <>
+      <EditableRow
+        label={c.page.details}
+        summary={
+          <p>
+            {name || "—"}
+            {profile.phone ? (
+              <span className="text-muted-foreground"> · {formatPhone(profile.phone)}</span>
+            ) : null}
+          </p>
+        }
+      >
+        {(close) => <ProfileForm initial={profile} onDone={close} />}
+      </EditableRow>
+      <EditableRow
+        label={c.page.address}
+        summary={
+          address ? (
+            <p>
+              {[address.line1, address.line2, address.area, address.city, zone]
+                .filter(Boolean)
+                .join(", ")}
+            </p>
+          ) : (
+            <p className="text-muted-foreground">{c.page.noAddress}</p>
+          )
+        }
+      >
+        {(close) => <AddressForm initial={address} zones={zones} onDone={close} />}
+      </EditableRow>
+    </>
   );
 }

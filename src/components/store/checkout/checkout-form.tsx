@@ -122,7 +122,7 @@ export function CheckoutFlow({
               onRedirect={() => setRedirecting(true)}
             />
           ) : (
-            <div className="mt-10 max-w-md">
+            <div className="mt-8 max-w-sm">
               <AccountGate initialMode="signUp" />
             </div>
           )}
@@ -230,7 +230,7 @@ function DeliveryForm({
   const label = "text-[0.65rem] tracking-[0.25em] uppercase";
 
   return (
-    <form onSubmit={onSubmit} noValidate className="mt-10 flex flex-col gap-10">
+    <form onSubmit={onSubmit} noValidate className="mt-8 flex flex-col gap-8">
       <section aria-labelledby="contact-title" className="flex flex-col gap-3">
         <h2 id="contact-title" className={cn(label, "text-muted-foreground font-sans")}>
           {c.contact}
@@ -259,7 +259,7 @@ function DeliveryForm({
 
       <section
         aria-labelledby="delivery-title"
-        className="grid grid-cols-[minmax(0,1fr)_minmax(0,1fr)] gap-x-4 gap-y-5"
+        className="grid grid-cols-[minmax(0,1fr)_minmax(0,1fr)] gap-x-3 gap-y-4"
       >
         <h2
           id="delivery-title"
@@ -305,7 +305,7 @@ function DeliveryForm({
             <div className="flex flex-col gap-2">
               <label
                 htmlFor="f-notes"
-                className="text-muted-foreground text-[0.65rem] tracking-[0.2em] uppercase"
+                className="text-muted-foreground text-[0.6rem] tracking-[0.2em] uppercase"
               >
                 {c.notes}
               </label>
@@ -314,7 +314,7 @@ function DeliveryForm({
                 name="notes"
                 rows={3}
                 maxLength={500}
-                className="border-input focus:border-primary w-full rounded-sm border bg-white px-3.5 py-3 text-[0.95rem] outline-none"
+                className="border-input focus:border-primary w-full rounded-sm border bg-white px-3 py-2.5 text-sm outline-none"
               />
             </div>
           ) : (
@@ -345,7 +345,7 @@ function DeliveryForm({
           type="submit"
           size="cta"
           disabled={submitting || redirecting || !pricing}
-          className="h-14 w-full"
+          className="h-12 w-full"
         >
           <Lock className="size-3.5" />
           {submitting || redirecting ? c.paying : c.pay}
