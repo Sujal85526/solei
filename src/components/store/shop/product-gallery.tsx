@@ -1,111 +1,70 @@
 "use client";
 
 import Image from "next/image";
-import { useCallback, useRef, useState } from "react";
+import { useRef, useState } from "react";
 import { t } from "@/content/en";
 import { cn } from "@/lib/utils";
 import type { StoreImage } from "@/modules/storefront/types";
 
-const smooth = () =>
-  typeof window !== "undefined" && !window.matchMedia("(prefers-reduced-motion: reduce)").matches
-    ? "smooth"
-    : "auto";
-
 /**
- * Product gallery: a scroll-snap strip (native swipe on touch devices) with thumbnails on larger
- * screens and dots on phones. Works without JS as a horizontally scrollable strip.
+ * Product gallery on the dark side of the product page: photographs crossfade in place, chosen from
+ * thumbnails (a column over the photo on wide screens, a row along its foot on phones) or by
+ * swiping on touch screens.
  */
 export function ProductGallery({ images, name }: { images: StoreImage[]; name: string }) {
-  const strip = useRef<HTMLDivElement>(null);
   const [active, setActive] = useState(0);
+  const touchX = useRef<number | null>(null);
   const many = images.length > 1;
-
-  const onScroll = useCallback(() => {
-    const el = strip.current;
-    if (!el) return;
-    // Math.abs: scrollLeft is negative in RTL.
-    setActive(Math.round(Math.abs(el.scrollLeft) / el.clientWidth));
-  }, []);
-
-  const go = (i: number) => {
-    const el = strip.current;
-    if (!el) return;
-    const dir = getComputedStyle(el).direction === "rtl" ? -1 : 1;
-    el.scrollTo({ left: dir * i * el.clientWidth, behavior: smooth() });
-    setActive(i);
-  };
+  const go = (i: number) => setActive((i + images.length) % images.length);
 
   return (
     <div
-      className="flex flex-col gap-4 md:flex-row-reverse md:gap-5"
       aria-label={t.product.gallery}
+      aria-roledescription={many ? "carousel" : undefined}
+      className="bg-noir relative h-full min-h-[inherit] overflow-hidden"
+      onTouchStart={(e) => (touchX.current = e.touches[0].clientX)}
+      onTouchEnd={(e) => {
+        if (touchX.current === null || !many) return;
+        const dx = e.changedTouches[0].clientX - touchX.current;
+        if (Math.abs(dx) > 40) go(active + (dx < 0 ? 1 : -1));
+        touchX.current = null;
+      }}
     >
-      <div className="relative min-w-0 flex-1">
+      {images.map((img, i) => (
         <div
-          ref={strip}
-          onScroll={many ? onScroll : undefined}
-          tabIndex={many ? 0 : undefined}
-          aria-roledescription={many ? "carousel" : undefined}
-          className="bg-wine flex snap-x snap-mandatory [scrollbar-width:none] overflow-x-auto overscroll-x-contain [&::-webkit-scrollbar]:hidden"
+          key={`${img.url}-${i}`}
+          aria-hidden={i !== active}
+          className={cn(
+            "absolute inset-0 transition-opacity duration-700 ease-(--ease-soft)",
+            i === active ? "opacity-100" : "opacity-0",
+          )}
         >
-          {images.map((img, i) => (
-            <div
-              key={`${img.url}-${i}`}
-              className="relative aspect-[4/5] w-full shrink-0 snap-center"
-              aria-roledescription={many ? "slide" : undefined}
-              aria-label={many ? `${i + 1} / ${images.length}` : undefined}
-            >
-              <Image
-                src={img.url}
-                alt={img.alt || name}
-                fill
-                preload={i === 0}
-                sizes="(min-width: 1024px) 48vw, 100vw"
-                className="object-cover"
-              />
-              <div
-                aria-hidden
-                className="outline-cream/60 pointer-events-none absolute inset-3 outline outline-1 sm:inset-4"
-              />
-            </div>
-          ))}
+          <Image
+            src={img.url}
+            alt={img.alt || name}
+            fill
+            preload={i === 0}
+            sizes="(min-width: 1024px) 58vw, 100vw"
+            className={cn(
+              "object-cover transition-transform duration-[2400ms] ease-(--ease-soft)",
+              i === active ? "scale-100" : "scale-[1.04]",
+            )}
+          />
         </div>
-        {many ? (
-          <div className="absolute inset-x-0 bottom-5 flex justify-center gap-2 md:hidden">
-            {images.map((_, i) => (
-              <button
-                key={i}
-                type="button"
-                onClick={() => go(i)}
-                aria-label={t.product.showImage(i + 1)}
-                aria-current={i === active ? "true" : undefined}
-                className="flex size-6 items-center justify-center"
-              >
-                <span
-                  className={cn(
-                    "block h-1.5 rounded-full transition-all duration-300",
-                    i === active ? "bg-noir w-5" : "bg-noir/60 w-1.5",
-                  )}
-                />
-              </button>
-            ))}
-          </div>
-        ) : null}
-      </div>
+      ))}
+
       {many ? (
-        <ul className="hidden w-20 shrink-0 flex-col gap-3 md:flex lg:w-24">
+        <ul className="absolute inset-x-4 bottom-4 z-10 flex gap-2 lg:inset-x-auto lg:start-8 lg:top-8 lg:bottom-auto lg:w-16 lg:flex-col lg:gap-3">
           {images.map((img, i) => (
-            <li key={`${img.url}-${i}`}>
+            <li key={`${img.url}-${i}`} className="flex-1 lg:flex-none">
               <button
                 type="button"
                 onClick={() => go(i)}
                 aria-label={t.product.showImage(i + 1)}
                 aria-current={i === active ? "true" : undefined}
                 className={cn(
-                  "bg-wine relative block aspect-[4/5] w-full overflow-hidden transition-all duration-300",
-                  i === active
-                    ? "ring-pink ring-offset-cream ring-1 ring-offset-2"
-                    : "opacity-60 hover:opacity-100",
+                  "relative block aspect-[4/3] w-full overflow-hidden rounded-[2px] border transition-all duration-300 lg:aspect-square",
+                  i === active ? "border-pearl" : "border-pearl/25 opacity-70 hover:opacity-100",
                 )}
               >
                 <Image src={img.url} alt="" fill sizes="96px" className="object-cover" />

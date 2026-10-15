@@ -29,21 +29,26 @@ test.describe("storefront — browse and cart", () => {
 
     // Product page.
     await page.getByRole("link", { name: /Cannes Perfume/ }).click();
-    await expect(page.getByRole("heading", { level: 1, name: "Cannes Perfume" })).toBeVisible();
+    await expect(
+      page.getByRole("heading", { level: 1, name: /Cannes Eau de parfum/ }),
+    ).toBeVisible();
     await expect(page.getByTestId("product-price")).toHaveText("AED 280");
     await expect(page.getByText("Price includes VAT")).toBeVisible();
+    await page.getByText("Details", { exact: true }).click();
     await expect(page.getByText(/Earn a Cannes stamp in your Solei Passport/)).toBeVisible();
     const jsonLd = await page.locator('script[type="application/ld+json"]').textContent();
     expect(JSON.parse(jsonLd!)).toMatchObject({ "@type": "Product", name: "Cannes Perfume" });
 
     const panel = page.getByTestId("purchase-panel");
     const add = panel.getByTestId("add-to-cart");
-    await expect(add).toBeEnabled();
-    await panel.getByRole("button", { name: "Increase quantity" }).click();
-    await expect(panel.getByRole("group", { name: "Quantity" }).locator("output")).toHaveText("2");
+    await expect(add).toHaveText(/Add to cart — AED 280/);
+    // One per tap (the cart page changes quantities); add twice.
+    await add.click();
+    const sheet = page.getByTestId("added-sheet");
+    await expect(sheet.getByText("Added to your cart")).toBeVisible();
+    await page.keyboard.press("Escape");
     await add.click();
 
-    const sheet = page.getByTestId("added-sheet");
     await expect(sheet.getByText("Added to your cart")).toBeVisible();
     await expect(sheet.getByText("2 items in your cart")).toBeVisible();
     await expect(page.getByTestId("cart-count")).toHaveText("2");
