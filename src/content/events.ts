@@ -8,6 +8,14 @@ export const eventsCopy = {
     description:
       "Book Solei for your wedding, engagement or celebration — a styled perfume booth, guest giveaways and arrangements in your colours. Request a personal quotation.",
   },
+  soon: {
+    eyebrow: "Private events",
+    title: "Plan your",
+    titleItalic: "event.",
+    badge: "Coming soon",
+    lede: "Styled perfume booths and guest giveaways for weddings and celebrations — opening for bookings soon.",
+    cta: "Shop the collection",
+  },
   hero: {
     eyebrow: "Private events",
     title: "Plan your",

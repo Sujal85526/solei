@@ -5,6 +5,7 @@ import { InstagramIcon } from "@/components/brand/icons";
 import { Logo, PostmarkWaves } from "@/components/brand";
 import { siteDefaults, storeNav } from "@/content/site";
 import { t } from "@/content/en";
+import { SoonTag } from "./soon-tag";
 
 export type FooterContact = {
   email?: string;
@@ -26,11 +27,17 @@ export function SiteFooter({ contact = {} }: { contact?: FooterContact }) {
           <PostmarkWaves className="text-pink/40 w-32" />
         </div>
         <FooterColumn title={t.footer.explore} className="md:col-span-2">
-          {storeNav.map((item) => (
-            <FooterLink key={item.href} href={item.href}>
-              {t.nav[item.key]}
-            </FooterLink>
-          ))}
+          {storeNav.map((item) =>
+            item.soon ? (
+              <li key={item.href} aria-disabled className="text-cream/45 text-sm">
+                {t.nav[item.key]} <SoonTag />
+              </li>
+            ) : (
+              <FooterLink key={item.href} href={item.href}>
+                {t.nav[item.key]}
+              </FooterLink>
+            ),
+          )}
         </FooterColumn>
         <FooterColumn title={t.footer.help} className="md:col-span-3">
           <FooterLink href="/track">{t.nav.trackOrder}</FooterLink>

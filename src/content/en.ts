@@ -24,6 +24,7 @@ export const en = {
     menu: "Menu",
     closeMenu: "Close menu",
     trackOrder: "Track an order",
+    soon: "Soon",
     skipToContent: "Skip to content",
   },
   footer: {

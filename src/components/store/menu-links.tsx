@@ -3,6 +3,7 @@ import type { CSSProperties } from "react";
 import { storeNav } from "@/content/site";
 import { t } from "@/content/en";
 import { cn } from "@/lib/utils";
+import { SoonTag } from "./soon-tag";
 
 /**
  * The store menu's links (every page, then order tracking) — shared by the desktop dropdown and
@@ -17,20 +18,30 @@ export function MenuLinks({
   itemClassName: string;
   dividerClassName?: string;
 }) {
-  const links = storeNav.map((l) => ({ href: l.href, label: t.nav[l.key] }));
+  const links = storeNav.map((l) => ({ href: l.href, label: t.nav[l.key], soon: l.soon }));
   return (
     <nav aria-label="Menu">
       <ul>
         {links.map((link, i) => (
           <li key={link.href}>
-            <Link
-              href={link.href}
-              onClick={onNavigate}
-              className={itemClassName}
-              style={{ "--i": i } as CSSProperties}
-            >
-              {link.label}
-            </Link>
+            {link.soon ? (
+              <span
+                aria-disabled
+                className={cn(itemClassName, "pointer-events-none opacity-50")}
+                style={{ "--i": i } as CSSProperties}
+              >
+                {link.label} <SoonTag />
+              </span>
+            ) : (
+              <Link
+                href={link.href}
+                onClick={onNavigate}
+                className={itemClassName}
+                style={{ "--i": i } as CSSProperties}
+              >
+                {link.label}
+              </Link>
+            )}
           </li>
         ))}
       </ul>

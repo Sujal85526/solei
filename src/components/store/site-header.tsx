@@ -8,6 +8,7 @@ import { CartButton } from "./cart/cart-button";
 import { HeaderShell } from "./header-shell";
 import { SiteMenu } from "./site-menu";
 import { SiteMenuDrawer } from "./site-menu-drawer";
+import { SoonTag } from "./soon-tag";
 
 const navLink = "eyebrow text-[0.65rem] text-pearl/85 transition-colors hover:text-pink";
 const iconLink =
@@ -30,9 +31,18 @@ export function SiteHeader() {
             <ul className="flex items-center gap-9">
               {storeNav.slice(0, 3).map((item) => (
                 <li key={item.href}>
-                  <Link href={item.href} className={navLink}>
-                    {t.nav[item.key]}
-                  </Link>
+                  {item.soon ? (
+                    <span
+                      aria-disabled
+                      className={cn(navLink, "text-pearl/45 hover:text-pearl/45")}
+                    >
+                      {t.nav[item.key]} <SoonTag />
+                    </span>
+                  ) : (
+                    <Link href={item.href} className={navLink}>
+                      {t.nav[item.key]}
+                    </Link>
+                  )}
                 </li>
               ))}
             </ul>
