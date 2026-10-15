@@ -518,6 +518,59 @@
   transform: translateZ(0);
 }
 
+/*
+ * Admin sign-in panel: three photos crossfade (6 s each, 18 s loop) while each drifts in a slow
+ * zoom; the logo and tagline rise in. Reduced motion: the first photo, still.
+ */
+.auth-slide {
+  opacity: 0;
+}
+.auth-slide:first-child {
+  opacity: 1;
+}
+@media (prefers-reduced-motion: no-preference) {
+  .auth-slide {
+    animation: solei-auth-fade 18s linear infinite both;
+  }
+  .auth-slide:nth-child(2),
+  .auth-slide:nth-child(2) .auth-slide-img {
+    animation-delay: 6s;
+  }
+  .auth-slide:nth-child(3),
+  .auth-slide:nth-child(3) .auth-slide-img {
+    animation-delay: 12s;
+  }
+  .auth-slide-img {
+    animation: solei-auth-zoom 18s linear infinite both;
+  }
+  .auth-rise {
+    animation: solei-rise 1.2s var(--ease-soft) both;
+    --rise: 18px;
+  }
+}
+@keyframes solei-auth-fade {
+  0% {
+    opacity: 0;
+  }
+  7%,
+  33% {
+    opacity: 1;
+  }
+  41%,
+  100% {
+    opacity: 0;
+  }
+}
+@keyframes solei-auth-zoom {
+  from {
+    scale: 1.12;
+  }
+  45%,
+  to {
+    scale: 1;
+  }
+}
+
 /* CTA sheen: a soft light sweep across the button on hover (pointer devices only). */
 @layer components {
   .sheen {
