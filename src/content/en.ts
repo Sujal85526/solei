@@ -236,6 +236,7 @@ export const en = {
     stampsTitle: "Your stamps",
     rewardsTitle: "Your rewards",
     rewardReady: "Ready to redeem",
+    whatsappUs: "Message us on WhatsApp",
     rewardHow:
       "Show this page at a Solei pop-up, or message us on WhatsApp, and we'll hand over your reward. Online redemption at checkout is coming soon.",
     destinationsTitle: "Destinations collected",

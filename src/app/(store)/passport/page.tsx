@@ -10,11 +10,13 @@ import { AccountGate } from "@/components/store/account/account-gate";
 import { CircleArrowLink } from "@/components/store/home/circle-arrow-link";
 import { t } from "@/content/en";
 import { formatBusinessDate } from "@/lib/dates";
+import { waNumber } from "@/lib/phone";
 import { cn } from "@/lib/utils";
 import { progress } from "@/modules/loyalty/engine";
 import { currentCardStickers, destinationTally, signedStamps } from "@/modules/loyalty/format";
 import { getMyPassport, getPublicProgramme } from "@/modules/loyalty/queries";
 import { stampKindLabels } from "@/modules/loyalty/schema";
+import { getContactDetails } from "@/modules/settings/queries";
 
 export const metadata: Metadata = {
   title: "Solei Passport",
@@ -130,7 +132,11 @@ async function Steps() {
 
 async function YourPassport() {
   await connection();
-  const [programme, me] = await Promise.all([getPublicProgramme(), getMyPassport()]);
+  const [programme, me, contact] = await Promise.all([
+    getPublicProgramme(),
+    getMyPassport(),
+    getContactDetails(),
+  ]);
 
   if (me.status === "signed_out") {
     return (
@@ -209,6 +215,16 @@ async function YourPassport() {
                 <p className="eyebrow text-burgundy/80">{p.rewardReady}</p>
                 <p className="font-display text-2xl">{r.label}</p>
                 <p className="text-sm">{p.rewardHow}</p>
+                {contact.whatsapp ? (
+                  <a
+                    href={`https://wa.me/${waNumber(contact.whatsapp)}`}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="eyebrow self-start text-[0.65rem] underline underline-offset-4"
+                  >
+                    {p.whatsappUs}
+                  </a>
+                ) : null}
               </div>
             ))}
           </div>

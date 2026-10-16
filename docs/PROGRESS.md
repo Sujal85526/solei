@@ -81,6 +81,9 @@ admin-editable later, so avoid extra sections). Current storefront:
   `.env.local` + Vercel production) verifies any sign-up / reset — so emails aren't really verified and a
   passport could be claimed by email. It switches off automatically once `RESEND_API_KEY` is set; delete the
   variable then.
+- **Contact details (client 2026-10-16):** WhatsApp 050 470 8053, support + owner-alert email
+  soleiperfumes@gmail.com, Instagram @solei.ad — in Admin → Settings → Contact details and in the
+  Shipping/Privacy policies (migration `20261016000002_contact_details.sql`).
 - **Resend (account codes + notifications):** set `RESEND_API_KEY` and `EMAIL_FROM` (client's domain, verified
   in Resend) locally and on Vercel; until then codes only appear in the server log. Outside production only
   `EMAIL_ALLOWLIST` recipients get real email (`EMAIL_ALLOW_ALL=1` for client testing).
