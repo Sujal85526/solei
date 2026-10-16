@@ -88,24 +88,14 @@ slideshow, admin collapsible sidebar + burgundy/baby-pink admin theme, performan
 sprite, DB-side stats RPCs, parallel queries, debounced cart), Ziina provider code (inactive until API key),
 test sign-up code `ACCOUNT_TEST_CODE=123456` (until Resend).
 
-**NOT deployed yet (3 local commits on `main`, ahead of origin):** the redesigned **Solei Passport page**
-(`src/app/(store)/passport/page.tsx`, copy in `src/content/en.ts` → `passport`) built to the client's mock-up:
-light hero "Every scent takes you somewhere." → "Your journey in 3 simple steps" on blush (icons) → burgundy
-band with the live 12-sticker tracker (signed out: "Sign in to view progress" opens the sign-in drawer —
-`src/components/store/passport/passport-sign-in.tsx`; signed in: filled stickers, reward ready / redeemed) → FAQ
-(cream). Steps, tracker and FAQ are approved.
-
-**OPEN TASK — Passport hero (first section) on laptop:** the user doesn't like the current version (photo masked
-with a white/cream fade — `.passport-hero-photo` in `globals.css`). **Remove the fade/blur transition** and follow
-the pattern used on the other pages (e.g. Contact us / Our story: clean split, photo in its own frame — arch or
-full-height panel via `CinematicImage` — no gradient veil). Keep the hero copy and buttons. Phones are fine.
-Any of the client's 10 studio photos may be used (originals in `~/Downloads/WhatsApp Image 2026-10-16 at
-19.59.*.jpeg`, copies in `~/.solei-tools/scratch/passport-src/p1–p10.jpg`): p1 open passport page (portrait),
-p2 closed passport + Verona/Capri cards + perfume (portrait, in repo as `passport-hero.jpg`), p3 five perfumes,
-p4 three sprays, p5 passport + spray + perfumes on marble (landscape), p6 sprays + flowers, p7 passports open &
-closed with cards and boxes (landscape, in repo as `passport-hero-wide.jpg`), p8 passport + all destination
-cards (portrait, `passport-cards.jpg`), p9 perfumes with boxes and cards, p10 whole collection + passport.
-After the user approves the hero: deploy (push main).
+**Deployed 2026-10-16 (later):** the redesigned **Solei Passport page** (`src/app/(store)/passport/page.tsx`,
+copy in `src/content/en.ts` → `passport`), built to the client's mock-up: hero "Every scent takes you somewhere."
+as a clean split like Contact us (copy on cream; the collection photo p10 `passport-collection.jpg` in an arch
+beside it on laptop, below it on phones; no fade) → "Your journey in 3 simple steps" on blush → burgundy band with
+the live 12-sticker tracker (signed out: "Sign in to view progress" opens the sign-in drawer —
+`src/components/store/passport/passport-sign-in.tsx`) → FAQ. Approved by the user. The client's 10 studio photos
+are in `~/.solei-tools/scratch/passport-src/p1–p10.jpg` (originals in `~/Downloads/WhatsApp Image 2026-10-16 at
+19.59.*.jpeg`); in the repo: p2 `passport-hero.jpg` (steps), p8 `passport-cards.jpg` (tracker), p10 (hero).
 
 **Still needed from the client (not blocking):** domain (then Resend DNS → real emails, remove the test code),
 Ziina API key (`PAYMENT_PROVIDER=ziina`, `ZIINA_API_KEY`, then `pnpm ziina:webhook https://<site>`), dark product
