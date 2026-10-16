@@ -72,6 +72,49 @@ admin-editable later, so avoid extra sections). Current storefront:
 - **Admin for client testing**: https://solei-rust.vercel.app/admin/login — `client@solei.test` (password in
   Keychain `solei-client-test-password`); 2FA is OFF on the dev DB (see carry-over below).
 
+## Handoff — 2026-10-16 (start the next session here)
+**Working style now:** commit straight to local `main` (small commits; no branches/PRs). Push + deploy only when
+the user says "deploy" — `git push origin main` (Vercel auto-deploys; no `ship.sh`/PR). Another agent may work in
+this checkout: stage/commit only your own paths (Sikemux blocks `git add -A`). Kill local servers when done.
+Dev CSS goes stale sometimes → stop dev, `rm -rf .next`, restart. Local preview browser uses `localhost:3000`
+(`127.0.0.1` is allowed in `next.config.ts` too).
+
+**Live (deployed) since the 10-15 handoff:** Our story (client wording, `/story`), Contact us (`/contact`, pink,
+WhatsApp 050 470 8053 · soleiperfumes@gmail.com · @solei.ad from Admin → Settings → Contact details), Help centre
+(`/help`, policies in DB table `help_topics`, editable in Admin → Settings → Help & policies; `/policies/*`
+redirect), Destinations pages removed (redirect to `/shop`), footer "Website by CityReach", no address anywhere,
+no VAT (rate 0, lines hidden), AED 30 flat UAE delivery, password eye toggles + confirm password, admin login
+slideshow, admin collapsible sidebar + burgundy/baby-pink admin theme, performance pass (no inlined CSS, logo
+sprite, DB-side stats RPCs, parallel queries, debounced cart), Ziina provider code (inactive until API key),
+test sign-up code `ACCOUNT_TEST_CODE=123456` (until Resend).
+
+**NOT deployed yet (3 local commits on `main`, ahead of origin):** the redesigned **Solei Passport page**
+(`src/app/(store)/passport/page.tsx`, copy in `src/content/en.ts` → `passport`) built to the client's mock-up:
+light hero "Every scent takes you somewhere." → "Your journey in 3 simple steps" on blush (icons) → burgundy
+band with the live 12-sticker tracker (signed out: "Sign in to view progress" opens the sign-in drawer —
+`src/components/store/passport/passport-sign-in.tsx`; signed in: filled stickers, reward ready / redeemed) → FAQ
+(cream). Steps, tracker and FAQ are approved.
+
+**OPEN TASK — Passport hero (first section) on laptop:** the user doesn't like the current version (photo masked
+with a white/cream fade — `.passport-hero-photo` in `globals.css`). **Remove the fade/blur transition** and follow
+the pattern used on the other pages (e.g. Contact us / Our story: clean split, photo in its own frame — arch or
+full-height panel via `CinematicImage` — no gradient veil). Keep the hero copy and buttons. Phones are fine.
+Any of the client's 10 studio photos may be used (originals in `~/Downloads/WhatsApp Image 2026-10-16 at
+19.59.*.jpeg`, copies in `~/.solei-tools/scratch/passport-src/p1–p10.jpg`): p1 open passport page (portrait),
+p2 closed passport + Verona/Capri cards + perfume (portrait, in repo as `passport-hero.jpg`), p3 five perfumes,
+p4 three sprays, p5 passport + spray + perfumes on marble (landscape), p6 sprays + flowers, p7 passports open &
+closed with cards and boxes (landscape, in repo as `passport-hero-wide.jpg`), p8 passport + all destination
+cards (portrait, `passport-cards.jpg`), p9 perfumes with boxes and cards, p10 whole collection + passport.
+After the user approves the hero: deploy (push main).
+
+**Still needed from the client (not blocking):** domain (then Resend DNS → real emails, remove the test code),
+Ziina API key (`PAYMENT_PROVIDER=ziina`, `ZIINA_API_KEY`, then `pnpm ziina:webhook https://<site>`), dark product
+photography (later), optional delivery-time / refund-timeline / passport reward rules, Dukhoon products?
+
+**Before launch (ours):** separate production Supabase project, re-enable 2FA for owner/manager, remove
+`ACCOUNT_TEST_CODE` + delete test accounts, re-enable CI and run e2e (M17 hardening). Architecture notes and
+next steps (account_user_id column on orders, stored stock balances) are in DECISIONS / this file.
+
 ## Carry-overs
 - **Ziina payments (client's gateway):** code is ready (`src/providers/payment/ziina.ts`). To go live, set on
   Vercel `PAYMENT_PROVIDER=ziina`, `ZIINA_API_KEY=…` (token with `write_payment_intents`; `ZIINA_TEST_MODE=1`
