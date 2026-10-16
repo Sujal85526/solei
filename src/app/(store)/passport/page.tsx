@@ -23,6 +23,8 @@ export const metadata: Metadata = {
 
 const p = t.passport;
 const STEP_ICONS = [ShoppingBag, Ticket, Gift];
+/** Hero photo (client studio shot) and its framing. */
+const HERO = { src: "/images/passport/passport-hero-wide.jpg", position: "60% 50%" };
 
 /**
  * Solei Passport: light hero, three steps on blush, the 12-sticker tracker on burgundy (live once
@@ -52,23 +54,24 @@ function Hero() {
   return (
     <section
       aria-labelledby="passport-title"
-      className="bg-cream relative isolate flex min-h-[34rem] items-center overflow-hidden lg:min-h-[80svh]"
+      className="bg-cream relative isolate flex min-h-[46rem] items-start overflow-hidden lg:min-h-[80svh] lg:items-center"
     >
-      {/* The photo fills the end ~60% (whole frame on phones) and melts into the cream behind the copy. */}
-      <div className="absolute inset-0 -z-10 overflow-hidden lg:start-auto lg:w-[54%]">
-        <CinematicImage
-          src="/images/passport/passport-hero.jpg"
-          alt="The Solei passport with Verona and Capri destination cards and a Solei perfume"
-          sizes="(min-width: 1024px) 60vw, 100vw"
-          position="50% 45%"
-          drift="4%"
-        />
-        <div
-          aria-hidden
-          className="from-cream via-cream/75 lg:via-cream/20 absolute inset-0 bg-gradient-to-r to-transparent to-70% lg:via-15% lg:to-35% rtl:bg-gradient-to-l"
+      {/*
+       * Full-width photo whose own pixels fade out towards the copy (a mask, not an overlay), so
+       * the cream shows through softly with no panel edge. Slow zoom like the other heroes.
+       */}
+      <div aria-hidden className="passport-hero-photo absolute inset-0 -z-10">
+        <Image
+          src={HERO.src}
+          alt=""
+          fill
+          priority
+          sizes="100vw"
+          className="passport-hero-zoom object-cover"
+          style={{ objectPosition: HERO.position }}
         />
       </div>
-      <div className="mx-auto w-full max-w-[96rem] px-6 py-20 sm:px-10 lg:px-14">
+      <div className="mx-auto w-full max-w-[96rem] px-6 pt-14 pb-20 sm:px-10 lg:px-14 lg:py-20">
         <div className="max-w-xl">
           <Reveal as="p" className="eyebrow text-burgundy/70">
             {p.eyebrow}
@@ -149,8 +152,8 @@ function Steps() {
         </ol>
         <div className="relative hidden aspect-[4/5] overflow-hidden rounded-sm shadow-[0_24px_48px_-24px_rgb(70_3_40/0.45)] xl:col-span-3 xl:block">
           <CinematicImage
-            src="/images/passport/passport-open.jpg"
-            alt="An open Solei passport: collect a destination sticker with every Solei purchase"
+            src="/images/passport/passport-hero.jpg"
+            alt="The Solei passport with Verona and Capri destination cards and a Solei perfume"
             sizes="25vw"
             drift="3%"
           />
