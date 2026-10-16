@@ -218,35 +218,73 @@ export const en = {
     track: "Track this order",
   },
   passport: {
-    eyebrow: "The Solei Passport",
-    title: "Collect the destinations.",
-    titleItalic: "Keep the memory.",
-    lede: "Every Solei piece you buy earns a destination stamp — online, at our pop-ups and private events.",
-    open: "Open your passport",
-    howTitle: "How it works",
-    howHeading: "The more you collect,",
-    howHeadingItalic: "the closer you get.",
-    bandLine: "Eight destinations. One passport. A little something for staying with us.",
-    signInTitle: "Open your passport",
-    signInLede:
-      "Sign in with your Solei account — or create one with the email you shop with. Stamps from pop-ups and past orders appear automatically.",
-    emptyTitle: "Your passport is ready",
+    eyebrow: "The Solei loyalty experience",
+    title: "Every scent takes",
+    titleEnd: "you somewhere.",
+    lede: "Collect destination stickers with every eligible Solei purchase. Complete your passport and choose a complimentary All Over Spray.",
+    discover: "Discover your passport",
+    howLink: "How it works",
+    stepsTitle: "Your journey",
+    stepsTitleEnd: "in 3 simple steps",
+    steps: [
+      {
+        title: "Shop Solei",
+        body: "Every eligible perfume or All Over Spray earns one destination sticker.",
+      },
+      {
+        title: "Collect 12 stickers",
+        body: "Your passport fills with every eligible purchase, online or in person.",
+      },
+      {
+        title: "Choose your reward",
+        body: "Redeem a complimentary All Over Spray of your choice.",
+      },
+    ],
+    trackerTitle: "Your Solei Passport",
+    stickers: "stickers",
+    signedOutNote: "Sign in to track your journey online.",
+    signInCta: "Sign in to view progress",
+    signInTitle: "Sign in",
     welcome: (name: string) => `Bon voyage, ${name}.`,
     number: "Passport",
     noPassportYet: "Your paper passport is on its way",
-    progress: (collected: number, total: number, remaining: number, reward: string) =>
-      `${collected} / ${total} — ${remaining} more to ${reward}`,
-    stampsTitle: "Your stamps",
-    rewardsTitle: "Your rewards",
-    rewardReady: "Ready to redeem",
-    whatsappUs: "Message us on WhatsApp",
+    emptyNote: "Your first sticker arrives with your first Solei purchase.",
+    progressNote: (remaining: number) =>
+      remaining === 1
+        ? "One more sticker to your complimentary All Over Spray."
+        : `${remaining} more stickers to your complimentary All Over Spray.`,
+    rewardReady: "Reward ready to redeem",
     rewardHow:
-      "Show this page at a Solei pop-up, or message us on WhatsApp, and we'll hand over your reward. Online redemption at checkout is coming soon.",
-    destinationsTitle: "Destinations collected",
-    historyTitle: "Recent stamps",
-    noStamps: "Your first stamp arrives with your first Solei purchase.",
-    shop: "Discover the destinations",
-    paused: "The passport is taking a short break — stamps you've collected are safe.",
+      "Show this page at a Solei pop-up, or message us on WhatsApp, and we'll hand over your All Over Spray.",
+    whatsappUs: "Message us on WhatsApp",
+    redeemed: (label: string, date: string) => `${label} — redeemed ${date}`,
+    shop: "Shop the collection",
+    paused: "The passport is taking a short break — stickers you've collected are safe.",
+    faqEyebrow: "Questions?",
+    faqTitle: "Frequently",
+    faqTitleEnd: "Asked Questions",
+    faq: [
+      {
+        q: "How do I get a Solei Passport?",
+        a: "You receive a physical Solei Passport with a qualifying order of two products — or simply ask our team for one at a pop-up.",
+      },
+      {
+        q: "Which purchases earn a sticker?",
+        a: "Every eligible Solei perfume or All Over Spray earns one destination sticker per item.",
+      },
+      {
+        q: "Can online purchases update my progress automatically?",
+        a: "Yes. When you're signed in with the email you shop with, eligible website orders add their stickers to your passport as soon as payment is confirmed.",
+      },
+      {
+        q: "What if I purchase at an event or via WhatsApp?",
+        a: "Those purchases count too. Our team adds the stickers to your passport, and they appear here with the rest of your journey.",
+      },
+      {
+        q: "How do I redeem my complimentary spray?",
+        a: "Once you collect twelve stickers, show your passport at a Solei pop-up or message us on WhatsApp to choose your All Over Spray, subject to availability.",
+      },
+    ],
   },
   track: {
     title: "Track an order",

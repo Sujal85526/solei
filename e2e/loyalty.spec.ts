@@ -92,10 +92,13 @@ test.describe("Solei Passport", () => {
 
   test("passport page explains the programme and offers account sign-in", async ({ page }) => {
     await page.goto("/passport");
-    await expect(page.getByText("12 stamps, one gift")).toBeVisible();
-    const card = page.locator("#your-passport");
-    await expect(card.getByRole("heading", { name: "Open your passport" })).toBeVisible();
-    await expect(card.getByLabel("Email address")).toBeVisible();
-    await expect(card.getByRole("button", { name: "Sign in" })).toBeVisible();
+    await expect(page.getByRole("heading", { level: 1 })).toContainText("Every scent takes");
+    await expect(page.getByRole("heading", { name: "Collect 12 stickers" })).toBeVisible();
+    const tracker = page.locator("#your-passport");
+    await expect(tracker.getByTestId("passport-progress")).toContainText("0 / 12");
+    await tracker.getByRole("button", { name: /Sign in to view progress/ }).click();
+    await expect(page.getByLabel("Email address")).toBeVisible();
+    await page.getByText("Which purchases earn a sticker?").click();
+    await expect(page.getByText(/one destination sticker per item/)).toBeVisible();
   });
 });
