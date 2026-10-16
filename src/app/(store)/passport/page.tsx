@@ -60,8 +60,8 @@ export default function PassportPage() {
         <div className="lg:col-span-5 lg:col-start-8">
           <div className="arch relative mx-auto aspect-[4/5] w-full max-w-md">
             <CinematicImage
-              src="/images/events/booth-passport.jpg"
-              alt="Solei passports beside Verona, Santorini and Capri perfumes at a pop-up"
+              src="/images/passport/passport-cards.jpg"
+              alt="The burgundy Solei passport among destination cards for Cannes, Capri, Marbella, Santorini and Verona"
               sizes="(min-width: 1024px) 36vw, 90vw"
               drift="4%"
             />
@@ -107,26 +107,68 @@ async function Steps() {
     },
   ];
   return (
-    <section
-      aria-labelledby="passport-how"
-      className="border-pink/10 mx-auto max-w-[96rem] border-t px-6 py-20 sm:px-10 sm:py-24 lg:px-14"
-    >
-      <h2 id="passport-how" className="sr-only">
-        {p.howTitle}
-      </h2>
-      {!programme.enabled ? <p className="text-pearl-muted mb-10">{p.paused}</p> : null}
-      <ol className="grid gap-12 sm:grid-cols-3 sm:gap-10">
-        {steps.map((s, i) => (
-          <Reveal as="li" key={s.title} delay={i * 120} className="flex flex-col gap-4">
-            <span className="font-display text-gold numeric text-5xl italic">
-              {String(i + 1).padStart(2, "0")}
-            </span>
-            <h3 className="text-2xl">{s.title}</h3>
-            <p className="text-pearl/75 max-w-xs text-sm leading-relaxed">{s.body}</p>
+    <>
+      <section
+        aria-labelledby="passport-how"
+        className="border-pink/10 mx-auto grid max-w-[96rem] items-center gap-12 border-t px-6 py-20 sm:px-10 sm:py-28 lg:grid-cols-12 lg:gap-20 lg:px-14"
+      >
+        <div className="relative mx-auto aspect-[4/5] w-full max-w-md overflow-hidden rounded-sm lg:col-span-5">
+          <CinematicImage
+            src="/images/passport/passport-open.jpg"
+            alt="An open Solei passport: collect a destination sticker with every Solei purchase"
+            sizes="(min-width: 1024px) 36vw, 90vw"
+            drift="4%"
+          />
+        </div>
+        <div className="lg:col-span-6 lg:col-start-7">
+          <Reveal as="p" className="eyebrow text-primary/70">
+            {p.howTitle}
           </Reveal>
-        ))}
-      </ol>
-    </section>
+          <h2 id="passport-how" className="mt-4 text-4xl sm:text-5xl">
+            {p.howHeading} <span className="italic">{p.howHeadingItalic}</span>
+          </h2>
+          {!programme.enabled ? <p className="text-pearl-muted mt-6">{p.paused}</p> : null}
+          <ol className="border-pink/10 mt-10 border-t">
+            {steps.map((s, i) => (
+              <Reveal
+                as="li"
+                key={s.title}
+                delay={i * 120}
+                className="border-pink/10 grid grid-cols-[4rem_1fr] gap-4 border-b py-6"
+              >
+                <span className="font-display text-gold numeric text-4xl italic">
+                  {String(i + 1).padStart(2, "0")}
+                </span>
+                <span className="flex flex-col gap-2">
+                  <h3 className="text-2xl">{s.title}</h3>
+                  <p className="text-pearl/75 max-w-sm text-sm leading-relaxed">{s.body}</p>
+                </span>
+              </Reveal>
+            ))}
+          </ol>
+        </div>
+      </section>
+
+      {/* Wide cinematic band: the passport among the collection. */}
+      <section aria-label={p.bandLine} className="relative h-[60svh] min-h-[22rem] overflow-hidden">
+        <CinematicImage
+          src="/images/passport/passport-collection.jpg"
+          alt="The Solei passport on marble beside an all-over spray, Marbella and Capri perfumes"
+          sizes="100vw"
+          drift="6%"
+        />
+        <div
+          aria-hidden
+          className="from-noir/85 via-noir/40 sm:via-noir/30 pointer-events-none absolute inset-0 bg-gradient-to-t to-transparent sm:bg-gradient-to-l sm:via-50%"
+        />
+        {/* Text on the plain wall (end side) so it never sits over the bottles. */}
+        <Reveal className="absolute inset-x-0 bottom-0 mx-auto flex max-w-[96rem] justify-end px-6 pb-10 sm:inset-y-0 sm:items-center sm:px-10 sm:pb-0 lg:px-14">
+          <p className="font-display text-shimmer text-pink max-w-md text-3xl leading-snug italic sm:text-end sm:text-5xl">
+            {p.bandLine}
+          </p>
+        </Reveal>
+      </section>
+    </>
   );
 }
 

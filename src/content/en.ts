@@ -224,6 +224,9 @@ export const en = {
     lede: "Every Solei piece you buy earns a destination stamp — online, at our pop-ups and private events.",
     open: "Open your passport",
     howTitle: "How it works",
+    howHeading: "The more you collect,",
+    howHeadingItalic: "the closer you get.",
+    bandLine: "Eight destinations. One passport. A little something for staying with us.",
     signInTitle: "Open your passport",
     signInLede:
       "Sign in with your Solei account — or create one with the email you shop with. Stamps from pop-ups and past orders appear automatically.",
