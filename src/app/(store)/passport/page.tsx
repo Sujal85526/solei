@@ -23,8 +23,12 @@ export const metadata: Metadata = {
 
 const p = t.passport;
 const STEP_ICONS = [ShoppingBag, Ticket, Gift];
-/** Hero photo (client studio shot) and its framing. */
-const HERO = { src: "/images/passport/passport-hero-wide.jpg", position: "62% 50%" };
+/** Hero photos (client studio shots): the arch on laptops, the wide scene under the copy on phones. */
+const HERO = {
+  arch: "/images/passport/passport-collection.jpg",
+  wide: "/images/passport/passport-hero-wide.jpg",
+  widePosition: "62% 50%",
+};
 
 /**
  * Solei Passport: light hero, three steps on blush, the 12-sticker tracker on burgundy (live once
@@ -54,25 +58,22 @@ function Hero() {
   return (
     <section
       aria-labelledby="passport-title"
-      className="bg-cream relative isolate flex min-h-[46rem] items-start overflow-hidden lg:min-h-[80svh] lg:items-center"
+      className="bg-cream relative isolate flex min-h-[46rem] items-start overflow-hidden lg:min-h-0"
     >
-      {/*
-       * Full-width photo whose own pixels fade out towards the copy (a mask, not an overlay), so
-       * the cream shows through softly with no panel edge. Slow zoom like the other heroes.
-       */}
-      <div aria-hidden className="passport-hero-photo absolute inset-0 -z-10">
+      {/* Phones/tablets: the passport scene rises in under the copy (see .passport-hero-photo). */}
+      <div aria-hidden className="passport-hero-photo absolute inset-0 -z-10 lg:hidden">
         <Image
-          src={HERO.src}
+          src={HERO.wide}
           alt=""
           fill
           priority
-          sizes="100vw"
+          sizes="(min-width: 1024px) 1px, 100vw"
           className="passport-hero-zoom object-cover"
-          style={{ objectPosition: HERO.position }}
+          style={{ objectPosition: HERO.widePosition }}
         />
       </div>
-      <div className="mx-auto w-full max-w-[96rem] px-6 pt-14 pb-20 sm:px-10 lg:px-14 lg:py-20">
-        <div className="max-w-xl">
+      <div className="mx-auto grid w-full max-w-[96rem] items-center gap-14 px-6 pt-14 pb-20 sm:px-10 lg:grid-cols-12 lg:gap-20 lg:px-14 lg:pt-20 lg:pb-28">
+        <div className="max-w-xl lg:col-span-6">
           <Reveal as="p" className="eyebrow text-burgundy/70">
             {p.eyebrow}
           </Reveal>
@@ -85,7 +86,10 @@ function Hero() {
             {p.titleEnd}
           </h1>
           <Reveal delay={250}>
-            <p className="text-ink/80 mt-6 max-w-md text-[0.95rem] leading-relaxed">{p.lede}</p>
+            <span aria-hidden className="bg-burgundy/40 mt-8 hidden h-px w-12 lg:block" />
+            <p className="text-ink/80 mt-6 max-w-md text-[0.95rem] leading-relaxed lg:mt-8">
+              {p.lede}
+            </p>
             <div className="mt-9 flex flex-col items-start gap-5">
               <Link
                 href="#your-passport"
@@ -101,6 +105,17 @@ function Hero() {
               </Link>
             </div>
           </Reveal>
+        </div>
+        {/* Laptops: the photo in its own arch, like Contact us — no veil, no fade. */}
+        <div className="hidden lg:col-span-5 lg:col-start-8 lg:block">
+          <div className="arch relative mx-auto aspect-[4/5] w-full max-w-md">
+            <CinematicImage
+              src={HERO.arch}
+              alt="The Solei collection — perfumes, all-over sprays, the passport and its destination cards"
+              sizes="36vw"
+              drift="4%"
+            />
+          </div>
         </div>
       </div>
     </section>
