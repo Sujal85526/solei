@@ -43,8 +43,8 @@ async function Topics({ searchParams }: { searchParams: PageProps<"/help">["sear
   if (!topic) return null;
   const extra = "text-burgundy/60 hover:text-burgundy";
   return (
-    <div className="mt-12 grid gap-8 lg:mt-16 lg:grid-cols-12 lg:gap-14">
-      <nav aria-label={c.eyebrow} className="lg:col-span-4">
+    <div className="mt-12 grid grid-cols-1 gap-8 lg:mt-16 lg:grid-cols-12 lg:gap-14">
+      <nav aria-label={c.eyebrow} className="min-w-0 lg:col-span-4">
         {/* Phones: a scrollable row of chips; wide screens: a quiet list. */}
         <ul className="-mx-6 flex gap-2 overflow-x-auto px-6 pb-1 lg:sticky lg:top-24 lg:mx-0 lg:flex-col lg:gap-0 lg:overflow-visible lg:px-0">
           {topics.map((t) => {
@@ -103,7 +103,7 @@ function TopicCard({ topic }: { topic: HelpTopic }) {
   return (
     <article
       aria-labelledby="topic-title"
-      className="bg-cream text-ink rounded-sm px-6 py-9 shadow-[0_30px_60px_-30px_rgb(70_3_40/0.35)] sm:px-12 sm:py-12 lg:col-span-8"
+      className="bg-cream text-ink min-w-0 rounded-sm px-6 py-9 shadow-[0_30px_60px_-30px_rgb(70_3_40/0.35)] sm:px-12 sm:py-12 lg:col-span-8"
     >
       <h2 id="topic-title" className="text-4xl sm:text-5xl">
         {topic.title}

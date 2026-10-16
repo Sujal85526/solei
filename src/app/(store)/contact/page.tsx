@@ -41,8 +41,8 @@ export default async function ContactPage() {
 
   return (
     <section aria-labelledby="contact-title" data-solid-header className="on-blush">
-      <div className="mx-auto grid max-w-[96rem] items-center gap-14 px-6 pt-14 pb-24 sm:px-10 sm:pt-20 lg:grid-cols-12 lg:gap-20 lg:px-14 lg:pb-32">
-        <div className="lg:col-span-6">
+      <div className="mx-auto grid max-w-[96rem] grid-cols-1 items-center gap-14 px-6 pt-14 pb-24 sm:px-10 sm:pt-20 lg:grid-cols-12 lg:gap-20 lg:px-14 lg:pb-32">
+        <div className="min-w-0 lg:col-span-6">
           <Reveal as="p" className="eyebrow text-primary/70">
             {c.eyebrow}
           </Reveal>
