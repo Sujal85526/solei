@@ -578,20 +578,6 @@
 }
 
 /* Passport hero: the photo fades into the cream behind the copy (mask — no visible edge). */
-/* Phones/tablets: copy on cream at the top, the passport scene rising in underneath it.
-   (Laptops show the photo in an arch beside the copy instead — no fade.) */
-.passport-hero-photo {
-  top: auto;
-  height: 52%;
-  -webkit-mask-image: linear-gradient(to bottom, transparent 0%, #000 35%);
-  mask-image: linear-gradient(to bottom, transparent 0%, #000 35%);
-}
-@media (prefers-reduced-motion: no-preference) {
-  .passport-hero-zoom {
-    animation: solei-auth-zoom 18s var(--ease-soft) both;
-  }
-}
-
 /* CTA sheen: a soft light sweep across the button on hover (pointer devices only). */
 @layer components {
   .sheen {

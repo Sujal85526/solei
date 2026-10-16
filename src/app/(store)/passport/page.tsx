@@ -23,12 +23,8 @@ export const metadata: Metadata = {
 
 const p = t.passport;
 const STEP_ICONS = [ShoppingBag, Ticket, Gift];
-/** Hero photos (client studio shots): the arch on laptops, the wide scene under the copy on phones. */
-const HERO = {
-  arch: "/images/passport/passport-collection.jpg",
-  wide: "/images/passport/passport-hero-wide.jpg",
-  widePosition: "62% 50%",
-};
+/** Hero photo (client studio shot), framed in an arch beside the copy. */
+const HERO_PHOTO = "/images/passport/passport-collection.jpg";
 
 /**
  * Solei Passport: light hero, three steps on blush, the 12-sticker tracker on burgundy (live once
@@ -56,22 +52,7 @@ export default function PassportPage() {
 
 function Hero() {
   return (
-    <section
-      aria-labelledby="passport-title"
-      className="bg-cream relative isolate flex min-h-[46rem] items-start overflow-hidden lg:min-h-0"
-    >
-      {/* Phones/tablets: the passport scene rises in under the copy (see .passport-hero-photo). */}
-      <div aria-hidden className="passport-hero-photo absolute inset-0 -z-10 lg:hidden">
-        <Image
-          src={HERO.wide}
-          alt=""
-          fill
-          priority
-          sizes="(min-width: 1024px) 1px, 100vw"
-          className="passport-hero-zoom object-cover"
-          style={{ objectPosition: HERO.widePosition }}
-        />
-      </div>
+    <section aria-labelledby="passport-title" className="bg-cream">
       <div className="mx-auto grid w-full max-w-[96rem] items-center gap-14 px-6 pt-14 pb-20 sm:px-10 lg:grid-cols-12 lg:gap-20 lg:px-14 lg:pt-20 lg:pb-28">
         <div className="max-w-xl lg:col-span-6">
           <Reveal as="p" className="eyebrow text-burgundy/70">
@@ -106,13 +87,13 @@ function Hero() {
             </div>
           </Reveal>
         </div>
-        {/* Laptops: the photo in its own arch, like Contact us — no veil, no fade. */}
-        <div className="hidden lg:col-span-5 lg:col-start-8 lg:block">
+        {/* The photo in its own arch, like Contact us — no veil, no fade. */}
+        <div className="lg:col-span-5 lg:col-start-8">
           <div className="arch relative mx-auto aspect-[4/5] w-full max-w-md">
             <CinematicImage
-              src={HERO.arch}
+              src={HERO_PHOTO}
               alt="The Solei collection — perfumes, all-over sprays, the passport and its destination cards"
-              sizes="36vw"
+              sizes="(min-width: 1024px) 36vw, 90vw"
               drift="4%"
             />
           </div>
