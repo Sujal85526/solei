@@ -579,12 +579,15 @@
 
 /* Passport hero: the photo fades into the cream behind the copy (mask — no visible edge). */
 .passport-hero-photo {
-  -webkit-mask-image: linear-gradient(to right, transparent 0%, transparent 26%, #000 66%);
-  mask-image: linear-gradient(to right, transparent 0%, transparent 26%, #000 66%);
+  /* Laptop+: the photo starts after the copy column; only its first stretch feathers into cream. */
+  inset-inline-start: 44%;
+  -webkit-mask-image: linear-gradient(to right, transparent 0%, #000 24%);
+  mask-image: linear-gradient(to right, transparent 0%, #000 24%);
 }
 /* Phones/tablets: copy on cream at the top, the photo rising in underneath it. */
 @media (max-width: 1023px) {
   .passport-hero-photo {
+    inset-inline-start: 0;
     top: auto;
     height: 52%;
     -webkit-mask-image: linear-gradient(to bottom, transparent 0%, #000 35%);

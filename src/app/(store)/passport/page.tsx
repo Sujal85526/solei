@@ -24,7 +24,7 @@ export const metadata: Metadata = {
 const p = t.passport;
 const STEP_ICONS = [ShoppingBag, Ticket, Gift];
 /** Hero photo (client studio shot) and its framing. */
-const HERO = { src: "/images/passport/passport-hero-wide.jpg", position: "60% 50%" };
+const HERO = { src: "/images/passport/passport-hero-wide.jpg", position: "62% 50%" };
 
 /**
  * Solei Passport: light hero, three steps on blush, the 12-sticker tracker on burgundy (live once
