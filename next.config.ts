@@ -25,7 +25,12 @@ const nextConfig: NextConfig = {
   // CSS ships as one cached stylesheet. (experimental.inlineCss copied the whole sheet into every
   // page's HTML and its RSC payload — ~740 KB per page — so it was turned off.)
   images: {
-    formats: ["image/avif", "image/webp"],
+    // WebP only: AVIF is a little smaller but slow to encode, so the first visit after each deploy
+    // waited up to ~1 s per photo while Vercel re-encoded it.
+    formats: ["image/webp"],
+    // Browsers and the CDN keep optimized photos for 31 days (the default sent max-age=0 to
+    // browsers, so every visit fetched every photo again). Replacing a photo? Give it a new name.
+    minimumCacheTTL: 2678400,
     remotePatterns: [
       {
         protocol: supabase.protocol.replace(":", "") as "http" | "https",
