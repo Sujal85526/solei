@@ -75,18 +75,10 @@ export async function SiteFooter() {
         </FooterColumn>
       </div>
       <div className="border-cream/10 border-t">
-        <div className="text-cream/70 mx-auto flex max-w-[90rem] flex-col items-start gap-1.5 px-5 py-6 text-xs sm:px-8 lg:px-12">
+        <div className="text-cream/70 mx-auto flex max-w-[90rem] px-5 py-6 text-xs sm:px-8 lg:px-12">
           <p>
             © <CopyrightYear /> Solei. {t.footer.rights}
           </p>
-          <a
-            href="https://cityreachdigital.com"
-            target="_blank"
-            rel="noreferrer"
-            className="text-cream/45 hover:text-pink text-[0.65rem] transition-colors"
-          >
-            {t.footer.credit}
-          </a>
         </div>
       </div>
     </footer>

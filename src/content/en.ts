@@ -31,7 +31,6 @@ export const en = {
     explore: "Explore",
     help: "Help",
     helpCentre: "Help centre",
-    credit: "Website by CityReach",
     follow: "Follow",
     contact: "Contact us",
     policies: {
