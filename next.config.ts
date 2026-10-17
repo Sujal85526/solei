@@ -8,6 +8,18 @@ const nextConfig: NextConfig = {
   partialPrefetching: true,
   // Dev only: let the in-app preview browser (which opens 127.0.0.1) load dev assets and hydrate.
   allowedDevOrigins: ["127.0.0.1"],
+  // Site photos: browsers keep them for 31 days (Vercel passes this on to the optimized images,
+  // which otherwise go out with max-age=0). Replacing a photo? Give it a new file name.
+  async headers() {
+    return [
+      {
+        source: "/images/:path*",
+        headers: [
+          { key: "Cache-Control", value: "public, max-age=2678400, stale-while-revalidate=86400" },
+        ],
+      },
+    ];
+  },
   // Policies live on one Help page; keep old links working.
   async redirects() {
     return [
