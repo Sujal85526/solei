@@ -1,4 +1,3 @@
-import { PlaneCursor } from "@/components/motion/plane-cursor";
 import { CartDrawer } from "@/components/store/cart/cart-drawer";
 import { SiteFooter } from "@/components/store/site-footer";
 import { SiteHeader } from "@/components/store/site-header";
@@ -12,7 +11,6 @@ export default function StoreLayout({ children }: LayoutProps<"/">) {
       </main>
       <SiteFooter />
       <CartDrawer />
-      <PlaneCursor />
     </div>
   );
 }
