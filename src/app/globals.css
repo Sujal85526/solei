@@ -763,3 +763,34 @@ body:has([data-hero]) .site-header:not([data-scrolled]) {
     --rise: -6px;
   }
 }
+
+/* Storefront cursor: a small burgundy airplane (nose = hotspot); pink-winged over links and
+   buttons. Mouse/trackpad only; text fields keep the text cursor; admin keeps the system cursor. */
+@media (pointer: fine) {
+  html:has(.theme-store),
+  html:has(.theme-store) body {
+    cursor:
+      url("/cursors/plane.svg") 4 4,
+      auto;
+  }
+  html:has(.theme-store)
+    :is(
+      a[href],
+      button:not(:disabled),
+      [role="button"],
+      label[for],
+      summary,
+      select,
+      input[type="checkbox"],
+      input[type="radio"]
+    ),
+  html:has(.theme-store) :is(a[href], button:not(:disabled), [role="button"], summary) * {
+    cursor:
+      url("/cursors/plane-link.svg") 4 4,
+      pointer;
+  }
+  html:has(.theme-store)
+    :is(input:not([type="checkbox"], [type="radio"], [type="submit"]), textarea) {
+    cursor: text;
+  }
+}
