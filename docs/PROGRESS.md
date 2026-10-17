@@ -97,12 +97,21 @@ the live 12-sticker tracker (signed out: "Sign in to view progress" opens the si
 are in `~/.solei-tools/scratch/passport-src/p1–p10.jpg` (originals in `~/Downloads/WhatsApp Image 2026-10-16 at
 19.59.*.jpeg`); in the repo: p2 `passport-hero.jpg` (steps), p8 `passport-cards.jpg` (tracker), p10 (hero).
 
-**Still needed from the client (not blocking):** domain (then Resend DNS → real emails, remove the test code),
-Ziina API key (`PAYMENT_PROVIDER=ziina`, `ZIINA_API_KEY`, then `pnpm ziina:webhook https://<site>`), dark product
+**Domain, email, ownership (done 2026-10-17):** site lives at **https://soleiperfumes.com** (bought at
+tasjeel.ae, account "reem alnaqbi" / soleiperfumes@gmail.com; DNS in tasjeel's DNS Manager: apex A → Vercel
+216.198.79.1 + 64.29.17.1, www CNAME → Vercel, Resend DKIM/`send`/`rsend`/DMARC; tasjeel MX left as is).
+Real email on: Resend team "soleiwebsite26" (Admins: soleiperfumes@gmail.com + rajputsujal098@gmail.com),
+domain verified (eu-west-1), sending key "Solei website (Vercel)" (Keychain `solei-resend-api-key`), Vercel
+`RESEND_API_KEY` + `EMAIL_FROM="Solei <hello@soleiperfumes.com>"`, `NEXT_PUBLIC_SITE_URL=https://soleiperfumes.com`;
+`ACCOUNT_TEST_CODE` deleted on Vercel. Supabase org "Solei": Owners soleiperfumes@gmail.com + you; Auth Site URL
+= soleiperfumes.com (+ redirect entries). ⏳ First real email not yet tested end-to-end. Supabase free-project
+limit counts orgs where you're Owner/Admin — client upgrading Solei to Pro at launch frees your slot.
+
+**Still needed from the client (not blocking):** Ziina API key (`PAYMENT_PROVIDER=ziina`, `ZIINA_API_KEY`, then `pnpm ziina:webhook https://<site>`), dark product
 photography (later), optional delivery-time / refund-timeline / passport reward rules, Dukhoon products?
 
 **Before launch (ours):** separate production Supabase project, re-enable 2FA for owner/manager, remove
-`ACCOUNT_TEST_CODE` + delete test accounts, re-enable CI and run e2e (M17 hardening). Architecture notes and
+`ACCOUNT_TEST_CODE` from local `.env.local` + delete test accounts, re-enable CI and run e2e (M17 hardening). Architecture notes and
 next steps (account_user_id column on orders, stored stock balances) are in DECISIONS / this file.
 
 ## Carry-overs
@@ -110,16 +119,12 @@ next steps (account_user_id column on orders, stored stock balances) are in DECI
   Vercel `PAYMENT_PROVIDER=ziina`, `ZIINA_API_KEY=…` (token with `write_payment_intents`; `ZIINA_TEST_MODE=1`
   first for test payments), then run once `ZIINA_API_KEY=… pnpm ziina:webhook https://<site>`. Until then the
   site keeps the mock test checkout.
-- **Account test code (remove at launch):** until Resend is set up, `ACCOUNT_TEST_CODE=123456` (local
-  `.env.local` + Vercel production) verifies any sign-up / reset — so emails aren't really verified and a
-  passport could be claimed by email. It switches off automatically once `RESEND_API_KEY` is set; delete the
-  variable then.
+- ~~**Account test code:**~~ off on the live site since 2026-10-17 (Resend on, variable deleted on Vercel).
 - **Contact details (client 2026-10-16):** WhatsApp 050 470 8053, support + owner-alert email
   soleiperfumes@gmail.com, Instagram @solei.ad — in Admin → Settings → Contact details and in the
   Shipping/Privacy policies (migration `20261016000002_contact_details.sql`).
-- **Resend (account codes + notifications):** set `RESEND_API_KEY` and `EMAIL_FROM` (client's domain, verified
-  in Resend) locally and on Vercel; until then codes only appear in the server log. Outside production only
-  `EMAIL_ALLOWLIST` recipients get real email (`EMAIL_ALLOW_ALL=1` for client testing).
+- **Resend (account codes + notifications):** live since 2026-10-17 (see "Domain, email, ownership"). Outside
+  production only `EMAIL_ALLOWLIST` recipients get real email (empty locally → local codes are not delivered).
 - **M17 (accounts):** rate-limit sign-up / resend-code / forgot-password per email and IP (codes are
   admin-generated, so Supabase's own email limits don't apply). Dev DB test account:
   `ui-test-1792066208809@solei.test` / `Solei-test-2026` (one mock order) — delete before launch.
