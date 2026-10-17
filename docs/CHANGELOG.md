@@ -32,3 +32,4 @@ One line per merged PR (newest first).
 - 2026-10-16 — (direct to main) admin sign-in photo slideshow with crossfade and slow zoom
 - 2026-10-16 — (direct to main) admin: collapsible sidebar, burgundy + baby-pink theme; perf: pages 7–9× lighter (no inlined CSS, shared logo sprite), DB-side admin stats, parallel/bulk queries, debounced cart
 - 2026-10-16 — (direct to main) Solei Passport page redesign (client mock-up): framed-arch hero, three steps, live 12-sticker tracker, FAQ
+- 2026-10-17 — (direct to main) live on soleiperfumes.com; real email via Resend (hello@soleiperfumes.com), test code off; client owns Supabase + Resend
