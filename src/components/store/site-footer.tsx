@@ -15,13 +15,13 @@ export async function SiteFooter() {
   const link = "text-cream/85 hover:text-pink flex items-center gap-3 text-sm";
   return (
     <footer className="border-pink/10 bg-noir text-pearl border-t">
-      <div className="mx-auto grid max-w-[90rem] gap-12 px-5 py-16 sm:px-8 md:grid-cols-12 lg:px-12">
-        <div className="flex flex-col gap-5 md:col-span-4">
+      <div className="mx-auto grid max-w-[90rem] gap-12 px-5 py-16 sm:px-8 md:grid-cols-3 md:gap-x-8 lg:grid-cols-12 lg:gap-12 lg:px-12">
+        <div className="flex flex-col gap-5 md:col-span-3 lg:col-span-4">
           <Logo className="text-pink h-9 w-[5.45rem] self-start" />
           <p className="font-display text-xl italic">{t.brand.tagline}</p>
           <PostmarkWaves className="text-pink/40 w-32" />
         </div>
-        <FooterColumn title={t.footer.explore} className="md:col-span-2">
+        <FooterColumn title={t.footer.explore} className="lg:col-span-2">
           {storeNav.map((item) =>
             item.soon ? (
               <li key={item.href} className="text-cream/45 text-sm">
@@ -34,7 +34,7 @@ export async function SiteFooter() {
             ),
           )}
         </FooterColumn>
-        <FooterColumn title={t.footer.help} className="md:col-span-3">
+        <FooterColumn title={t.footer.help} className="lg:col-span-3">
           <FooterLink href="/help">{t.footer.helpCentre}</FooterLink>
           <FooterLink href="/track">{t.nav.trackOrder}</FooterLink>
           <FooterLink href="/help?tab=shipping">{t.footer.policies.delivery}</FooterLink>
@@ -42,7 +42,7 @@ export async function SiteFooter() {
           <FooterLink href="/help?tab=privacy">{t.footer.policies.privacy}</FooterLink>
           <FooterLink href="/help?tab=terms">{t.footer.policies.terms}</FooterLink>
         </FooterColumn>
-        <FooterColumn title={t.footer.contact} className="md:col-span-3">
+        <FooterColumn title={t.footer.contact} className="lg:col-span-3">
           {contact.whatsapp ? (
             <li>
               <a

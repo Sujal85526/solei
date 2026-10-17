@@ -61,7 +61,7 @@ export default async function CustomersPage({ searchParams }: PageProps<"/admin/
         method="get"
         role="search"
         aria-label="Filter customers"
-        className="mb-5 grid gap-2 sm:grid-cols-2 lg:grid-cols-[1fr_9rem_9rem_9rem_9rem_10rem_auto]"
+        className="mb-5 grid gap-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-[1fr_9rem_9rem_9rem_9rem_10rem_auto]"
       >
         <Input
           name="q"
@@ -69,7 +69,7 @@ export default async function CustomersPage({ searchParams }: PageProps<"/admin/
           defaultValue={filters.q}
           placeholder="Search name, phone or email"
           aria-label="Search customers"
-          className="h-10 sm:col-span-2 lg:col-span-1"
+          className="h-10 sm:col-span-2 lg:col-span-3 xl:col-span-1"
         />
         <NativeSelect
           name="consent"

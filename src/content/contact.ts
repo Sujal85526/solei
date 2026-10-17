@@ -13,5 +13,4 @@ export const contactCopy = {
   instagram: "Instagram",
   popups: "Pop-ups",
   popupsBody: "We pop up at events across Abu Dhabi. Follow us on Instagram for upcoming dates.",
-  track: "Track an order",
 } as const;

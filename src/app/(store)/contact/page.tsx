@@ -1,5 +1,4 @@
 import type { Metadata } from "next";
-import Link from "next/link";
 import { ArrowUpRight } from "lucide-react";
 import { CinematicImage } from "@/components/motion/cinematic-image";
 import { Reveal } from "@/components/motion/reveal";
@@ -86,12 +85,6 @@ export default async function ContactPage() {
               <p className="eyebrow text-burgundy/60 text-[0.62rem]">{c.popups}</p>
               <p className="text-foreground/75 text-sm leading-relaxed">{c.popupsBody}</p>
             </div>
-            <Link
-              href="/track"
-              className="eyebrow text-burgundy mt-8 inline-block text-[0.65rem] underline-offset-[6px] hover:underline"
-            >
-              {c.track} →
-            </Link>
           </Reveal>
         </div>
 
