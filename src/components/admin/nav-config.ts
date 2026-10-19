@@ -17,6 +17,7 @@ import {
   History,
 } from "lucide-react";
 import type { en } from "@/content/en";
+import { FEATURES } from "@/lib/features";
 
 export type AdminNavKey = keyof (typeof en)["admin"]["nav"];
 
@@ -28,6 +29,8 @@ export type AdminNavItem = {
   permission?: string;
   /** Shown in the mobile bottom bar (max 4; the rest go under "More"). */
   primary?: boolean;
+  /** Not launched yet: greyed out with a "Soon" tag and not clickable. */
+  soon?: boolean;
 };
 
 export const adminNav: AdminNavItem[] = [
@@ -47,7 +50,13 @@ export const adminNav: AdminNavItem[] = [
     permission: "events.view",
     primary: true,
   },
-  { href: "/admin/bookings", key: "bookings", icon: Inbox, permission: "bookings.view" },
+  {
+    href: "/admin/bookings",
+    key: "bookings",
+    icon: Inbox,
+    permission: "bookings.view",
+    soon: !FEATURES.bookings,
+  },
   { href: "/admin/products", key: "products", icon: Package, permission: "catalog.view" },
   { href: "/admin/inventory", key: "inventory", icon: Boxes, permission: "inventory.view" },
   { href: "/admin/reviews", key: "reviews", icon: Star, permission: "reviews.manage" },

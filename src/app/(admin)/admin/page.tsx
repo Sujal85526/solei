@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { FEATURES } from "@/lib/features";
 import { ArrowRight, MonitorSmartphone, Plus } from "lucide-react";
 import { ExportsPanel } from "@/components/admin/dashboard/exports-panel";
 import { StatusBadge } from "@/components/admin/events/event-style";
@@ -238,7 +239,7 @@ export default async function AdminDashboard() {
           </AdminSection>
         ) : null}
 
-        {d.pending_bookings ? (
+        {FEATURES.bookings && d.pending_bookings ? (
           <AdminSection
             title="Booking requests"
             description={`${plural(d.pending_bookings.count, "request")} waiting for a reply.`}

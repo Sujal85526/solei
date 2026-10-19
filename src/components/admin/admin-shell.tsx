@@ -182,6 +182,26 @@ function SidebarLink({
 }) {
   const Icon = item.icon;
   const label = t.admin.nav[item.key];
+  if (item.soon) {
+    return (
+      <span
+        aria-disabled="true"
+        title={`${label} — ${t.nav.soon}`}
+        className={cn(
+          "text-sidebar-foreground/40 flex h-11 cursor-default items-center gap-3 rounded-md text-sm whitespace-nowrap",
+          collapsed ? "justify-center px-0" : "px-3",
+        )}
+      >
+        <Icon className="size-[18px] shrink-0" strokeWidth={1.6} />
+        {collapsed ? null : (
+          <>
+            {label}
+            <SoonTag />
+          </>
+        )}
+      </span>
+    );
+  }
   return (
     <Link
       href={item.href}
@@ -256,6 +276,20 @@ function MoreSheet({ items, pathname }: { items: AdminNavItem[]; pathname: strin
           {items.map((item) => {
             const Icon = item.icon;
             const on = isActive(pathname, item.href);
+            if (item.soon) {
+              return (
+                <li key={item.href}>
+                  <span
+                    aria-disabled="true"
+                    className="bg-card text-muted-foreground/60 flex h-20 flex-col items-center justify-center gap-1.5 rounded-xl border text-xs"
+                  >
+                    <Icon className="size-5" strokeWidth={1.6} />
+                    {t.admin.nav[item.key]}
+                    <SoonTag />
+                  </span>
+                </li>
+              );
+            }
             return (
               <li key={item.href}>
                 <Link
@@ -289,5 +323,14 @@ function MoreSheet({ items, pathname }: { items: AdminNavItem[]; pathname: strin
         </div>
       </SheetContent>
     </Sheet>
+  );
+}
+
+/** Small "Soon" pill for features that aren't launched yet. */
+function SoonTag() {
+  return (
+    <span className="rounded-full border border-current px-1.5 py-px text-[0.55rem] tracking-[0.15em] uppercase opacity-80">
+      {t.nav.soon}
+    </span>
   );
 }
