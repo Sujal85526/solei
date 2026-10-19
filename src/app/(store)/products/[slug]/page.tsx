@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Suspense } from "react";
+import { ProductReviews } from "@/components/store/reviews/product-reviews";
 import { ProductAccordions } from "@/components/store/shop/product-accordions";
 import { ProductGallery } from "@/components/store/shop/product-gallery";
 import { ProductGrid, ProductGridSkeleton } from "@/components/store/shop/product-grid";
@@ -168,6 +169,10 @@ export default async function ProductPage({ params }: PageProps<"/products/[slug
           </div>
         </div>
       </section>
+
+      <Suspense fallback={null}>
+        <ProductReviews productId={product.id} />
+      </Suspense>
 
       <section aria-labelledby="related-title" className="on-blush py-16 sm:py-24">
         <div className="mx-auto max-w-[96rem] px-6 sm:px-10 lg:px-14">

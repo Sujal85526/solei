@@ -8,6 +8,8 @@ export const CONTENT_TAGS = {
   /** Help centre topics (policies). */
   help: "help",
   loyalty: "loyalty",
+  /** Approved product reviews (product pages). */
+  reviews: "reviews",
   /** Online availability (stock ledger); revalidate after sales, receipts and adjustments. */
   stock: "stock",
 } as const;

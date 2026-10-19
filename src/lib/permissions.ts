@@ -19,6 +19,7 @@ export const PERMISSIONS = {
   "payment_links.create": { group: "Sales", description: "Create and send payment links" },
   "coupons.manage": { group: "Sales", description: "Create, edit and pause discount coupons" },
   "catalog.view": { group: "Catalog", description: "View all products, including inactive" },
+  "reviews.manage": { group: "Catalog", description: "Approve or decline customer reviews" },
   "catalog.manage": {
     group: "Catalog",
     description: "Create and edit products, prices and images",

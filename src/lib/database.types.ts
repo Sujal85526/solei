@@ -2129,6 +2129,100 @@ export type Database = {
           },
         ]
       }
+      product_reviews: {
+        Row: {
+          author_name: string
+          body: string
+          created_at: string
+          customer_id: string | null
+          id: string
+          moderated_at: string | null
+          moderated_by: string | null
+          order_id: string | null
+          photos: string[]
+          product_id: string
+          rating: number
+          status: Database["public"]["Enums"]["review_status"]
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          author_name: string
+          body: string
+          created_at?: string
+          customer_id?: string | null
+          id?: string
+          moderated_at?: string | null
+          moderated_by?: string | null
+          order_id?: string | null
+          photos?: string[]
+          product_id: string
+          rating: number
+          status?: Database["public"]["Enums"]["review_status"]
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          author_name?: string
+          body?: string
+          created_at?: string
+          customer_id?: string | null
+          id?: string
+          moderated_at?: string | null
+          moderated_by?: string | null
+          order_id?: string | null
+          photos?: string[]
+          product_id?: string
+          rating?: number
+          status?: Database["public"]["Enums"]["review_status"]
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "product_reviews_customer_id_fkey"
+            columns: ["customer_id"]
+            isOneToOne: false
+            referencedRelation: "customer_summary"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "product_reviews_customer_id_fkey"
+            columns: ["customer_id"]
+            isOneToOne: false
+            referencedRelation: "customers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "product_reviews_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "admin_orders"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "product_reviews_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "order_payment_summary"
+            referencedColumns: ["order_id"]
+          },
+          {
+            foreignKeyName: "product_reviews_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "orders"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "product_reviews_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       product_variants: {
         Row: {
           active: boolean
@@ -3127,6 +3221,15 @@ export type Database = {
       }
       request_ip: { Args: never; Returns: unknown }
       require_permission: { Args: { p_key: string }; Returns: undefined }
+      review_purchase: {
+        Args: {
+          p_email: string
+          p_order_ids: string[]
+          p_product: string
+          p_user: string
+        }
+        Returns: string
+      }
       send_booking_quote: {
         Args: { p: Json }
         Returns: {
@@ -3336,6 +3439,7 @@ export type Database = {
         | "payment_link"
         | "other"
       payment_state: "pending" | "succeeded" | "failed" | "cancelled"
+      review_status: "pending" | "approved" | "declined"
       stock_movement_type:
         | "receive"
         | "sale"
@@ -3582,6 +3686,7 @@ export const Constants = {
         "other",
       ],
       payment_state: ["pending", "succeeded", "failed", "cancelled"],
+      review_status: ["pending", "approved", "declined"],
       stock_movement_type: [
         "receive",
         "sale",
