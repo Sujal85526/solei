@@ -24,50 +24,34 @@ const toCoupon = (r: Row): Coupon => ({
 
 export type CouponUsage = { uses: number; discountFils: number };
 
-/**
- * Orders that used each coupon — same rule as `coupon_uses()`: not cancelled, and website orders
- * still awaiting payment only for 2 hours. Read with the service client after the permission
- * check (coupon managers may not have `orders.view`).
- */
-async function usage(ids: string[]): Promise<Map<string, CouponUsage>> {
-  const map = new Map<string, CouponUsage>();
-  if (!ids.length) return map;
-  const { data, error } = await createAdminClient()
-    .from("orders")
-    .select("coupon_id, status, placed_at, discount_fils")
-    .in("coupon_id", ids)
-    .neq("status", "cancelled");
+/** Uses and discount given per coupon, counted in the database (`coupon_usage()`). */
+async function usage(): Promise<Map<string, CouponUsage>> {
+  const supabase = await createClient();
+  const { data, error } = await supabase.rpc("coupon_usage");
   if (error) throw new Error(error.message);
-  const cutoff = Date.now() - 2 * 60 * 60_000;
-  for (const o of data) {
-    if (o.status === "pending_payment" && new Date(o.placed_at).getTime() <= cutoff) continue;
-    const u = map.get(o.coupon_id!) ?? { uses: 0, discountFils: 0 };
-    u.uses += 1;
-    u.discountFils += o.discount_fils;
-    map.set(o.coupon_id!, u);
-  }
-  return map;
+  return new Map(data.map((u) => [u.coupon_id, { uses: u.uses, discountFils: u.discount_fils }]));
 }
 
 export async function listCoupons(): Promise<(Coupon & CouponUsage)[]> {
   await assertPermission("coupons.manage");
   const supabase = await createClient();
-  const { data, error } = await supabase
-    .from("coupons")
-    .select("*")
-    .order("created_at", { ascending: false });
+  const [{ data, error }, used] = await Promise.all([
+    supabase.from("coupons").select("*").order("created_at", { ascending: false }),
+    usage(),
+  ]);
   if (error) throw new Error(error.message);
-  const used = await usage(data.map((r) => r.id));
   return data.map((r) => ({ ...toCoupon(r), ...(used.get(r.id) ?? { uses: 0, discountFils: 0 }) }));
 }
 
 export async function getCoupon(id: string): Promise<(Coupon & CouponUsage) | null> {
   await assertPermission("coupons.manage");
   const supabase = await createClient();
-  const { data, error } = await supabase.from("coupons").select("*").eq("id", id).maybeSingle();
+  const [{ data, error }, used] = await Promise.all([
+    supabase.from("coupons").select("*").eq("id", id).maybeSingle(),
+    usage(),
+  ]);
   if (error) throw new Error(error.message);
   if (!data) return null;
-  const used = await usage([id]);
   return { ...toCoupon(data), ...(used.get(id) ?? { uses: 0, discountFils: 0 }) };
 }
 

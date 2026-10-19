@@ -1,4 +1,5 @@
 import "server-only";
+import { cache } from "react";
 import { cacheLife, cacheTag } from "next/cache";
 import type { Tables } from "@/lib/database.types";
 import { must } from "@/lib/supabase/must";
@@ -77,28 +78,27 @@ export async function getPublicProgramme(): Promise<PublicProgramme> {
   return { enabled: programme.data?.enabled ?? false, rule: rule ? toRule(rule) : null };
 }
 
-/** Staff names for "who" columns. Callers must have checked a loyalty permission first. */
-async function staffNames(ids: (string | null | undefined)[]) {
-  const unique = [...new Set(ids.filter((x): x is string => Boolean(x)))];
-  if (!unique.length) return new Map<string, string>();
-  const { data } = await createAdminClient()
-    .from("staff_profiles")
-    .select("user_id, full_name")
-    .in("user_id", unique);
+/**
+ * Staff names for "who" columns — the whole (small) staff list in one read, shared per request,
+ * so it runs alongside the main queries instead of after them. Callers must have checked a
+ * loyalty permission first.
+ */
+const staffNames = cache(async (): Promise<Map<string, string>> => {
+  const { data } = await createAdminClient().from("staff_profiles").select("user_id, full_name");
   return new Map((data ?? []).map((s) => [s.user_id, s.full_name]));
-}
+});
 
 /** Settings screen: programme switch, every rule version (newest first) and pick lists. */
 export async function getProgrammeAdmin() {
   const supabase = await createClient();
-  const [programme, versions, categories, products] = await Promise.all([
+  const [programme, versions, categories, products, names] = await Promise.all([
     supabase.from("loyalty_programs").select("enabled, updated_at").eq("id", 1).single(),
     supabase.from("loyalty_rule_versions").select("*").order("version", { ascending: false }),
     supabase.from("categories").select("id, name").order("sort"),
     supabase.from("products").select("id, name, category_id, active").order("sort"),
+    staffNames(),
   ]);
   const rules = must(versions, "loyalty rules").map(toRule);
-  const names = await staffNames(rules.map((r) => r.createdBy));
   return {
     enabled: must(programme, "loyalty programme").enabled,
     active: activeVersion(rules),
@@ -147,8 +147,7 @@ type LedgerRow = {
   customers: { id: string; name: string | null } | null;
 };
 
-async function toLedger(rows: LedgerRow[], withNames: boolean): Promise<LedgerEntry[]> {
-  const names = withNames ? await staffNames(rows.map((r) => r.created_by)) : new Map();
+function toLedger(rows: LedgerRow[], names: Map<string, string>): LedgerEntry[] {
   return rows.map((r) => ({
     id: r.id,
     kind: r.kind,
@@ -166,12 +165,15 @@ async function toLedger(rows: LedgerRow[], withNames: boolean): Promise<LedgerEn
 /** Latest ledger entries across all customers (admin overview). */
 export async function recentActivity(limit = 20) {
   const supabase = await createClient();
-  const res = await supabase
-    .from("loyalty_stamps")
-    .select(LEDGER_SELECT)
-    .order("created_at", { ascending: false })
-    .limit(limit);
-  return toLedger(must(res, "loyalty activity") as unknown as LedgerRow[], true);
+  const [res, names] = await Promise.all([
+    supabase
+      .from("loyalty_stamps")
+      .select(LEDGER_SELECT)
+      .order("created_at", { ascending: false })
+      .limit(limit),
+    staffNames(),
+  ]);
+  return toLedger(must(res, "loyalty activity") as unknown as LedgerRow[], names);
 }
 
 export type CustomerReward = {
@@ -213,7 +215,7 @@ export async function getCustomerLoyalty(
     .order("created_at", { ascending: false });
   if (opts.ledgerLimit) ledgerQuery = ledgerQuery.limit(opts.ledgerLimit);
 
-  const [balance, passport, rewards, ledger] = await Promise.all([
+  const [balance, passport, rewards, ledger, names] = await Promise.all([
     supabase
       .from("loyalty_balances")
       .select("balance, collected")
@@ -232,16 +234,12 @@ export async function getCustomerLoyalty(
       .eq("customer_id", customerId)
       .order("created_at", { ascending: false }),
     ledgerQuery,
+    // Staff names only for staff callers (customers never see who added a stamp).
+    opts.staff ? staffNames() : Promise.resolve(new Map<string, string>()),
   ]);
-  const entries = await toLedger(
-    must(ledger, "loyalty ledger") as unknown as LedgerRow[],
-    Boolean(opts.staff),
-  );
+  const entries = toLedger(must(ledger, "loyalty ledger") as unknown as LedgerRow[], names);
   const passportRow = passport.data;
-  const by =
-    opts.staff && passportRow?.issued_by
-      ? ((await staffNames([passportRow.issued_by])).get(passportRow.issued_by) ?? null)
-      : null;
+  const by = passportRow?.issued_by ? (names.get(passportRow.issued_by) ?? null) : null;
 
   return {
     balance: balance.data?.balance ?? 0,

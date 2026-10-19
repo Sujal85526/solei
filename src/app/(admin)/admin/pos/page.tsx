@@ -11,8 +11,11 @@ export const metadata: Metadata = { title: "POS" };
 export default async function PosPage({ searchParams }: PageProps<"/admin/pos">) {
   await requirePagePermission("pos.use");
   const sp = await searchParams;
-  const events = await posEvents();
   const requested = typeof sp.event === "string" ? sp.event : undefined;
+  // With ?event= the tiles and day summary start alongside the event list (one round trip).
+  const early = requested ? Promise.all([posProducts(requested), daySummary(requested)]) : null;
+  early?.catch(() => {}); // unused when the event id is unknown — don't surface its error
+  const events = await posEvents();
   const event = events.find((e) => e.id === requested) ?? events[0];
   if (!event) {
     return (
@@ -27,7 +30,10 @@ export default async function PosPage({ searchParams }: PageProps<"/admin/pos">)
       </div>
     );
   }
-  const [products, summary] = await Promise.all([posProducts(event.id), daySummary(event.id)]);
+  const [products, summary] =
+    early && event.id === requested
+      ? await early
+      : await Promise.all([posProducts(event.id), daySummary(event.id)]);
   return (
     <>
       <h1 className="sr-only">Point of sale</h1>

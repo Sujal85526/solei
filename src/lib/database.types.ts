@@ -2937,6 +2937,14 @@ export type Database = {
         Args: { p_code: string; p_email: string; p_lines: Json }
         Returns: Json
       }
+      coupon_usage: {
+        Args: never
+        Returns: {
+          coupon_id: string
+          discount_fils: number
+          uses: number
+        }[]
+      }
       coupon_uses: {
         Args: { p_coupon: string; p_email?: string }
         Returns: number
@@ -3230,6 +3238,13 @@ export type Database = {
         }
         Returns: string
       }
+      review_status_counts: {
+        Args: never
+        Returns: {
+          count: number
+          status: Database["public"]["Enums"]["review_status"]
+        }[]
+      }
       send_booking_quote: {
         Args: { p: Json }
         Returns: {
@@ -3249,6 +3264,13 @@ export type Database = {
         Returns: undefined
       }
       settle_if_paid: { Args: { p_order_id: string }; Returns: boolean }
+      stock_on_hand_by_variant: {
+        Args: never
+        Returns: {
+          on_hand: number
+          variant_id: string
+        }[]
+      }
       submit_booking: {
         Args: { p: Json }
         Returns: {

@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { Suspense } from "react";
 import { notFound } from "next/navigation";
 import { ArrowLeft, ChevronRight } from "lucide-react";
 import { ConsentBadge } from "@/components/admin/customers/badges";
@@ -17,6 +18,7 @@ import {
   RecordConsentDialog,
 } from "@/components/admin/customers/profile-forms";
 import { PageHeader } from "@/components/admin/page-header";
+import { Skeleton } from "@/components/ui/skeleton";
 import { AdminSection, StatCard } from "@/components/admin/section";
 import { requirePagePermission } from "@/lib/auth/session";
 import { formatBusinessDate } from "@/lib/dates";
@@ -240,7 +242,10 @@ export default async function CustomerPage({ params }: PageProps<"/admin/custome
             </div>
           </AdminSection>
 
-          <PassportPanel customerId={c.id} />
+          {/* Streams in on its own so the customer details don't wait for the passport. */}
+          <Suspense fallback={<Skeleton className="h-64 rounded-xl" />}>
+            <PassportPanel customerId={c.id} />
+          </Suspense>
         </div>
       </div>
     </div>

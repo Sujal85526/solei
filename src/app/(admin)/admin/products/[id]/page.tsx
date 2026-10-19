@@ -25,13 +25,13 @@ export const metadata: Metadata = { title: "Product" };
 export default async function ProductPage({ params }: PageProps<"/admin/products/[id]">) {
   const staff = await requirePagePermission("catalog.view");
   const { id } = await params;
-  const [product, categories, destinations] = await Promise.all([
+  const [product, categories, destinations, stock] = await Promise.all([
     getProduct(id),
     listCategories(),
     listDestinations(),
+    onHandByVariant(),
   ]);
   if (!product) notFound();
-  const stock = await onHandByVariant(product.product_variants.map((v) => v.id));
   const canManage = can(staff.permissions, "catalog.manage");
   const canSeeCost = can(staff.permissions, "reports.financial.view");
 

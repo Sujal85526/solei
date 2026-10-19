@@ -238,31 +238,29 @@ export function storedEstimate(b: BookingDetail): Estimate {
 export async function bookingOrders(bookingId: string) {
   await assertPermission("bookings.view");
   const admin = createAdminClient();
-  const orders = must(
-    await admin
-      .from("orders")
-      .select("id, number, channel, status, total_fils, notes, created_at")
+  // Payment totals come with the orders (admin_orders view); notes in the same round trip.
+  const [rows, notes] = await Promise.all([
+    admin
+      .from("admin_orders")
+      .select(
+        "id, number, channel, status, total_fils, created_at, paid_fils, refunded_fils, outstanding_fils, payment_status",
+      )
       .eq("booking_id", bookingId)
       .order("created_at", { ascending: false }),
-    "booking orders",
-  );
-  if (!orders.length) return [];
-  const summaries = must(
-    await admin
-      .from("order_payment_summary")
-      .select("order_id, paid_fils, refunded_fils, outstanding_fils, payment_status")
-      .in(
-        "order_id",
-        orders.map((o) => o.id),
-      ),
-    "payment summary",
-  );
-  const byId = new Map(summaries.map((s) => [s.order_id, s]));
-  return orders.map((o) => ({
-    ...o,
-    paidFils: byId.get(o.id)?.paid_fils ?? 0,
-    refundedFils: byId.get(o.id)?.refunded_fils ?? 0,
-    paymentStatus: byId.get(o.id)?.payment_status ?? "pending",
+    admin.from("orders").select("id, notes").eq("booking_id", bookingId),
+  ]);
+  const noteById = new Map(must(notes, "booking order notes").map((n) => [n.id, n.notes]));
+  return must(rows, "booking orders").map((o) => ({
+    id: o.id!,
+    number: o.number!,
+    channel: o.channel!,
+    status: o.status!,
+    total_fils: o.total_fils ?? 0,
+    notes: noteById.get(o.id!) ?? null,
+    created_at: o.created_at!,
+    paidFils: o.paid_fils ?? 0,
+    refundedFils: o.refunded_fils ?? 0,
+    paymentStatus: o.payment_status ?? "pending",
   }));
 }
 

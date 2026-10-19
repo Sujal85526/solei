@@ -32,9 +32,8 @@ export async function listProducts(filters: AdminProductFilters = {}) {
   if (filters.q) q = q.ilike("name", `%${filters.q}%`);
   if (filters.category) q = q.eq("category_id", filters.category);
   if (filters.status) q = q.eq("active", filters.status === "active");
-  const products = must(await q, "products");
-  const variantIds = products.flatMap((p) => p.product_variants.map((v) => v.id));
-  const stock = await onHandByVariant(variantIds);
+  const [res, stock] = await Promise.all([q, onHandByVariant()]);
+  const products = must(res, "products");
   return products.map((p) => ({
     ...p,
     product_images: [...p.product_images].sort((a, b) => a.sort - b.sort),
@@ -62,17 +61,12 @@ export async function getProduct(id: string) {
 }
 
 /** Total on hand per variant across all locations (RLS: needs inventory.view or pos.use). */
-export async function onHandByVariant(variantIds: string[]) {
-  const map = new Map<string, number>();
-  if (!variantIds.length) return map;
+/**
+ * On hand per variant across all locations, summed in the database. Needs no product ids, so
+ * pages run it alongside their product query. Empty without stock permissions (RLS).
+ */
+export async function onHandByVariant() {
   const supabase = await createClient();
-  const { data } = await supabase
-    .from("stock_levels")
-    .select("variant_id, on_hand")
-    .in("variant_id", variantIds);
-  for (const row of data ?? []) {
-    if (!row.variant_id) continue;
-    map.set(row.variant_id, (map.get(row.variant_id) ?? 0) + (row.on_hand ?? 0));
-  }
-  return map;
+  const { data } = await supabase.rpc("stock_on_hand_by_variant");
+  return new Map((data ?? []).map((row) => [row.variant_id, row.on_hand]));
 }

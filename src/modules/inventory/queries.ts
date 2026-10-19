@@ -114,16 +114,15 @@ export async function listMovements(filters: MovementFilters = {}) {
 
 export async function getVariantStock(variantId: string) {
   const supabase = await createClient();
-  const { data: variant } = await supabase
-    .from("product_variants")
-    .select("id, label, sku, price_fils, low_stock_threshold, active, products(id, name)")
-    .eq("id", variantId)
-    .maybeSingle();
+  const [{ data: variant }, { data: levels }] = await Promise.all([
+    supabase
+      .from("product_variants")
+      .select("id, label, sku, price_fils, low_stock_threshold, active, products(id, name)")
+      .eq("id", variantId)
+      .maybeSingle(),
+    supabase.from("stock_levels").select("location_id, on_hand").eq("variant_id", variantId),
+  ]);
   if (!variant) return null;
-  const { data: levels } = await supabase
-    .from("stock_levels")
-    .select("location_id, on_hand")
-    .eq("variant_id", variantId);
   return { variant, levels: levels ?? [] };
 }
 

@@ -29,6 +29,12 @@ export type DaySummary = {
   by_method: Record<string, number>;
 };
 
+function addDays(day: string, n: number) {
+  const d = new Date(`${day}T00:00:00Z`);
+  d.setUTCDate(d.getUTCDate() + n);
+  return d.toISOString().slice(0, 10);
+}
+
 /** Events you can sell at: confirmed (or potential) events running today first, then upcoming/recent. */
 export async function posEvents(now = new Date()): Promise<PosEvent[]> {
   const supabase = await createClient();
@@ -38,6 +44,8 @@ export async function posEvents(now = new Date()): Promise<PosEvent[]> {
       .from("events")
       .select("id, name, start_date, end_date, status, closed_at")
       .in("status", ["confirmed", "potential"])
+      // Running, upcoming or ended in the last 30 days — not every event ever.
+      .gte("end_date", addDays(today, -30))
       .order("start_date", { ascending: true }),
     "events",
   );

@@ -40,9 +40,12 @@ function addDays(day: string, n: number) {
 export default async function BookingPage({ params }: PageProps<"/admin/bookings/[id]">) {
   const staff = await requirePagePermission("bookings.view");
   const { id } = await params;
-  const booking = await getBooking(id);
+  const [booking, orders, settings] = await Promise.all([
+    getBooking(id),
+    bookingOrders(id),
+    getBookingSettings(),
+  ]);
   if (!booking) notFound();
-  const [orders, settings] = await Promise.all([bookingOrders(id), getBookingSettings()]);
   const canManage = can(staff.permissions, "bookings.manage");
   const quoteUrl = (token: string) => `${publicEnv.NEXT_PUBLIC_SITE_URL}/events/quote/${token}`;
 

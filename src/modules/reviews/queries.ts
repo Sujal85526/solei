@@ -105,12 +105,12 @@ export async function listReviewsForAdmin(status: ReviewStatus) {
       .eq("status", status)
       .order("created_at", { ascending: status === "pending" })
       .limit(200),
-    supabase.from("product_reviews").select("status"),
+    supabase.rpc("review_status_counts"),
   ]);
   if (list.error) throw new Error(list.error.message);
   if (counts.error) throw new Error(counts.error.message);
   const tally: Record<ReviewStatus, number> = { pending: 0, approved: 0, declined: 0 };
-  for (const r of counts.data) tally[r.status] += 1;
+  for (const r of counts.data) tally[r.status] = r.count;
   const reviews: AdminReview[] = list.data.map((r) => ({
     id: r.id,
     status: r.status,
