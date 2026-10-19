@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
+  attachCustomerSchema,
   cancelSchema,
   orderFiltersSchema,
   paymentSchema,
@@ -50,5 +51,26 @@ describe("order list filters", () => {
     expect(searchNeedles("Layla, (test)")).toEqual({ text: "Layla test", phone: null });
     expect(searchNeedles("SOL-001001")).toEqual({ text: "SOL-001001", phone: null });
     expect(searchNeedles("12")).toEqual({ text: "12", phone: null });
+  });
+});
+
+describe("attachCustomerSchema", () => {
+  const orderId = "6f1d2a8e-1c1b-4a4e-9a4b-2b9f0b1c2d3e";
+  it("needs an email or a mobile", () => {
+    expect(attachCustomerSchema.safeParse({ orderId }).success).toBe(false);
+    expect(attachCustomerSchema.safeParse({ orderId, email: "", phone: "" }).success).toBe(false);
+  });
+  it("lower-cases the email and normalises a UAE mobile", () => {
+    const r = attachCustomerSchema.parse({
+      orderId,
+      email: " Reem@Example.COM ",
+      phone: "050 123 4567",
+    });
+    expect(r.email).toBe("reem@example.com");
+    expect(r.phone).toBe("+971501234567");
+  });
+  it("accepts email only", () => {
+    const r = attachCustomerSchema.parse({ orderId, email: "a@b.co" });
+    expect(r.phone).toBeNull();
   });
 });

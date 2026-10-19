@@ -3,7 +3,14 @@ import { UserError } from "@/lib/action-result";
 import { assertPermission } from "@/lib/auth/session";
 import { formatAED } from "@/lib/money";
 import { createClient } from "@/lib/supabase/server";
-import { cancelSchema, notesSchema, paymentSchema, refundSchema, statusSchema } from "./schema";
+import {
+  attachCustomerSchema,
+  cancelSchema,
+  notesSchema,
+  paymentSchema,
+  refundSchema,
+  statusSchema,
+} from "./schema";
 import { ORDER_STATUS_LABELS, type OrderStatus } from "./status";
 
 /**
@@ -103,4 +110,22 @@ export async function updateNotes(input: unknown) {
     p_internal_notes: v.internalNotes,
   });
   if (error) dbError(error);
+}
+
+/**
+ * Add / complete the customer on an order after the sale. Links the order when it had none,
+ * fills a missing email or phone, and awards the purchase's Passport stamps (once).
+ */
+export async function attachCustomer(input: unknown) {
+  await assertPermission("orders.update");
+  const v = attachCustomerSchema.parse(input);
+  const supabase = await createClient();
+  const { data, error } = await supabase.rpc("order_attach_customer", {
+    p_order_id: v.orderId,
+    p_email: v.email as string,
+    p_phone: v.phone as string,
+    p_name: v.name ?? undefined,
+  });
+  if (error) dbError(error);
+  return { orderId: v.orderId, customerId: data };
 }

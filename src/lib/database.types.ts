@@ -3136,6 +3136,15 @@ export type Database = {
           variant_id: string
         }[]
       }
+      order_attach_customer: {
+        Args: {
+          p_email: string
+          p_name?: string
+          p_order_id: string
+          p_phone: string
+        }
+        Returns: string
+      }
       order_status_allowed: {
         Args: {
           p_from: Database["public"]["Enums"]["order_status"]

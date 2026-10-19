@@ -11,6 +11,7 @@ import { OrderActions } from "@/components/admin/orders/order-actions";
 import { OrderNotes } from "@/components/admin/orders/order-notes";
 import { PaymentLinkPanel } from "@/components/admin/orders/payment-link-panel";
 import { paymentLinksFor } from "@/modules/orders/manual-queries";
+import { AttachCustomerForm } from "@/components/admin/orders/attach-customer-form";
 import { AdminSection } from "@/components/admin/section";
 import { Badge } from "@/components/ui/badge";
 import { requirePagePermission } from "@/lib/auth/session";
@@ -370,6 +371,26 @@ export default async function OrderDetailPage({ params }: PageProps<"/admin/orde
                 </div>
               ) : null}
             </dl>
+            {order.customer_id ? (
+              <Link
+                href={`/admin/customers/${order.customer_id}`}
+                className="text-burgundy mt-4 inline-flex items-center gap-1 text-sm underline-offset-4 hover:underline"
+              >
+                Customer record & Passport
+              </Link>
+            ) : null}
+            {can(staff.permissions, "orders.update") &&
+            order.status !== "cancelled" &&
+            (!order.customer_id || !order.contact_email || !order.contact_phone) ? (
+              <div className="mt-4">
+                <AttachCustomerForm
+                  orderId={order.id}
+                  email={order.contact_email}
+                  phone={order.contact_phone}
+                  hasCustomer={Boolean(order.customer_id)}
+                />
+              </div>
+            ) : null}
             {guestLink ? (
               <a
                 href={guestLink}

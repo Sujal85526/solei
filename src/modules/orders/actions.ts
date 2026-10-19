@@ -89,3 +89,14 @@ export async function updateNotesAction(_: unknown, fd: FormData): Promise<Actio
     return fail(e);
   }
 }
+
+export async function attachCustomerAction(_: unknown, fd: FormData): Promise<ActionResult> {
+  try {
+    const r = await orders.attachCustomer(entries(fd));
+    refresh(r.orderId);
+    revalidatePath(`/admin/customers/${r.customerId}`);
+    return ok(undefined, "Saved — this purchase's Passport stamps are on their card.");
+  } catch (e) {
+    return fail(e);
+  }
+}

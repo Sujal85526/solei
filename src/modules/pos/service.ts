@@ -11,7 +11,14 @@ export type CompleteSaleResult =
 /** Record one POS sale (also used to replay the offline queue — idempotent by clientUuid). */
 export async function completeSale(input: unknown): Promise<CompleteSaleResult> {
   const parsed = posSaleSchema.safeParse(input);
-  if (!parsed.success) return { ok: false, error: "This sale is incomplete.", retryable: false };
+  if (!parsed.success) {
+    const badEmail = parsed.error.issues.some((i) => i.path[0] === "customerEmail");
+    return {
+      ok: false,
+      error: badEmail ? "Check the customer's email." : "This sale is incomplete.",
+      retryable: false,
+    };
+  }
   const v = parsed.data;
   let phone: string | undefined;
   if (v.customerPhone) {
@@ -28,6 +35,7 @@ export async function completeSale(input: unknown): Promise<CompleteSaleResult> 
         sold_at: v.soldAt,
         customer_id: v.customerId ?? null,
         customer_phone: phone ?? null,
+        customer_email: v.customerEmail ?? null,
         customer_name: v.customerName ?? null,
         lines: v.lines.map((l) => ({ variant_id: l.variantId, qty: l.qty })),
         payments: v.payments.map((p) => ({

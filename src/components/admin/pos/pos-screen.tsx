@@ -53,6 +53,7 @@ export function PosScreen({
   const [cartOpen, setCartOpen] = useState(false);
   const [payOpen, setPayOpen] = useState(false);
   const [phone, setPhone] = useState("");
+  const [email, setEmail] = useState("");
   const [split, setSplit] = useState<SplitRow[] | null>(null);
   const [busy, setBusy] = useState(false);
   const [done, setDone] = useState<Done>(null);
@@ -137,6 +138,7 @@ export function PosScreen({
       eventId,
       soldAt: new Date().toISOString(),
       customerPhone: phone.trim() || undefined,
+      customerEmail: email.trim() || undefined,
       lines: lines.map((l) => ({ variantId: l.variantId, qty: l.qty })),
       payments,
       totalFils: total,
@@ -165,6 +167,7 @@ export function PosScreen({
     await refreshQueue();
     setCart([]);
     setPhone("");
+    setEmail("");
     setSplit(null);
     setPayOpen(false);
     setCartOpen(false);
@@ -425,20 +428,32 @@ export function PosScreen({
           <DialogHeader>
             <DialogTitle className="numeric text-4xl">{formatAED(total)}</DialogTitle>
           </DialogHeader>
-          <label className="flex flex-col gap-1.5 text-sm">
-            Customer mobile{" "}
-            <span className="text-muted-foreground text-xs">
-              (optional — earns passport stamps)
-            </span>
+          <fieldset className="flex flex-col gap-2 rounded-lg border p-3">
+            <legend className="px-1 text-sm font-medium">Customer for Passport</legend>
+            <p className="text-muted-foreground -mt-1 text-xs">
+              Optional — with an email their stamps also show in their online account. You can add
+              this to the order later too.
+            </p>
+            <Input
+              type="email"
+              inputMode="email"
+              autoComplete="off"
+              aria-label="Customer email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              placeholder="Email — name@example.com"
+              className="h-12 text-base"
+            />
             <Input
               type="tel"
               inputMode="tel"
+              aria-label="Customer mobile"
               value={phone}
               onChange={(e) => setPhone(e.target.value)}
-              placeholder="050 123 4567"
-              className="h-12 text-lg"
+              placeholder="Mobile — 050 123 4567"
+              className="h-12 text-base"
             />
-          </label>
+          </fieldset>
           {split ? (
             <div className="flex flex-col gap-2">
               {split.map((row, i) => (

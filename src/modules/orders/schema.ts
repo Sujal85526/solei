@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { normalizePhone } from "@/lib/phone";
 import { Constants } from "@/lib/database.types";
 import { aedField } from "@/modules/catalog/schema";
 import { MANUAL_PAYMENT_METHODS } from "./status";
@@ -51,6 +52,45 @@ export const notesSchema = z.object({
   orderId: z.uuid(),
   internalNotes: z.string().max(2000, "Keep notes under 2000 characters").default(""),
 });
+
+/**
+ * Add the customer to an order after the sale (e.g. a POS sale): email and/or phone. The email is
+ * what links the purchase to the customer's online Passport.
+ */
+export const attachCustomerSchema = z
+  .object({
+    orderId: z.uuid(),
+    email: z
+      .string()
+      .trim()
+      .toLowerCase()
+      .optional()
+      .transform((v) => v || null)
+      .pipe(z.email("Enter a valid email").nullable()),
+    phone: z
+      .string()
+      .trim()
+      .optional()
+      .transform((v, ctx) => {
+        if (!v) return null;
+        const r = normalizePhone(v);
+        if (!r.ok) {
+          ctx.addIssue({ code: "custom", message: r.error });
+          return z.NEVER;
+        }
+        return r.e164;
+      }),
+    name: z
+      .string()
+      .trim()
+      .max(80)
+      .optional()
+      .transform((v) => v || null),
+  })
+  .refine((v) => v.email || v.phone, {
+    path: ["email"],
+    message: "Enter an email or a mobile number",
+  });
 
 /** List filters from the URL (invalid values are ignored rather than erroring). */
 export const orderFiltersSchema = z.object({

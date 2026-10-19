@@ -15,6 +15,14 @@ export const posSaleSchema = z.object({
   soldAt: z.iso.datetime({ offset: true }),
   customerId: z.uuid().optional(),
   customerPhone: z.string().trim().max(20).optional(),
+  /** Links the sale to the customer's online Passport (account email). */
+  customerEmail: z
+    .string()
+    .trim()
+    .toLowerCase()
+    .optional()
+    .transform((v) => v || undefined)
+    .pipe(z.email("Enter a valid email").optional()),
   customerName: z.string().trim().max(80).optional(),
   lines: z
     .array(z.object({ variantId: z.uuid(), qty: z.number().int().min(1).max(99) }))
