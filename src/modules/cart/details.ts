@@ -47,9 +47,13 @@ export type CartDetailLine = {
   lineTotalFils: Fils;
 };
 
+/** A discount code on the bag: applied (with the amount) or refused (with the reason). */
+export type CartCoupon = { code: string; discountFils: Fils } | { code: string; error: string };
+
 export type CartDetails = {
   lines: CartDetailLine[];
   pricing: CartPricing;
+  coupon: CartCoupon | null;
   emirate: Emirate | null;
   zoneName: string | null;
   settings: Pick<CartSettings, "vatRateBp" | "pricesIncludeVat" | "freeDeliveryThresholdFils">;
@@ -60,6 +64,7 @@ export function resolveCart(
   products: StoreProduct[],
   availability: Availability,
   settings: CartSettings,
+  coupon: CartCoupon | null = null,
 ): CartDetails {
   const byVariant = new Map(
     products.flatMap((p) => p.variants.map((v) => [v.id, { product: p, variant: v }] as const)),
@@ -116,11 +121,13 @@ export function resolveCart(
     deliveryFeeFils: zone ? zone.feeFils : null,
     freeDeliveryThresholdFils: settings.freeDeliveryThresholdFils,
     fulfilment: "delivery",
+    discountFils: coupon && "discountFils" in coupon ? coupon.discountFils : 0,
   });
 
   return {
     lines,
     pricing,
+    coupon,
     emirate: zone ? zone.emirate : null,
     zoneName: zone?.name ?? null,
     settings: {

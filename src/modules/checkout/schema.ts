@@ -38,6 +38,8 @@ export const checkoutSchema = z.object({
   notes: z.string().trim().max(500).optional().default(""),
   marketingConsent: checkbox,
   saveAddress: checkbox,
+  /** Discount code applied in the order summary (checked again server-side). */
+  coupon: z.string().trim().max(40).optional().default(""),
   lines: z.array(cartLineSchema).min(1, "Your cart is empty").max(MAX_LINES),
 });
 

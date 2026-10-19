@@ -1,7 +1,7 @@
 /**
  * Permission keys. The database is the source of truth at runtime (`permissions`,
- * `role_permissions`, `has_permission()`); this list mirrors migration
- * `20261014000009_permissions_seed.sql` and is kept in sync by `permissions.test.ts`.
+ * `role_permissions`, `has_permission()`); this list mirrors the migrations that insert them
+ * (`20261014000009_permissions_seed.sql` and later) and is kept in sync by `permissions.test.ts`.
  */
 export const PERMISSIONS = {
   "dashboard.view": { group: "General", description: "See the dashboard" },
@@ -17,6 +17,7 @@ export const PERMISSIONS = {
   "orders.price_override": { group: "Sales", description: "Override prices on manual orders" },
   "payments.record": { group: "Sales", description: "Record cash, transfer and terminal payments" },
   "payment_links.create": { group: "Sales", description: "Create and send payment links" },
+  "coupons.manage": { group: "Sales", description: "Create, edit and pause discount coupons" },
   "catalog.view": { group: "Catalog", description: "View all products, including inactive" },
   "catalog.manage": {
     group: "Catalog",

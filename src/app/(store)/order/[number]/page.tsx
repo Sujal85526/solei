@@ -37,7 +37,7 @@ async function OrderView({ params, searchParams }: PageProps<"/order/[number]">)
   const { data: order } = await admin
     .from("orders")
     .select(
-      "id, number, status, total_fils, subtotal_fils, delivery_fee_fils, vat_fils, prices_include_vat, contact_name, contact_phone, delivery_address, order_lines(product_name, variant_label, qty, line_total_fils, destination_id, destinations(name))",
+      "id, number, status, total_fils, subtotal_fils, discount_fils, coupon_code, delivery_fee_fils, vat_fils, prices_include_vat, contact_name, contact_phone, delivery_address, order_lines(product_name, variant_label, qty, line_total_fils, discount_fils, destination_id, destinations(name))",
     )
     .eq("number", number.toUpperCase())
     .maybeSingle();
@@ -126,11 +126,17 @@ async function OrderView({ params, searchParams }: PageProps<"/order/[number]">)
               {l.variant_label ? ` · ${l.variant_label}` : ""}{" "}
               <span className="text-pearl-muted">× {l.qty}</span>
             </span>
-            <span className="numeric">{formatAED(l.line_total_fils)}</span>
+            <span className="numeric">{formatAED(l.line_total_fils + l.discount_fils)}</span>
           </li>
         ))}
       </ul>
       <dl className="numeric border-pink/15 mt-6 flex flex-col gap-2 border-t pt-4 text-sm">
+        {order.discount_fils ? (
+          <div className="flex justify-between">
+            <dt>Discount{order.coupon_code ? ` (${order.coupon_code})` : ""}</dt>
+            <dd>−{formatAED(order.discount_fils)}</dd>
+          </div>
+        ) : null}
         <div className="flex justify-between">
           <dt>Delivery</dt>
           <dd>{order.delivery_fee_fils ? formatAED(order.delivery_fee_fils) : "Free"}</dd>

@@ -5,6 +5,8 @@ import { UserError } from "@/lib/action-result";
 import { createAdminClient } from "@/lib/supabase/server";
 import { currentAccount, rememberOrder, saveAddress } from "@/modules/account/service";
 import { resolveCart } from "@/modules/cart/details";
+import { checkCoupon } from "@/modules/coupons/queries";
+import { normaliseCode, refusalMessage } from "@/modules/coupons/schema";
 import {
   fetchAvailability,
   fetchProductsForVariants,
@@ -45,12 +47,7 @@ export async function placeOrder(
     fetchAvailability(ids),
     getCartSettings(),
   ]);
-  const cart = resolveCart(
-    { lines: v.lines, emirate: v.emirate },
-    products,
-    availability,
-    settings,
-  );
+  let cart = resolveCart({ lines: v.lines, emirate: v.emirate }, products, availability, settings);
 
   const problems = cart.lines.filter((l) => l.status !== "ok");
   if (problems.length) {
@@ -60,6 +57,18 @@ export async function placeOrder(
         : "Some items are no longer available — we've updated your cart. Please review it.",
     );
   }
+
+  // Discount code: checked against the final bag and this customer; the order RPC checks again.
+  const code = v.coupon ? normaliseCode(v.coupon) : "";
+  if (code) {
+    const check = await checkCoupon(code, cart.lines, v.email);
+    if (!check.ok) throw new UserError(refusalMessage(check.reason, check.minOrderFils));
+    cart = resolveCart({ lines: v.lines, emirate: v.emirate }, products, availability, settings, {
+      code: check.code,
+      discountFils: check.discountFils,
+    });
+  }
+
   const pricing = cart.pricing;
   if (pricing.deliveryFeeFils === null) throw new UserError("Choose your emirate for delivery.");
 
@@ -80,6 +89,8 @@ export async function placeOrder(
           unit_price_fils: l.unitPriceFils,
         })),
         subtotal_fils: pricing.subtotalFils,
+        coupon_code: code || null,
+        discount_fils: pricing.discountFils,
         delivery_fee_fils: pricing.deliveryFeeFils,
         vat_fils: pricing.vatFils,
         total_fils: pricing.totalFils,
@@ -120,6 +131,8 @@ export async function placeOrder(
   if (!pricing.vatIncluded && pricing.vatFils > 0) {
     lines.push({ name: "VAT", unitAmountFils: pricing.vatFils, quantity: 1 });
   }
+  // With a discount the item lines no longer add up to the amount due, so the payment page shows
+  // one "Solei order …" line for the total instead (see startPayment).
 
   const url = await startPayment(created.order_id, { lines, email: v.email });
   return { redirectUrl: url, orderNumber: created.order_number };

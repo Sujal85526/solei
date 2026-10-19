@@ -162,7 +162,9 @@ export default async function OrderDetailPage({ params }: PageProps<"/admin/orde
                         </p>
                       ) : null}
                     </div>
-                    <p className="numeric shrink-0 font-semibold">{formatAED(l.line_total_fils)}</p>
+                    <p className="numeric shrink-0 font-semibold">
+                      {formatAED(l.line_total_fils + l.discount_fils)}
+                    </p>
                   </li>
                 );
               })}
@@ -172,7 +174,9 @@ export default async function OrderDetailPage({ params }: PageProps<"/admin/orde
               <dd className="text-end">{formatAED(order.subtotal_fils)}</dd>
               {order.discount_fils > 0 ? (
                 <>
-                  <dt className="text-muted-foreground">Discount</dt>
+                  <dt className="text-muted-foreground">
+                    Discount{order.coupon_code ? ` (${order.coupon_code})` : ""}
+                  </dt>
                   <dd className="text-end">−{formatAED(order.discount_fils)}</dd>
                 </>
               ) : null}

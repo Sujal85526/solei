@@ -12,6 +12,7 @@ import {
  *
  * Rules:
  * - Reward lines (loyalty redemptions) are free: they add nothing to the subtotal.
+ * - A coupon discount comes off the goods only (never delivery) and can't exceed the subtotal.
  * - Delivery is free for pickup, or when the goods subtotal reaches the free-delivery threshold.
  * - VAT applies to goods + delivery. With `pricesIncludeVat` the VAT is contained in the amounts
  *   (total = subtotal + delivery); otherwise it is added on top. VAT is computed once on the
@@ -36,6 +37,8 @@ export type PriceCartInput = {
   /** Goods subtotal from which delivery is free; `null` = no free delivery. */
   freeDeliveryThresholdFils: Fils | null;
   fulfilment: Fulfilment;
+  /** Coupon discount on the goods (website checkout); default 0. */
+  discountFils?: Fils;
 };
 
 export type PricedLine = PricingLine & { lineTotalFils: Fils };
@@ -44,8 +47,10 @@ export type CartPricing = {
   lines: PricedLine[];
   /** Number of units, rewards included. */
   itemCount: number;
-  /** Goods total as displayed (inclusive or exclusive of VAT per settings). */
+  /** Goods total as displayed (inclusive or exclusive of VAT per settings), before any discount. */
   subtotalFils: Fils;
+  /** Coupon discount taken off the goods. */
+  discountFils: Fils;
   /** Delivery charged; `null` when delivery is pending a zone choice. */
   deliveryFeeFils: Fils | null;
   /** True when the threshold waived a delivery fee (or would, once a zone is chosen). */
@@ -100,7 +105,11 @@ export function priceCart(input: PriceCartInput): CartPricing {
   const amountToFreeDeliveryFils =
     isPickup || empty || threshold === null || reachesThreshold ? null : threshold - subtotalFils;
 
-  const taxable = subtotalFils + (deliveryFeeFils ?? 0);
+  const discountFils = input.discountFils ?? 0;
+  assertNonNegative(discountFils, "Discount");
+  if (discountFils > subtotalFils) throw new Error(`Discount must not exceed the subtotal`);
+
+  const taxable = subtotalFils - discountFils + (deliveryFeeFils ?? 0);
   const vatFils = pricesIncludeVat
     ? vatFromInclusive(taxable, vatRateBp)
     : vatOnExclusive(taxable, vatRateBp);
@@ -110,6 +119,7 @@ export function priceCart(input: PriceCartInput): CartPricing {
     lines,
     itemCount,
     subtotalFils,
+    discountFils,
     deliveryFeeFils,
     freeDelivery,
     amountToFreeDeliveryFils,

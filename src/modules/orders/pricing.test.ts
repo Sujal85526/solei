@@ -157,6 +157,32 @@ describe("priceCart — rewards", () => {
   });
 });
 
+describe("priceCart — coupon discount", () => {
+  it("comes off the goods, not delivery, and VAT is on the discounted amount", () => {
+    const p = priceCart({
+      ...base,
+      freeDeliveryThresholdFils: null,
+      lines: [perfume],
+      discountFils: 2_800,
+    });
+    expect(p.subtotalFils).toBe(28_000);
+    expect(p.discountFils).toBe(2_800);
+    expect(p.deliveryFeeFils).toBe(2_000);
+    expect(p.totalFils).toBe(27_200);
+    // (28000 − 2800 + 2000) × 500 / 10500 = 1295.24 → 1295
+    expect(p.vatFils).toBe(1_295);
+  });
+
+  it("defaults to no discount", () => {
+    expect(priceCart({ ...base, lines: [perfume] }).discountFils).toBe(0);
+  });
+
+  it("rejects a discount larger than the goods", () => {
+    expect(() => priceCart({ ...base, lines: [spray], discountFils: 19_001 })).toThrow();
+    expect(() => priceCart({ ...base, lines: [spray], discountFils: -1 })).toThrow();
+  });
+});
+
 describe("priceCart — validation", () => {
   it.each([
     [{ ...base, lines: [{ unitPriceFils: 10.5, qty: 1 }] }, /integer fils/],

@@ -4,7 +4,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState, useTransition } from "react";
-import { ChevronDown, Lock } from "lucide-react";
+import { ChevronDown, Lock, Tag } from "lucide-react";
 import { AccountGate } from "@/components/store/account/account-gate";
 import type { ZoneOption } from "@/components/store/account/emirate-select";
 import { AddressFields } from "@/components/store/account/profile-forms";
@@ -51,7 +51,11 @@ export function CheckoutFlow({
   const [redirecting, setRedirecting] = useState(false);
   const [, startLoad] = useTransition();
   const req = useRef(0);
-  const key = state ? JSON.stringify([state.lines, state.emirate]) : null;
+  // Discount code being applied; dropped again if the server refuses it.
+  const [coupon, setCoupon] = useState<string | null>(null);
+  const [couponError, setCouponError] = useState<string | null>(null);
+  const [applying, startApply] = useTransition();
+  const key = state ? JSON.stringify([state.lines, state.emirate, coupon]) : null;
 
   // A saved address picks the emirate (and so the delivery fee) when none is chosen yet.
   useEffect(() => {
@@ -62,12 +66,33 @@ export function CheckoutFlow({
   useEffect(() => {
     if (!state || !state.lines.length) return;
     const id = ++req.current;
-    startLoad(async () => {
-      const res = await getCartDetails({ lines: state.lines, emirate: state.emirate });
-      if (id === req.current) setDetails(res);
+    const load = coupon ? startApply : startLoad;
+    load(async () => {
+      const res = await getCartDetails({ lines: state.lines, emirate: state.emirate, coupon });
+      if (id !== req.current) return;
+      setDetails(res);
+      if (res.coupon && "error" in res.coupon) {
+        setCouponError(res.coupon.error);
+        setCoupon(null);
+      }
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [key]);
+
+  const applied = details?.coupon && "discountFils" in details.coupon ? details.coupon : null;
+  const couponProps = {
+    applied,
+    error: couponError,
+    applying,
+    onApply: (code: string) => {
+      setCouponError(null);
+      setCoupon(code);
+    },
+    onRemove: () => {
+      setCouponError(null);
+      setCoupon(null);
+    },
+  };
 
   if (!state) return <div className="flex-1" />;
   if (!state.lines.length && !redirecting) {
@@ -100,11 +125,11 @@ export function CheckoutFlow({
             </span>
           </summary>
           <div className="px-5 pb-8 sm:px-10">
-            <Summary details={details} />
+            <Summary details={details} coupon={couponProps} />
           </div>
         </details>
         <div className="sticky top-0 hidden max-w-md px-12 py-14 lg:block">
-          <Summary details={details} />
+          <Summary details={details} coupon={couponProps} />
         </div>
       </aside>
 
@@ -117,6 +142,7 @@ export function CheckoutFlow({
               zones={zones}
               state={state}
               details={details}
+              couponCode={applied?.code ?? null}
               onDetails={setDetails}
               redirecting={redirecting}
               onRedirect={() => setRedirecting(true)}
@@ -180,6 +206,7 @@ function DeliveryForm({
   zones,
   state,
   details,
+  couponCode,
   onDetails,
   redirecting,
   onRedirect,
@@ -188,6 +215,7 @@ function DeliveryForm({
   zones: ZoneOption[];
   state: CartState;
   details: CartDetails | null;
+  couponCode: string | null;
   onDetails: (d: CartDetails) => void;
   redirecting: boolean;
   onRedirect: () => void;
@@ -212,6 +240,7 @@ function DeliveryForm({
         ...fd,
         clientUuid: clientUuid.current,
         lines: state.lines,
+        coupon: couponCode ?? "",
       });
       if (res.ok) {
         onRedirect();
@@ -220,8 +249,12 @@ function DeliveryForm({
       }
       setErrors(res.fieldErrors ?? {});
       setFormError(res.error);
-      // Stock or prices may have changed — refresh the summary.
-      const fresh = await getCartDetails({ lines: state.lines, emirate: state.emirate });
+      // Stock, prices or the discount may have changed — refresh the summary.
+      const fresh = await getCartDetails({
+        lines: state.lines,
+        emirate: state.emirate,
+        coupon: couponCode,
+      });
       onDetails(fresh);
       const allowed = new Map(
         fresh.lines.filter((l) => l.status !== "ok").map((l) => [l.variantId, l.qty]),
@@ -341,7 +374,15 @@ function Check({
   );
 }
 
-function Summary({ details }: { details: CartDetails | null }) {
+type CouponProps = {
+  applied: { code: string; discountFils: number } | null;
+  error: string | null;
+  applying: boolean;
+  onApply: (code: string) => void;
+  onRemove: () => void;
+};
+
+function Summary({ details, coupon }: { details: CartDetails | null; coupon: CouponProps }) {
   const pricing = details?.pricing;
   const lines = (details?.lines ?? []).filter((l) => l.qty > 0);
   return (
@@ -376,11 +417,18 @@ function Summary({ details }: { details: CartDetails | null }) {
           </li>
         ))}
       </ul>
+      <CouponBox {...coupon} />
       <dl className="numeric border-border flex flex-col gap-2.5 border-t pt-5 text-sm">
         <div className="flex justify-between">
           <dt className="text-muted-foreground">{c.subtotal}</dt>
           <dd>{pricing ? formatAED(pricing.subtotalFils) : "—"}</dd>
         </div>
+        {coupon.applied && pricing?.discountFils ? (
+          <div className="flex justify-between">
+            <dt className="text-muted-foreground">{c.discount}</dt>
+            <dd className="text-primary">−{formatAED(pricing.discountFils)}</dd>
+          </div>
+        ) : null}
         <div className="flex justify-between">
           <dt className="text-muted-foreground">{c.shipping}</dt>
           <dd>
@@ -402,5 +450,62 @@ function Summary({ details }: { details: CartDetails | null }) {
         </div>
       </dl>
     </div>
+  );
+}
+
+/** "Discount code" box in the order summary: type a code and apply, or remove the applied one. */
+function CouponBox({ applied, error, applying, onApply, onRemove }: CouponProps) {
+  const [value, setValue] = useState("");
+  if (applied) {
+    return (
+      <div className="border-border flex items-center justify-between gap-3 border-t pt-5 text-sm">
+        <span className="flex items-center gap-2">
+          <Tag className="text-primary size-3.5" />
+          <span className="font-medium tracking-wide">{applied.code}</span>
+        </span>
+        <button
+          type="button"
+          onClick={onRemove}
+          className="text-muted-foreground hover:text-primary text-xs underline underline-offset-4"
+        >
+          {c.removeCode}
+        </button>
+      </div>
+    );
+  }
+  return (
+    <form
+      onSubmit={(e) => {
+        e.preventDefault();
+        if (value.trim()) onApply(value.trim());
+      }}
+      className="border-border flex flex-col gap-2 border-t pt-5"
+    >
+      <div className="flex gap-2">
+        <input
+          aria-label={c.discountCode}
+          placeholder={c.discountCode}
+          value={value}
+          onChange={(e) => setValue(e.target.value)}
+          autoCapitalize="characters"
+          autoComplete="off"
+          aria-invalid={error ? true : undefined}
+          className="border-border focus-visible:border-primary h-11 min-w-0 flex-1 border bg-white px-3 text-sm uppercase outline-none placeholder:normal-case"
+        />
+        <Button
+          type="submit"
+          variant="outline"
+          disabled={applying || !value.trim()}
+          className="h-11 px-5"
+        >
+          {applying ? "…" : c.applyCode}
+        </Button>
+      </div>
+      {error ? (
+        <p role="alert" className="text-destructive text-xs">
+          {error}
+        </p>
+      ) : null}
+    </form>
   );
 }

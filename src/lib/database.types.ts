@@ -492,6 +492,63 @@ export type Database = {
         }
         Relationships: []
       }
+      coupons: {
+        Row: {
+          active: boolean
+          amount_fils: number | null
+          code: string
+          created_at: string
+          created_by: string | null
+          description: string | null
+          ends_at: string | null
+          id: string
+          kind: Database["public"]["Enums"]["coupon_kind"]
+          max_uses: number | null
+          min_order_fils: number | null
+          once_per_customer: boolean
+          percent_bp: number | null
+          product_ids: string[]
+          starts_at: string | null
+          updated_at: string
+        }
+        Insert: {
+          active?: boolean
+          amount_fils?: number | null
+          code: string
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          ends_at?: string | null
+          id?: string
+          kind: Database["public"]["Enums"]["coupon_kind"]
+          max_uses?: number | null
+          min_order_fils?: number | null
+          once_per_customer?: boolean
+          percent_bp?: number | null
+          product_ids?: string[]
+          starts_at?: string | null
+          updated_at?: string
+        }
+        Update: {
+          active?: boolean
+          amount_fils?: number | null
+          code?: string
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          ends_at?: string | null
+          id?: string
+          kind?: Database["public"]["Enums"]["coupon_kind"]
+          max_uses?: number | null
+          min_order_fils?: number | null
+          once_per_customer?: boolean
+          percent_bp?: number | null
+          product_ids?: string[]
+          starts_at?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       customers: {
         Row: {
           address: Json | null
@@ -1594,6 +1651,8 @@ export type Database = {
           contact_email: string | null
           contact_name: string | null
           contact_phone: string | null
+          coupon_code: string | null
+          coupon_id: string | null
           courier: string | null
           created_at: string
           customer_id: string | null
@@ -1629,6 +1688,8 @@ export type Database = {
           contact_email?: string | null
           contact_name?: string | null
           contact_phone?: string | null
+          coupon_code?: string | null
+          coupon_id?: string | null
           courier?: string | null
           created_at?: string
           customer_id?: string | null
@@ -1664,6 +1725,8 @@ export type Database = {
           contact_email?: string | null
           contact_name?: string | null
           contact_phone?: string | null
+          coupon_code?: string | null
+          coupon_id?: string | null
           courier?: string | null
           created_at?: string
           customer_id?: string | null
@@ -1696,6 +1759,13 @@ export type Database = {
             columns: ["booking_id"]
             isOneToOne: false
             referencedRelation: "bookings"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "orders_coupon_id_fkey"
+            columns: ["coupon_id"]
+            isOneToOne: false
+            referencedRelation: "coupons"
             referencedColumns: ["id"]
           },
           {
@@ -2769,6 +2839,14 @@ export type Database = {
           order_number: string
         }[]
       }
+      coupon_evaluate: {
+        Args: { p_code: string; p_email: string; p_lines: Json }
+        Returns: Json
+      }
+      coupon_uses: {
+        Args: { p_coupon: string; p_email?: string }
+        Returns: number
+      }
       create_manual_order: {
         Args: { p: Json }
         Returns: {
@@ -3174,6 +3252,7 @@ export type Database = {
         | "completed"
         | "rejected"
         | "cancelled"
+      coupon_kind: "percent" | "fixed"
       customer_source:
         | "website"
         | "pos"
@@ -3409,6 +3488,7 @@ export const Constants = {
         "rejected",
         "cancelled",
       ],
+      coupon_kind: ["percent", "fixed"],
       customer_source: [
         "website",
         "pos",

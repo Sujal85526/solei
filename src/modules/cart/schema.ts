@@ -20,5 +20,7 @@ export type CartLine = z.infer<typeof cartLineSchema>;
 export const cartDetailsInputSchema = z.object({
   lines: z.array(cartLineSchema).max(MAX_LINES),
   emirate: emirateSchema.nullish(),
+  /** Discount code typed at checkout (website only). */
+  coupon: z.string().trim().max(40).nullish(),
 });
 export type CartDetailsInput = z.infer<typeof cartDetailsInputSchema>;

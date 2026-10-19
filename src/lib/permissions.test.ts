@@ -1,4 +1,4 @@
-import { readFileSync } from "node:fs";
+import { readdirSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 import { describe, expect, it } from "vitest";
 import {
@@ -8,10 +8,11 @@ import {
   can,
 } from "./permissions";
 
-const migration = readFileSync(
-  join(__dirname, "../../supabase/migrations/20261014000009_permissions_seed.sql"),
-  "utf8",
-);
+const dir = join(__dirname, "../../supabase/migrations");
+const migration = readdirSync(dir)
+  .filter((f) => f.endsWith(".sql"))
+  .map((f) => readFileSync(join(dir, f), "utf8"))
+  .join("\n");
 
 describe("permissions", () => {
   it("every key in code exists in the database migration", () => {
