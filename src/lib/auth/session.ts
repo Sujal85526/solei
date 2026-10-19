@@ -37,11 +37,13 @@ export const resolveStaff = cache(async (): Promise<GateResult> => {
   // Session reads are request-time; mark it before supabase-js touches Date.now().
   await connection();
   const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-  if (!user) return { status: "signed_out" };
-  const email = user.email ?? "";
+  // Verify the session JWT locally (asymmetric signing key, cached JWKS) instead of a round trip
+  // to Supabase Auth on every admin request; the proxy refreshes the session before this runs.
+  const { data: claimsData } = await supabase.auth.getClaims();
+  const claims = claimsData?.claims;
+  if (!claims?.sub) return { status: "signed_out" };
+  const user = { id: claims.sub, email: typeof claims.email === "string" ? claims.email : "" };
+  const email = user.email;
 
   // Profile, permissions and MFA level only need the session — fetch them together.
   const [{ data: profile }, permsRes, aalRes] = await Promise.all([
