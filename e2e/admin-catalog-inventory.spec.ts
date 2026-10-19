@@ -47,14 +47,14 @@ test.describe("catalog & inventory admin", () => {
       .setInputFiles({ name: "bottle.png", mimeType: "image/png", buffer: PNG });
     await expect(page.getByText("Cover")).toBeVisible();
 
-    // Receive 100 from the variant's stock page
+    // Add 100 to stock from the variant's stock page
     await page.getByRole("link", { name: "0 in stock" }).click();
     await expect(page.getByText("Total on hand")).toBeVisible();
-    await page.getByRole("button", { name: "Receive" }).click();
+    await page.getByRole("button", { name: "Add stock" }).click();
     let form = page.getByRole("dialog");
     await form.getByLabel("Units").fill("100");
-    await form.getByRole("button", { name: "Receive" }).click();
-    await expect(page.getByText("Stock received.")).toBeVisible();
+    await form.getByRole("button", { name: "Add stock" }).click();
+    await expect(page.getByText("Stock added.")).toBeVisible();
 
     // Damage needs a reason
     await page.getByRole("button", { name: "Damage / correction" }).click();

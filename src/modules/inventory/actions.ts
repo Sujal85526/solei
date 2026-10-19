@@ -20,7 +20,7 @@ export async function receiveStockAction(_: unknown, fd: FormData): Promise<Acti
   try {
     await inventory.receiveStock(entries(fd));
     refresh();
-    return ok(undefined, "Stock received.");
+    return ok(undefined, "Stock added.");
   } catch (e) {
     return fail(e);
   }

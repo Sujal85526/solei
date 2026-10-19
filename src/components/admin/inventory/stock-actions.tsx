@@ -28,7 +28,11 @@ export type LocationOption = { id: string; name: string; kind: string };
 type Mode = "receive" | "adjust" | "transfer";
 
 const titles: Record<Mode, { title: string; description: string; cta: string }> = {
-  receive: { title: "Receive stock", description: "Add a delivery to a location.", cta: "Receive" },
+  receive: {
+    title: "Add stock",
+    description: "New units that arrived — a delivery or a new batch — added to a location.",
+    cta: "Add stock",
+  },
   adjust: {
     title: "Damage or correction",
     description: "Record breakages or fix the count after a stock take. A reason is required.",
@@ -59,7 +63,7 @@ export function StockActions({
       <div className="flex flex-wrap gap-2">
         {can.receive ? (
           <Button onClick={() => setMode("receive")}>
-            <PackagePlus /> Receive
+            <PackagePlus /> Add stock
           </Button>
         ) : null}
         {can.transfer ? (
