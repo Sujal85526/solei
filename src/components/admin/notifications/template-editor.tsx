@@ -70,7 +70,7 @@ export function TemplateEditor({
     });
 
   return (
-    <div className="grid gap-6 lg:grid-cols-2">
+    <div className="grid grid-cols-1 gap-6 lg:grid-cols-2 [&>*]:min-w-0">
       <AdminSection title="Email">
         <form {...action} className="flex flex-col gap-4" noValidate>
           <input type="hidden" name="key" value={template.key} />
