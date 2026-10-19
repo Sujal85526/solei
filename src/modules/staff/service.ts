@@ -3,6 +3,7 @@ import { publicEnv } from "@/lib/env";
 import { UserError } from "@/lib/action-result";
 import { assertPermission } from "@/lib/auth/session";
 import { createAdminClient, createClient } from "@/lib/supabase/server";
+import { STAFF_PASSWORD_LINK_PATH } from "@/modules/auth/schema";
 import {
   createRoleSchema,
   inviteStaffSchema,
@@ -37,7 +38,7 @@ export async function inviteStaff(input: unknown) {
 
   const { data: invited, error } = await admin.auth.admin.inviteUserByEmail(v.email, {
     data: { full_name: v.fullName },
-    redirectTo: `${publicEnv.NEXT_PUBLIC_SITE_URL}/admin/set-password`,
+    redirectTo: `${publicEnv.NEXT_PUBLIC_SITE_URL}${STAFF_PASSWORD_LINK_PATH}`,
   });
   if (error || !invited.user) {
     if (error?.code === "email_exists" || /already been registered/i.test(error?.message ?? "")) {
@@ -131,8 +132,9 @@ export async function sendPasswordReset(userId: string) {
     .eq("user_id", userId)
     .single();
   if (!data) throw new UserError("Staff member not found.");
-  const { error } = await supabase.auth.resetPasswordForEmail(data.email, {
-    redirectTo: `${publicEnv.NEXT_PUBLIC_SITE_URL}/admin/set-password`,
+  // Sent to someone else's inbox, so a link that works on any device (service client).
+  const { error } = await createAdminClient().auth.resetPasswordForEmail(data.email, {
+    redirectTo: `${publicEnv.NEXT_PUBLIC_SITE_URL}${STAFF_PASSWORD_LINK_PATH}`,
   });
   if (error) throw new Error(error.message);
 }

@@ -41,3 +41,10 @@ export function safeLocalPath(next: string | null | undefined, fallback = "/"): 
     return fallback;
   return next;
 }
+
+/**
+ * Where staff password emails (reset, invite) land: /auth/callback signs the link in — any
+ * device, since these links carry their own tokens — then opens "Choose a password". Linking to
+ * /admin/set-password directly bounced to the login page (no session yet).
+ */
+export const STAFF_PASSWORD_LINK_PATH = "/auth/callback?next=%2Fadmin%2Fset-password";

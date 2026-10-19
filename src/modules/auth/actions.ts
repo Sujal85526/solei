@@ -3,8 +3,15 @@
 import { redirect } from "next/navigation";
 import { publicEnv } from "@/lib/env";
 import { writeSystemAudit } from "@/lib/audit";
-import { createClient } from "@/lib/supabase/server";
-import { emailSchema, loginSchema, passwordSchema, safeAdminPath, totpCodeSchema } from "./schema";
+import { createAdminClient, createClient } from "@/lib/supabase/server";
+import {
+  emailSchema,
+  loginSchema,
+  passwordSchema,
+  safeAdminPath,
+  STAFF_PASSWORD_LINK_PATH,
+  totpCodeSchema,
+} from "./schema";
 
 export type FormState = { error?: string; fieldErrors?: Record<string, string>; message?: string };
 
@@ -128,9 +135,9 @@ export async function forgotPasswordAction(
 ): Promise<FormState> {
   const parsed = emailSchema.safeParse(Object.fromEntries(formData));
   if (!parsed.success) return { fieldErrors: fieldErrorsOf(parsed.error.issues) };
-  const supabase = await createClient();
-  await supabase.auth.resetPasswordForEmail(parsed.data.email, {
-    redirectTo: `${publicEnv.NEXT_PUBLIC_SITE_URL}/admin/set-password`,
+  // Service client: a link that works on any device (no code verifier tied to this browser).
+  await createAdminClient().auth.resetPasswordForEmail(parsed.data.email, {
+    redirectTo: `${publicEnv.NEXT_PUBLIC_SITE_URL}${STAFF_PASSWORD_LINK_PATH}`,
   });
   await writeSystemAudit({
     action: "auth.password_reset_requested",
