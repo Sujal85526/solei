@@ -36,8 +36,8 @@ after a `db:reset`).
 | 3 | Abandoned cart | ✅ built (`20261024000006_abandoned_carts.sql`) |
 | 4 | CRM segments & campaigns | ✅ built (`20261024000007_segments_campaigns.sql`) |
 | 5 | Points & VIP tiers + birthday offer | ✅ built, **off by default** (`20261024000008/9_points*.sql`) |
-| 6 | Giveaways customiser | ✅ built (`20261024000010_giveaways.sql`, local only — not on the hosted DB yet) |
-| 7 | WhatsApp API · courier API · staff attendance · PDF reports (mock providers) | ✅ built (`20261024000011_operations.sql`, local only — not on the hosted DB yet) |
+| 6 | Giveaways customiser | ✅ built (`20261024000010_giveaways.sql`) |
+| 7 | WhatsApp API · courier API · staff attendance · PDF reports (mock providers) | ✅ built (`20261024000011_operations.sql`) |
 
 **1 — Promotions:** Admin → Promotions (`/admin/promotions`): % off / AED off / free delivery, minimum
 order, start/end dates, total uses, uses per customer, category + product scope, pause/delete. Checkout
@@ -132,6 +132,21 @@ main-compatibility check; production checked afterwards). `phase-2` pushed; Verc
 open it). Preview env: a branch-only `NEXT_PUBLIC_SITE_URL` for `phase-2` (the general Preview value points at the
 old production alias); emails on preview go to the log provider (no `RESEND_API_KEY` / `EMAIL_ALLOWLIST` there).
 Production (`main`, soleiperfumes.com) untouched.
+
+**v2 = everything (2026-10-24):** the goal is that **https://solei-v2.vercel.app** (the `phase-2` branch domain,
+protection off) shows the whole site plus all of Phase 2, while soleiperfumes.com (`main`) doesn't change; when v2
+is approved, `phase-2` is merged into `main`.
+- Migrations `…010` (giveaways) and `…011` (operations) applied to the hosted DB after the main-compatibility
+  check (main's checkout, POS, orders, catalog, customers and reports e2e on a DB with all Phase 2 migrations);
+  soleiperfumes.com checked afterwards.
+- *Plan your event* is on for v2 only: `NEXT_PUBLIC_FEATURE_BOOKINGS=1` is set for Preview · `phase-2` in Vercel
+  (production has no value, so the live site keeps "Coming soon"). `/events` is the real page again, restyled to
+  the current storefront (cream hero, packages on baby pink, the planner on deep burgundy).
+- Deliberately **off** on the shared DB: points & tiers (`rewards_settings.points_enabled` — the paid-order
+  trigger runs for every order, so switching it on would award and take back points on live orders too) and
+  WhatsApp updates (stand-in only). Don't flip either from v2's admin until the merge.
+- No customisable (giveaway) product exists on the hosted DB: an active one would also show on the live shop,
+  whose checkout can't send choices (`PHASE2_MERGE.md` §4). Verified locally only.
 
 **Shared hosted DB (2026-10-24):** the user allowed using the hosted DB, which also serves the live site
 (`main`). Phase 2 migrations were made main-safe (kept `coupons.once_per_customer`, no manager grants) and
