@@ -134,6 +134,7 @@ export default async function CartsPage({ searchParams }: PageProps<"/admin/cart
                             ? `${c.remindersSent} reminder${c.remindersSent === 1 ? "" : "s"}`
                             : null,
                           c.linkOpenedAt ? "opened the link" : null,
+                          c.optedOut ? "reminders off" : null,
                         ]
                           .filter(Boolean)
                           .join(" · ")}
@@ -157,6 +158,7 @@ export default async function CartsPage({ searchParams }: PageProps<"/admin/cart
 
         {manage ? (
           <AdminSection
+            className="order-first xl:order-none"
             title="Reminders"
             description="Timing and on/off. The email wording is in Settings → Notifications (Bag reminder)."
           >

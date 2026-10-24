@@ -37,6 +37,8 @@ export type AdminCart = {
   order: { id: string; number: string; totalFils: number } | null;
   updatedAt: string;
   customerId: string | null;
+  /** The customer turned bag reminders off. */
+  optedOut: boolean;
 };
 
 export type CartFilter = "open" | "recovered" | "all";
@@ -48,7 +50,7 @@ export async function listCarts(filter: CartFilter = "open"): Promise<AdminCart[
   let query = supabase
     .from("carts")
     .select(
-      "id, email, name, status, item_count, value_fils, reminders_sent, last_reminder_at, link_opened_at, updated_at, orders(id, number, total_fils)",
+      "id, user_id, email, name, status, item_count, value_fils, reminders_sent, last_reminder_at, link_opened_at, updated_at, orders(id, number, total_fils)",
     )
     .order("updated_at", { ascending: false })
     .limit(200);
@@ -63,6 +65,11 @@ export async function listCarts(filter: CartFilter = "open"): Promise<AdminCart[
     ? await supabase.from("customers").select("id, email").in("email", emails)
     : { data: [] as { id: string; email: string | null }[] };
   const byEmail = new Map((customers ?? []).map((c) => [c.email, c.id]));
+  const userIds = [...new Set(data.map((c) => c.user_id))];
+  const { data: optouts } = userIds.length
+    ? await supabase.from("cart_reminder_optouts").select("user_id").in("user_id", userIds)
+    : { data: [] as { user_id: string }[] };
+  const off = new Set((optouts ?? []).map((o) => o.user_id));
 
   return data.map((c) => ({
     id: c.id,
@@ -79,6 +86,7 @@ export async function listCarts(filter: CartFilter = "open"): Promise<AdminCart[
       : null,
     updatedAt: c.updated_at,
     customerId: byEmail.get(c.email) ?? null,
+    optedOut: off.has(c.user_id),
   }));
 }
 
