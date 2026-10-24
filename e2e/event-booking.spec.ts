@@ -7,9 +7,12 @@ import { adminClient, signInAsOwner } from "./helpers/auth";
  * Runs on phone and desktop; tablet is covered by those two layouts.
  */
 
-/** Far-future date per project so runs don't share a calendar day. */
+/**
+ * About two years ahead (the wizard takes dates up to three years out), a different month per
+ * project so runs don't share a calendar day.
+ */
 const eventDate = (project: string) =>
-  `2031-${{ mobile: "02", desktop: "03" }[project] ?? "04"}-14`;
+  `${new Date().getFullYear() + 2}-${{ mobile: "02", desktop: "03" }[project] ?? "04"}-14`;
 
 const phoneFor = (project: string) =>
   `050 ${project === "mobile" ? "441" : "442"} ${String(Date.now()).slice(-4)}`;
@@ -53,15 +56,17 @@ test.describe("event booking", () => {
     await page.getByRole("checkbox", { name: /Perfume display booth/ }).check({ force: true });
     await next(page);
 
-    await pick(page, /^Signature/);
+    await pick(page, /^The Signature package/);
     await expect(page.getByText("Estimate so far")).toBeVisible();
     await next(page);
 
-    await pick(page, /^Passport bar/);
+    await pick(page, /Passport bar/);
     await next(page);
 
     await pick(page, /^Add flowers/);
-    await pick(page, /^Burgundy/);
+    // Click the colour's label: on phones its hidden radio can sit under the sticky header.
+    await page.getByText("Burgundy", { exact: true }).click();
+    await expect(page.getByRole("radio", { name: /^Burgundy/ })).toBeChecked();
     await next(page);
 
     await page.getByLabel("Perfumes").fill("10");
@@ -73,7 +78,7 @@ test.describe("event booking", () => {
 
     await page.getByLabel("Full name").fill("Mariam E2E");
     await page.getByLabel("Mobile number").fill(phoneFor(project));
-    await page.getByLabel("Email").fill(email);
+    await page.getByRole("textbox", { name: /^Email/ }).fill(email);
     await page.getByRole("checkbox", { name: /Solei may contact me/ }).check();
     await next(page);
 
@@ -100,9 +105,11 @@ test.describe("event booking", () => {
     await expect(page.getByRole("heading", { level: 1, name: new RegExp(ref) })).toBeVisible();
     await expect(page.getByTestId("quote-builder-total")).toHaveText("AED 10,250");
     await page.getByRole("button", { name: "Send quotation" }).click();
-    const link = (await page.getByTestId("quote-link").textContent())!.trim();
-    expect(link).toMatch(/\/events\/quote\/[0-9a-f]{64}$/);
-    await expect(page.getByTestId("current-quote-link")).toHaveText(link);
+    // The sent quote's accept link is listed under the quotation (the "sent" notice can be
+    // replaced by the page refresh that follows).
+    const current = page.getByTestId("current-quote-link");
+    await expect(current).toHaveText(/\/events\/quote\/[0-9a-f]{64}$/);
+    const link = (await current.textContent())!.trim();
 
     // ─── Customer: accept + pay the deposit ───────────────────────────────────────────────
     await page.goto(new URL(link).pathname);
