@@ -1171,6 +1171,73 @@ export type Database = {
         }
         Relationships: []
       }
+      fulfilments: {
+        Row: {
+          booked_by: string | null
+          courier: string
+          created_at: string
+          events: Json
+          id: string
+          label_url: string | null
+          last_checked_at: string | null
+          order_id: string
+          provider: string
+          status: Database["public"]["Enums"]["fulfilment_status"]
+          tracking_number: string
+          updated_at: string
+        }
+        Insert: {
+          booked_by?: string | null
+          courier: string
+          created_at?: string
+          events?: Json
+          id?: string
+          label_url?: string | null
+          last_checked_at?: string | null
+          order_id: string
+          provider: string
+          status?: Database["public"]["Enums"]["fulfilment_status"]
+          tracking_number: string
+          updated_at?: string
+        }
+        Update: {
+          booked_by?: string | null
+          courier?: string
+          created_at?: string
+          events?: Json
+          id?: string
+          label_url?: string | null
+          last_checked_at?: string | null
+          order_id?: string
+          provider?: string
+          status?: Database["public"]["Enums"]["fulfilment_status"]
+          tracking_number?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "fulfilments_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "admin_orders"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "fulfilments_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "order_payment_summary"
+            referencedColumns: ["order_id"]
+          },
+          {
+            foreignKeyName: "fulfilments_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "orders"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       gift_card_ledger: {
         Row: {
           amount_fils: number
@@ -3100,6 +3167,7 @@ export type Database = {
           updated_by: string | null
           vat_rate_bp: number
           whatsapp_number: string | null
+          whatsapp_updates_enabled: boolean
         }
         Insert: {
           booking_deposit_bp?: number
@@ -3129,6 +3197,7 @@ export type Database = {
           updated_by?: string | null
           vat_rate_bp?: number
           whatsapp_number?: string | null
+          whatsapp_updates_enabled?: boolean
         }
         Update: {
           booking_deposit_bp?: number
@@ -3158,8 +3227,53 @@ export type Database = {
           updated_by?: string | null
           vat_rate_bp?: number
           whatsapp_number?: string | null
+          whatsapp_updates_enabled?: boolean
         }
         Relationships: []
+      }
+      staff_attendance: {
+        Row: {
+          clock_in: string
+          clock_out: string | null
+          created_at: string
+          edited_by: string | null
+          event_id: string | null
+          id: string
+          note: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          clock_in: string
+          clock_out?: string | null
+          created_at?: string
+          edited_by?: string | null
+          event_id?: string | null
+          id?: string
+          note?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          clock_in?: string
+          clock_out?: string | null
+          created_at?: string
+          edited_by?: string | null
+          event_id?: string | null
+          id?: string
+          note?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "staff_attendance_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "events"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       staff_profiles: {
         Row: {
@@ -3572,6 +3686,10 @@ export type Database = {
         Returns: number
       }
       apply_order_stock: { Args: { p_order_id: string }; Returns: undefined }
+      attendance_clock_in: { Args: { p_event?: string }; Returns: string }
+      attendance_clock_out: { Args: { p_note?: string }; Returns: string }
+      attendance_delete: { Args: { p_id: string }; Returns: undefined }
+      attendance_save: { Args: { p: Json }; Returns: string }
       birthdays_due: {
         Args: never
         Returns: {
@@ -4291,6 +4409,14 @@ export type Database = {
       event_type: "exhibition" | "popup" | "private_booking" | "other"
       fee_payment_status:
         "unpaid" | "partially_paid" | "paid" | "waived" | "not_applicable"
+      fulfilment_status:
+        | "booked"
+        | "picked_up"
+        | "in_transit"
+        | "out_for_delivery"
+        | "delivered"
+        | "failed"
+        | "cancelled"
       fulfilment_type: "delivery" | "pickup" | "handed_over"
       gift_card_entry: "issue" | "redeem" | "refund" | "adjust" | "void"
       gift_card_status: "pending" | "active" | "void"
@@ -4530,6 +4656,15 @@ export const Constants = {
         "paid",
         "waived",
         "not_applicable",
+      ],
+      fulfilment_status: [
+        "booked",
+        "picked_up",
+        "in_transit",
+        "out_for_delivery",
+        "delivered",
+        "failed",
+        "cancelled",
       ],
       fulfilment_type: ["delivery", "pickup", "handed_over"],
       gift_card_entry: ["issue", "redeem", "refund", "adjust", "void"],

@@ -61,7 +61,7 @@ select results_eq($$ select * from pg_temp.members('{"passport": "none"}') $$,
 reset role;
 select public.customer_unsubscribe(:'big');
 select is((select marketing_consent from public.customers where id = :'big'), false, 'unsubscribe turns consent off');
-select tests.login_as(tests.create_staff('seg-sales@solei.test', 'sales'));
+select tests.login_as(tests.create_staff('seg-sales@solei.test', 'sales_staff'));
 select throws_ok($$ select * from public.segment_members('{}') $$, '42501', null, 'sales staff cannot list segments');
 
 select * from finish();
