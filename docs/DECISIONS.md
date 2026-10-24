@@ -457,3 +457,14 @@ Open client questions are built as configurable defaults. Each row: what we chos
 - **P2-17 — Birthday:** day + month only (no year); 29 Feb is celebrated on 28 Feb in other years; only customers
   with an email who have bought at least once; once per calendar year. Needs the daily scheduler (P2-9) or the
   admin button.
+
+## Phase 2 — giveaways customiser (branch `phase-2`, 2026-10-24)
+- **P2-18 — Model:** option groups belong to a product (`single` / `multi` / `text`, required or not, text length
+  limit), options carry a per-piece price change (may be negative); `products.min_order_qty`. Any product can be
+  customised — no separate "giveaway" type. Chosen options live on the cart line and are snapshotted on the order
+  line (`order_lines.options`), so later edits or deletions of options never change past orders.
+- **P2-19 — Cart identity:** a line is variant + choices (`lineKey`); ordinary lines keep the plain variant id, so
+  existing carts in browsers keep working. Stock is per variant and shared by its lines.
+- **P2-20 — Prices from the database:** `line_unit_price_fils` (variant price + chosen active options of that
+  product) and `line_options_check` (required answered, one choice for "pick one", text length, nothing foreign)
+  are used by `create_web_order`, `coupon_evaluate` and `cart_sync`; the browser's unit price must match.

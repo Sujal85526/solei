@@ -36,3 +36,8 @@ alter table public.coupons drop column once_per_customer;
   database refuses such an order with "your discount changed", so nothing is mis-charged).
 - New notification templates (gift card, bag reminder, campaign) appear in the live site's
   Settings → Notifications; leave them as they are.
+
+## 4. Giveaways (migration `20261024000010`, not on the hosted DB yet)
+`create_web_order`, `coupon_evaluate` and `cart_sync` are redefined with the same signatures; orders from `main`
+(no options) work unchanged for products without choices. Don't add choices or a minimum to a product on the
+shared DB until the merge — `main`'s checkout can't send choices, so such a product would be refused there.

@@ -36,7 +36,7 @@ after a `db:reset`).
 | 3 | Abandoned cart | ✅ built (`20261024000006_abandoned_carts.sql`) |
 | 4 | CRM segments & campaigns | ✅ built (`20261024000007_segments_campaigns.sql`) |
 | 5 | Points & VIP tiers + birthday offer | ✅ built, **off by default** (`20261024000008/9_points*.sql`) |
-| 6 | Giveaways customiser | ⬜ |
+| 6 | Giveaways customiser | ✅ built (`20261024000010_giveaways.sql`, local only — not on the hosted DB yet) |
 | 7 | WhatsApp API · courier API · staff attendance · PDF reports (mock providers) | ⬜ |
 
 **1 — Promotions:** Admin → Promotions (`/admin/promotions`): % off / AED off / free delivery, minimum
@@ -94,6 +94,17 @@ page); bonus once a year with the `birthday_points` email, via `GET /api/cron/bi
 spending points at the till (staff can adjust points by hand), points expiry. Tests: `points/points.test.ts`,
 pgTAP `160_points_test.sql`, e2e `e2e/points.spec.ts`.
 
+**6 — Giveaways customiser:** any product can have choices (Admin → Products → a product → Customisation): "Pick
+one" / "Pick any" (options with a price change per piece, may be negative, can be hidden) or a short text (e.g.
+the names on a tag, with a length limit), each required or optional, plus a minimum per order (e.g. 20). The
+product page shows the choices, a quantity starting at the minimum and "AED x each · AED y"; the shop card's +
+opens the product instead of adding it. Bag lines are keyed by variant + choices (two different tags = two
+lines; ordinary lines unchanged), stock is shared per variant, and the choices travel to checkout, discount codes,
+saved bags/reminders, the order (`order_lines.options` snapshot), the order pages and emails. The database
+re-prices and re-checks every line (`line_unit_price_fils`, `line_options_check`) and refuses orders below the
+minimum. Not built: choices at the till (POS) and on staff manual orders. Tests: `catalog/options.test.ts`, pgTAP
+`170_giveaways_test.sql`, e2e `e2e/giveaways.spec.ts`.
+
 **Preview deployment (2026-10-24):** migrations `20261024000001`–`…009` applied to the hosted DB (after the
 main-compatibility check; production checked afterwards). `phase-2` pushed; Vercel preview at the stable branch URL
 **https://solei-git-phase-2-sujalxcode.vercel.app** (Vercel Authentication: only signed-in Vercel team members can
@@ -111,6 +122,9 @@ migrations. Pushed with the user's OK on 2026-10-24 (see "Preview deployment"). 
 - pgTAP `070_orders_admin`, `080_bookings`, `110_reports` fail on stale expectations from later Phase 1
   changes (template count 16 vs 14, `record_payment` rules, report permissions) — not Phase 2 regressions.
 - Orders Excel/CSV export: add a promotion code / delivery-waived column (needs the export RPC rewritten).
+- Stale Phase 1 e2e: `storefront.spec.ts` ("Price includes VAT" line gone since VAT 0; two "Cart" buttons in the
+  header), `checkout.spec.ts` (product-page quantity stepper removed), `admin-auth.spec.ts` ("Dashboard" heading),
+  `loyalty.spec.ts` (redeem dialog closes; passport page redesigned).
 - Rate-limit gift card lookups at checkout (signed-in only today; 32^12 codes) and on the till.
 - The desk preview browser (WebKit, background tab) doesn't reveal streamed admin pages until it is focused
   (React batches Suspense reveals on `requestAnimationFrame`); real browsers and Playwright are fine.
