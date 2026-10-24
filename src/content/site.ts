@@ -4,7 +4,7 @@
  */
 export const storeNav: readonly {
   href: string;
-  key: "home" | "collections" | "events" | "story" | "passport" | "contact";
+  key: "home" | "collections" | "events" | "story" | "passport" | "giftCards" | "contact";
   soon?: boolean;
 }[] = [
   { href: "/", key: "home" },
@@ -12,5 +12,6 @@ export const storeNav: readonly {
   { href: "/events", key: "events", soon: true },
   { href: "/story", key: "story" },
   { href: "/passport", key: "passport" },
+  { href: "/gift-cards", key: "giftCards" },
   { href: "/contact", key: "contact" },
 ];

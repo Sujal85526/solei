@@ -21,6 +21,11 @@ export const PERMISSIONS = {
     group: "Sales",
     description: "Create, edit and pause promotions (discount codes)",
   },
+  "gift_cards.view": { group: "Sales", description: "See gift cards and their balances" },
+  "gift_cards.manage": {
+    group: "Sales",
+    description: "Issue, void and adjust gift cards; gift card settings",
+  },
   "catalog.view": { group: "Catalog", description: "View all products, including inactive" },
   "reviews.manage": { group: "Catalog", description: "Approve or decline customer reviews" },
   "catalog.manage": {

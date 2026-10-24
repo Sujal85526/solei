@@ -4,7 +4,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState, useTransition } from "react";
-import { ChevronDown, Lock, Tag } from "lucide-react";
+import { ChevronDown, Gift, Lock, Tag } from "lucide-react";
 import { AccountGate } from "@/components/store/account/account-gate";
 import type { ZoneOption } from "@/components/store/account/emirate-select";
 import { AddressFields } from "@/components/store/account/profile-forms";
@@ -23,6 +23,7 @@ import type { CartState } from "@/modules/cart/logic";
 import { cartDrawer } from "@/modules/cart/drawer";
 import { cart, useCart } from "@/modules/cart/store";
 import { placeOrderAction } from "@/modules/checkout/actions";
+import { maskGiftCode } from "@/modules/gift-cards/schema";
 
 const c = t.checkout;
 
@@ -55,7 +56,10 @@ export function CheckoutFlow({
   const [coupon, setCoupon] = useState<string | null>(null);
   const [couponError, setCouponError] = useState<string | null>(null);
   const [applying, startApply] = useTransition();
-  const key = state ? JSON.stringify([state.lines, state.emirate, coupon]) : null;
+  // Gift card being applied (signed-in customers); dropped again if the server refuses it.
+  const [giftCard, setGiftCard] = useState<string | null>(null);
+  const [giftError, setGiftError] = useState<string | null>(null);
+  const key = state ? JSON.stringify([state.lines, state.emirate, coupon, giftCard]) : null;
 
   // A saved address picks the emirate (and so the delivery fee) when none is chosen yet.
   useEffect(() => {
@@ -66,14 +70,23 @@ export function CheckoutFlow({
   useEffect(() => {
     if (!state || !state.lines.length) return;
     const id = ++req.current;
-    const load = coupon ? startApply : startLoad;
+    const load = coupon || giftCard ? startApply : startLoad;
     load(async () => {
-      const res = await getCartDetails({ lines: state.lines, emirate: state.emirate, coupon });
+      const res = await getCartDetails({
+        lines: state.lines,
+        emirate: state.emirate,
+        coupon,
+        giftCard,
+      });
       if (id !== req.current) return;
       setDetails(res);
       if (res.coupon && "error" in res.coupon) {
         setCouponError(res.coupon.error);
         setCoupon(null);
+      }
+      if (res.giftCard && "error" in res.giftCard) {
+        setGiftError(res.giftCard.error);
+        setGiftCard(null);
       }
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -93,6 +106,24 @@ export function CheckoutFlow({
       setCoupon(null);
     },
   };
+
+  const appliedGift =
+    details?.giftCard && "appliedFils" in details.giftCard ? details.giftCard : null;
+  const giftProps: GiftCardProps | null = account
+    ? {
+        applied: appliedGift,
+        error: giftError,
+        applying,
+        onApply: (code: string) => {
+          setGiftError(null);
+          setGiftCard(code);
+        },
+        onRemove: () => {
+          setGiftError(null);
+          setGiftCard(null);
+        },
+      }
+    : null;
 
   if (!state) return <div className="flex-1" />;
   if (!state.lines.length && !redirecting) {
@@ -125,11 +156,11 @@ export function CheckoutFlow({
             </span>
           </summary>
           <div className="px-5 pb-8 sm:px-10">
-            <Summary details={details} coupon={couponProps} />
+            <Summary details={details} coupon={couponProps} giftCard={giftProps} />
           </div>
         </details>
         <div className="sticky top-0 hidden max-w-md px-12 py-14 lg:block">
-          <Summary details={details} coupon={couponProps} />
+          <Summary details={details} coupon={couponProps} giftCard={giftProps} />
         </div>
       </aside>
 
@@ -143,6 +174,7 @@ export function CheckoutFlow({
               state={state}
               details={details}
               couponCode={applied?.code ?? null}
+              giftCardCode={appliedGift?.code ?? null}
               onDetails={setDetails}
               redirecting={redirecting}
               onRedirect={() => setRedirecting(true)}
@@ -207,6 +239,7 @@ function DeliveryForm({
   state,
   details,
   couponCode,
+  giftCardCode,
   onDetails,
   redirecting,
   onRedirect,
@@ -216,6 +249,7 @@ function DeliveryForm({
   state: CartState;
   details: CartDetails | null;
   couponCode: string | null;
+  giftCardCode: string | null;
   onDetails: (d: CartDetails) => void;
   redirecting: boolean;
   onRedirect: () => void;
@@ -241,6 +275,7 @@ function DeliveryForm({
         clientUuid: clientUuid.current,
         lines: state.lines,
         coupon: couponCode ?? "",
+        giftCard: giftCardCode ?? "",
       });
       if (res.ok) {
         onRedirect();
@@ -254,6 +289,7 @@ function DeliveryForm({
         lines: state.lines,
         emirate: state.emirate,
         coupon: couponCode,
+        giftCard: giftCardCode,
       });
       onDetails(fresh);
       const allowed = new Map(
@@ -337,7 +373,11 @@ function DeliveryForm({
           className="h-12 w-full"
         >
           <Lock className="size-3.5" />
-          {submitting || redirecting ? c.paying : c.pay}
+          {submitting || redirecting
+            ? c.paying
+            : details?.giftCard && "dueFils" in details.giftCard && details.giftCard.dueFils === 0
+              ? c.placeOrder
+              : c.pay}
         </Button>
         <p className="text-muted-foreground text-xs leading-relaxed">{c.payNote}</p>
         <button
@@ -374,6 +414,14 @@ function Check({
   );
 }
 
+type GiftCardProps = {
+  applied: { code: string; appliedFils: number; dueFils: number } | null;
+  error: string | null;
+  applying: boolean;
+  onApply: (code: string) => void;
+  onRemove: () => void;
+};
+
 type CouponProps = {
   applied: { code: string; discountFils: number; freeDelivery: boolean } | null;
   error: string | null;
@@ -382,7 +430,15 @@ type CouponProps = {
   onRemove: () => void;
 };
 
-function Summary({ details, coupon }: { details: CartDetails | null; coupon: CouponProps }) {
+function Summary({
+  details,
+  coupon,
+  giftCard,
+}: {
+  details: CartDetails | null;
+  coupon: CouponProps;
+  giftCard: GiftCardProps | null;
+}) {
   const pricing = details?.pricing;
   const lines = (details?.lines ?? []).filter((l) => l.qty > 0);
   return (
@@ -417,7 +473,16 @@ function Summary({ details, coupon }: { details: CartDetails | null; coupon: Cou
           </li>
         ))}
       </ul>
-      <CouponBox {...coupon} />
+      <CouponBox {...coupon} label={c.discountCode} />
+      {giftCard ? (
+        <CouponBox
+          {...giftCard}
+          label={c.giftCard}
+          icon={Gift}
+          display={maskGiftCode}
+          className="border-t-0 pt-0"
+        />
+      ) : null}
       <dl className="numeric border-border flex flex-col gap-2.5 border-t pt-5 text-sm">
         <div className="flex justify-between">
           <dt className="text-muted-foreground">{c.subtotal}</dt>
@@ -458,20 +523,58 @@ function Summary({ details, coupon }: { details: CartDetails | null; coupon: Cou
             {pricing ? formatAED(pricing.totalFils).replace(/^AED\s*/, "") : "—"}
           </dd>
         </div>
+        {giftCard?.applied ? (
+          <>
+            <div className="flex justify-between">
+              <dt className="text-muted-foreground">
+                {c.giftCard} {maskGiftCode(giftCard.applied.code)}
+              </dt>
+              <dd className="text-primary">−{formatAED(giftCard.applied.appliedFils)}</dd>
+            </div>
+            <div className="flex justify-between font-medium">
+              <dt>{c.toPay}</dt>
+              <dd>{formatAED(giftCard.applied.dueFils)}</dd>
+            </div>
+          </>
+        ) : null}
       </dl>
     </div>
   );
 }
 
-/** "Discount code" box in the order summary: type a code and apply, or remove the applied one. */
-function CouponBox({ applied, error, applying, onApply, onRemove }: CouponProps) {
+/**
+ * Code box in the order summary (discount code, gift card): type a code and apply, or remove the
+ * applied one.
+ */
+function CouponBox({
+  applied,
+  error,
+  applying,
+  onApply,
+  onRemove,
+  label,
+  icon: Icon = Tag,
+  display = (code) => code,
+  className,
+}: Omit<CouponProps, "applied"> & {
+  applied: { code: string } | null;
+  label: string;
+  icon?: typeof Tag;
+  display?: (code: string) => string;
+  className?: string;
+}) {
   const [value, setValue] = useState("");
   if (applied) {
     return (
-      <div className="border-border flex items-center justify-between gap-3 border-t pt-5 text-sm">
+      <div
+        className={cn(
+          "border-border flex items-center justify-between gap-3 border-t pt-5 text-sm",
+          className,
+        )}
+      >
         <span className="flex items-center gap-2">
-          <Tag className="text-primary size-3.5" />
-          <span className="font-medium tracking-wide">{applied.code}</span>
+          <Icon className="text-primary size-3.5" />
+          <span className="font-medium tracking-wide">{display(applied.code)}</span>
         </span>
         <button
           type="button"
@@ -489,12 +592,12 @@ function CouponBox({ applied, error, applying, onApply, onRemove }: CouponProps)
         e.preventDefault();
         if (value.trim()) onApply(value.trim());
       }}
-      className="border-border flex flex-col gap-2 border-t pt-5"
+      className={cn("border-border flex flex-col gap-2 border-t pt-5", className)}
     >
       <div className="flex gap-2">
         <input
-          aria-label={c.discountCode}
-          placeholder={c.discountCode}
+          aria-label={label}
+          placeholder={label}
           value={value}
           onChange={(e) => setValue(e.target.value)}
           autoCapitalize="characters"

@@ -40,6 +40,8 @@ export const checkoutSchema = z.object({
   saveAddress: checkbox,
   /** Discount code applied in the order summary (checked again server-side). */
   coupon: z.string().trim().max(40).optional().default(""),
+  /** Gift card applied in the order summary (balance checked again server-side). */
+  giftCard: z.string().trim().max(40).optional().default(""),
   lines: z.array(cartLineSchema).min(1, "Your cart is empty").max(MAX_LINES),
 });
 

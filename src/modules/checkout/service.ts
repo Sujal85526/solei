@@ -7,6 +7,13 @@ import { currentAccount, rememberOrder, saveAddress } from "@/modules/account/se
 import { resolveCart } from "@/modules/cart/details";
 import { checkCoupon } from "@/modules/coupons/queries";
 import { normaliseCode, refusalMessage } from "@/modules/coupons/schema";
+import { checkGiftCard } from "@/modules/gift-cards/queries";
+import {
+  giftCardApplies,
+  giftCardRefusalMessage,
+  normaliseGiftCode,
+} from "@/modules/gift-cards/schema";
+import { onOrderPaid } from "@/modules/orders/events";
 import {
   fetchAvailability,
   fetchProductsForVariants,
@@ -73,6 +80,16 @@ export async function placeOrder(
   const pricing = cart.pricing;
   if (pricing.deliveryFeeFils === null) throw new UserError("Choose your emirate for delivery.");
 
+  // Gift card: spends as much of the balance as the order needs; the order RPC re-checks it.
+  let giftCode: string | null = null;
+  let giftFils = 0;
+  if (v.giftCard) {
+    giftCode = normaliseGiftCode(v.giftCard);
+    const check = giftCode ? await checkGiftCard(giftCode) : null;
+    if (!check?.ok) throw new UserError(giftCardRefusalMessage(check?.reason ?? "invalid"));
+    giftFils = giftCardApplies(check.balanceFils, pricing.totalFils);
+  }
+
   const admin = createAdminClient();
   const { data: created, error } = await admin
     .rpc("create_web_order", {
@@ -98,6 +115,8 @@ export async function placeOrder(
         total_fils: pricing.totalFils,
         vat_rate_bp: settings.vatRateBp,
         prices_include_vat: settings.pricesIncludeVat,
+        gift_card_code: giftFils > 0 ? giftCode : null,
+        gift_card_fils: giftFils,
       },
     })
     .single();
@@ -115,6 +134,21 @@ export async function placeOrder(
         )
       : null,
   ]);
+
+  // Paid in full by the gift card: no payment page — straight to the confirmation.
+  const { data: placed } = await admin
+    .from("orders")
+    .select("paid_at")
+    .eq("id", created.order_id)
+    .single();
+  if (placed?.paid_at) {
+    if (!created.existing)
+      await onOrderPaid({ id: created.order_id, number: created.order_number });
+    return {
+      redirectUrl: orderUrl(created.order_id, created.order_number, "&paid=1"),
+      orderNumber: created.order_number,
+    };
+  }
 
   const lines: CheckoutLine[] = cart.lines.map((l) => ({
     name: l.product?.name ?? "Solei",

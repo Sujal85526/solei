@@ -54,10 +54,19 @@ export type CartDetailLine = {
 export type CartCoupon =
   { code: string; discountFils: Fils; freeDelivery: boolean } | { code: string; error: string };
 
+/**
+ * A gift card on the order: how much of it this order spends (and what's left to pay by card), or
+ * why it was refused. It pays for the order; it doesn't change the prices.
+ */
+export type CartGiftCard =
+  | { code: string; appliedFils: Fils; balanceFils: Fils; dueFils: Fils }
+  | { code: string; error: string };
+
 export type CartDetails = {
   lines: CartDetailLine[];
   pricing: CartPricing;
   coupon: CartCoupon | null;
+  giftCard?: CartGiftCard | null;
   emirate: Emirate | null;
   zoneName: string | null;
   settings: Pick<CartSettings, "vatRateBp" | "pricesIncludeVat" | "freeDeliveryThresholdFils">;

@@ -4,6 +4,7 @@ import { formatAED } from "@/lib/money";
 import { formatPhone } from "@/lib/phone";
 import { createAdminClient } from "@/lib/supabase/server";
 import { orderUrl } from "@/modules/checkout/service";
+import { notifyGiftCardPurchase } from "@/modules/gift-cards/notify";
 import { notifyPassportForOrder } from "@/modules/loyalty/notify";
 import { notify, ownerEmail } from "@/modules/notifications/service";
 import { formatOrderLines, humanize, trackingText } from "./format";
@@ -24,7 +25,7 @@ async function loadOrder(orderId: string) {
   const { data: order, error } = await admin
     .from("orders")
     .select(
-      "id, number, channel, status, customer_id, contact_name, contact_email, contact_phone, total_fils, delivery_emirate, fulfilment, tracking_number, courier, order_lines(product_name, variant_label, qty, line_total_fils, is_reward, variant_id, created_at)",
+      "id, number, channel, status, gift_card_purchase, customer_id, contact_name, contact_email, contact_phone, total_fils, delivery_emirate, fulfilment, tracking_number, courier, order_lines(product_name, variant_label, qty, line_total_fils, is_reward, variant_id, created_at)",
     )
     .eq("id", orderId)
     .single();
@@ -44,7 +45,9 @@ function customerVars(o: LoadedOrder) {
     customer_name: o.contact_name?.trim() || "there",
     order_number: o.number,
     order_total: formatAED(o.total_fils),
-    order_lines: formatOrderLines(o.lines),
+    order_lines: o.gift_card_purchase
+      ? `Solei gift card — ${formatAED(o.total_fils)}`
+      : formatOrderLines(o.lines),
     order_link: GUEST_LINK_CHANNELS.has(o.channel) ? orderUrl(o.id, o.number) : "",
   };
 }
@@ -69,7 +72,9 @@ export function notifyOrderPaid(orderId: string) {
     const o = await loadOrder(orderId);
     // Booking deposits/balances: the bookings module sends `booking_confirmed` instead.
     if (o.channel === "booking") return;
-    await notify("order_confirmation", { ...refs(o), vars: customerVars(o) });
+    // Gift card purchases: the card itself (and a receipt) instead of an order confirmation.
+    if (o.gift_card_purchase) await notifyGiftCardPurchase(o);
+    else await notify("order_confirmation", { ...refs(o), vars: customerVars(o) });
 
     // POS sales happen in front of the owner's team; alert only for remote orders.
     if (o.channel !== "pos") {

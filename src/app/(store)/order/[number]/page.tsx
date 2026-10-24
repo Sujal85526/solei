@@ -12,6 +12,7 @@ import { orderLinkSecret } from "@/lib/env.server";
 import { formatAED } from "@/lib/money";
 import { formatPhone } from "@/lib/phone";
 import { createAdminClient } from "@/lib/supabase/server";
+import { cn } from "@/lib/utils";
 import { verifyOrderToken } from "@/modules/checkout/order-link";
 import { retryPaymentAction } from "@/modules/checkout/order-actions";
 
@@ -37,12 +38,12 @@ async function OrderView({ params, searchParams }: PageProps<"/order/[number]">)
   const { data: order } = await admin
     .from("orders")
     .select(
-      "id, number, status, total_fils, subtotal_fils, discount_fils, coupon_code, delivery_fee_fils, delivery_discount_fils, vat_fils, prices_include_vat, contact_name, contact_phone, delivery_address, order_lines(product_name, variant_label, qty, line_total_fils, discount_fils, destination_id, destinations(name))",
+      "id, number, status, total_fils, subtotal_fils, discount_fils, coupon_code, delivery_fee_fils, delivery_discount_fils, vat_fils, prices_include_vat, contact_name, contact_phone, contact_email, delivery_address, gift_card_purchase, gift_cards(initial_fils, recipient_name, recipient_email), order_lines(product_name, variant_label, qty, line_total_fils, discount_fils, destination_id, destinations(name))",
     )
     .eq("number", number.toUpperCase())
     .maybeSingle();
   if (!order || !verifyOrderToken(order.id, token, orderLinkSecret())) notFound();
-  const [{ data: summary }, { data: lastPayment }] = await Promise.all([
+  const [{ data: summary }, { data: lastPayment }, { data: giftPayments }] = await Promise.all([
     admin
       .from("order_payment_summary")
       .select("payment_status, outstanding_fils")
@@ -55,7 +56,18 @@ async function OrderView({ params, searchParams }: PageProps<"/order/[number]">)
       .order("created_at", { ascending: false })
       .limit(1)
       .maybeSingle(),
+    admin
+      .from("payments")
+      .select("kind, amount_fils")
+      .eq("order_id", order.id)
+      .eq("method", "gift_card")
+      .eq("status", "succeeded"),
   ]);
+  const giftCardPaid = (giftPayments ?? []).reduce(
+    (sum, p) => sum + (p.kind === "payment" ? p.amount_fils : -p.amount_fils),
+    0,
+  );
+  const giftCards = order.gift_card_purchase ? order.gift_cards : [];
 
   const paid = summary?.payment_status === "paid";
   const justReturned = sp.paid === "1";
@@ -67,7 +79,14 @@ async function OrderView({ params, searchParams }: PageProps<"/order/[number]">)
 
   return (
     <Container size="narrow" className="py-16 sm:py-24">
-      {paid ? <ClearCartOnPaid /> : justReturned && !failed ? <AwaitPayment /> : null}
+      {/* Buying a gift card leaves the bag as it was. */}
+      {paid ? (
+        order.gift_card_purchase ? null : (
+          <ClearCartOnPaid />
+        )
+      ) : justReturned && !failed ? (
+        <AwaitPayment />
+      ) : null}
       <div className="flex flex-col items-center gap-5 text-center">
         <Eyebrow>
           {t.order.number} {order.number}
@@ -80,7 +99,13 @@ async function OrderView({ params, searchParams }: PageProps<"/order/[number]">)
               <Check className="size-7" strokeWidth={1.5} />
             </span>
             <h1 className="text-5xl">{t.order.paidTitle}</h1>
-            <p className="font-display text-pink max-w-md text-xl italic">{t.order.paidLede}</p>
+            <p className="font-display text-pink max-w-md text-xl italic">
+              {order.gift_card_purchase
+                ? t.order.giftCardLede(
+                    giftCards[0]?.recipient_email ?? order.contact_email ?? "your inbox",
+                  )
+                : t.order.paidLede}
+            </p>
           </>
         ) : justReturned && !failed ? (
           <>
@@ -119,6 +144,17 @@ async function OrderView({ params, searchParams }: PageProps<"/order/[number]">)
 
       <OrnamentDivider className="my-12" />
       <ul className="flex flex-col gap-3 text-sm">
+        {giftCards.map((g, i) => (
+          <li key={`g${i}`} className="flex justify-between gap-4">
+            <span>
+              Solei gift card
+              {g.recipient_name ? (
+                <span className="text-pearl-muted"> · for {g.recipient_name}</span>
+              ) : null}
+            </span>
+            <span className="numeric">{formatAED(g.initial_fils)}</span>
+          </li>
+        ))}
         {order.order_lines.map((l, i) => (
           <li key={i} className="flex justify-between gap-4">
             <span>
@@ -137,7 +173,7 @@ async function OrderView({ params, searchParams }: PageProps<"/order/[number]">)
             <dd>−{formatAED(order.discount_fils)}</dd>
           </div>
         ) : null}
-        <div className="flex justify-between">
+        <div className={cn("flex justify-between", order.gift_card_purchase && "hidden")}>
           <dt>
             Delivery
             {order.delivery_discount_fils && order.coupon_code ? ` (${order.coupon_code})` : ""}
@@ -154,9 +190,15 @@ async function OrderView({ params, searchParams }: PageProps<"/order/[number]">)
           <dt>Total</dt>
           <dd>{formatAED(order.total_fils)}</dd>
         </div>
+        {giftCardPaid > 0 ? (
+          <div className="text-pearl-muted flex justify-between">
+            <dt>Paid by gift card</dt>
+            <dd>−{formatAED(giftCardPaid)}</dd>
+          </div>
+        ) : null}
       </dl>
       <div className="mt-10 grid gap-6 text-sm sm:grid-cols-2">
-        <div>
+        <div className={cn(order.gift_card_purchase && "invisible")}>
           <p className="eyebrow text-pink/70 mb-2">Delivering to</p>
           <p>{order.contact_name}</p>
           <p className="text-pearl-muted">

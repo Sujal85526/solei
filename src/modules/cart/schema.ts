@@ -22,5 +22,7 @@ export const cartDetailsInputSchema = z.object({
   emirate: emirateSchema.nullish(),
   /** Discount code typed at checkout (website only). */
   coupon: z.string().trim().max(40).nullish(),
+  /** Gift card code applied at checkout (signed-in customers). */
+  giftCard: z.string().trim().max(40).nullish(),
 });
 export type CartDetailsInput = z.infer<typeof cartDetailsInputSchema>;
