@@ -35,6 +35,7 @@ export async function getCartDetails(input: unknown): Promise<CartDetails> {
     ? {
         code: check.code,
         discountFils: Math.min(check.discountFils, details.pricing.subtotalFils),
+        freeDelivery: check.freeDelivery,
       }
     : { code, error: refusalMessage(check.reason, check.minOrderFils) };
   return resolveCart(parsed, products, availability, settings, coupon);

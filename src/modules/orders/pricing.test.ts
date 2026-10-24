@@ -183,6 +183,35 @@ describe("priceCart — coupon discount", () => {
   });
 });
 
+describe("priceCart — free-delivery code", () => {
+  it("waives the zone fee and reports it as a delivery discount", () => {
+    const p = priceCart({ ...base, lines: [perfume], waiveDelivery: true });
+    expect(p.deliveryFeeFils).toBe(0);
+    expect(p.deliveryDiscountFils).toBe(2_000);
+    expect(p.freeDelivery).toBe(true);
+    expect(p.amountToFreeDeliveryFils).toBeNull();
+    expect(p.totalFils).toBe(28_000);
+  });
+
+  it("waives nothing when delivery is already free (threshold) or pickup", () => {
+    const over = priceCart({ ...base, lines: [perfume, perfume], waiveDelivery: true });
+    expect(over.deliveryDiscountFils).toBe(0);
+    const pickup = priceCart({
+      ...base,
+      lines: [perfume],
+      fulfilment: "pickup",
+      waiveDelivery: true,
+    });
+    expect(pickup.deliveryDiscountFils).toBe(0);
+  });
+
+  it("keeps delivery pending until a zone is chosen", () => {
+    const p = priceCart({ ...base, lines: [perfume], deliveryFeeFils: null, waiveDelivery: true });
+    expect(p.deliveryFeeFils).toBeNull();
+    expect(p.deliveryDiscountFils).toBe(0);
+  });
+});
+
 describe("priceCart — validation", () => {
   it.each([
     [{ ...base, lines: [{ unitPriceFils: 10.5, qty: 1 }] }, /integer fils/],

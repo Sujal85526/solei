@@ -3,12 +3,13 @@ import { businessDay, businessDayRange } from "@/lib/dates";
 import { aedToFils, formatAED, type Fils } from "@/lib/money";
 
 /**
- * Discount coupons (website checkout only). The owner names the code and picks which rules apply
- * when creating it; every rule is optional. The database enforces them again at order time
- * (`coupon_evaluate`, `create_web_order`).
+ * Promotions — discount codes (website checkout only). The owner names the code, picks what it
+ * gives (% off, AED off or free delivery) and which rules apply; every rule is optional. The
+ * database enforces them again at order time (`coupon_evaluate`, `create_web_order`). Internally
+ * still called coupons (table, permission `coupons.manage`).
  */
 
-export type CouponKind = "percent" | "fixed";
+export type CouponKind = "percent" | "fixed" | "free_delivery";
 
 export type Coupon = {
   id: string;
@@ -21,9 +22,12 @@ export type Coupon = {
   startsOn: string | null;
   endsOn: string | null;
   maxUses: number | null;
-  oncePerCustomer: boolean;
+  /** Orders per customer (by email); null = no limit. */
+  perCustomerLimit: number | null;
   minOrderFils: Fils | null;
+  /** Scope: empty product and category lists = the whole bag. */
   productIds: string[];
+  categoryIds: string[];
   active: boolean;
   createdAt: string;
 };
@@ -50,6 +54,20 @@ const day = z
   .transform((v) => v || null)
   .refine((v) => v === null || /^\d{4}-\d{2}-\d{2}$/.test(v), "Pick a date");
 
+const positiveInt = z
+  .string()
+  .trim()
+  .optional()
+  .transform((v, ctx) => {
+    if (!v) return null;
+    const n = Number(v);
+    if (!Number.isSafeInteger(n) || n < 1) {
+      ctx.addIssue({ code: "custom", message: "A whole number, 1 or more" });
+      return z.NEVER;
+    }
+    return n;
+  });
+
 const positiveAed = (label: string) =>
   z
     .string()
@@ -65,7 +83,10 @@ const positiveAed = (label: string) =>
       return aedToFils(n);
     });
 
-/** Admin create / edit form. `value` is a percentage (e.g. 10 or 12.5) or AED amount by kind. */
+/**
+ * Admin create / edit form. `value` is a percentage (e.g. 10 or 12.5) or AED amount by kind;
+ * unused for free delivery.
+ */
 export const couponFormSchema = z
   .object({
     id: z
@@ -77,39 +98,32 @@ export const couponFormSchema = z
       .transform(normaliseCode)
       .refine((v) => CODE_PATTERN.test(v), "3–32 letters, numbers, - or _ (e.g. SUMMER20)"),
     description: optionalText.pipe(z.string().max(200).nullable()),
-    kind: z.enum(["percent", "fixed"]),
-    value: z.string().trim().min(1, "Enter the discount"),
+    kind: z.enum(["percent", "fixed", "free_delivery"]),
+    value: z.string().trim().optional().default(""),
     startsOn: day,
     endsOn: day,
-    maxUses: z
-      .string()
-      .trim()
-      .optional()
-      .transform((v, ctx) => {
-        if (!v) return null;
-        const n = Number(v);
-        if (!Number.isSafeInteger(n) || n < 1) {
-          ctx.addIssue({ code: "custom", message: "A whole number, 1 or more" });
-          return z.NEVER;
-        }
-        return n;
-      }),
-    oncePerCustomer: checkbox,
+    maxUses: positiveInt,
+    perCustomerLimit: positiveInt,
     minOrder: positiveAed("a minimum"),
     productIds: z.array(z.uuid()).default([]),
+    categoryIds: z.array(z.uuid()).default([]),
     active: checkbox,
   })
   .transform((v, ctx) => {
     const n = Number(v.value.replace(/[,\s%]/g, ""));
     let percentBp: number | null = null;
     let amountFils: Fils | null = null;
+    if (v.kind !== "free_delivery" && !v.value) {
+      ctx.addIssue({ code: "custom", path: ["value"], message: "Enter the discount" });
+      return z.NEVER;
+    }
     if (v.kind === "percent") {
       percentBp = Math.round(n * 100);
       if (!Number.isFinite(n) || n <= 0 || n > 100 || Math.abs(n * 100 - percentBp) > 1e-6) {
         ctx.addIssue({ code: "custom", path: ["value"], message: "A percentage from 0.01 to 100" });
         return z.NEVER;
       }
-    } else {
+    } else if (v.kind === "fixed") {
       if (!Number.isFinite(n) || n <= 0) {
         ctx.addIssue({
           code: "custom",
@@ -145,11 +159,22 @@ export function storedDays(startsAt: string | null, endsAt: string | null) {
   };
 }
 
-/** "10% off", "AED 50 off". */
+/** "10% off", "AED 50 off", "Free delivery". */
 export function couponValueLabel(c: Pick<Coupon, "kind" | "percentBp" | "amountFils">) {
+  if (c.kind === "free_delivery") return "Free delivery";
   return c.kind === "percent"
     ? `${(c.percentBp ?? 0) / 100}% off`
     : `${formatAED(c.amountFils ?? 0)} off`;
+}
+
+/** "All products", "Perfumes, Soho", … — what the code applies to. */
+export function couponScopeLabel(
+  c: Pick<Coupon, "productIds" | "categoryIds">,
+  names: Map<string, string>,
+): string {
+  const ids = [...c.categoryIds, ...c.productIds];
+  if (ids.length === 0) return "All products";
+  return ids.map((id) => names.get(id) ?? "Removed item").join(", ");
 }
 
 export type CouponState = "active" | "paused" | "scheduled" | "expired" | "used_up";

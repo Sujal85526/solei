@@ -183,7 +183,12 @@ export default async function OrderDetailPage({ params }: PageProps<"/admin/orde
               ) : null}
               {order.fulfilment === "delivery" ? (
                 <>
-                  <dt className="text-muted-foreground">Delivery</dt>
+                  <dt className="text-muted-foreground">
+                    Delivery
+                    {order.delivery_discount_fils > 0 && order.coupon_code
+                      ? ` (${order.coupon_code}, ${formatAED(order.delivery_discount_fils)} waived)`
+                      : ""}
+                  </dt>
                   <dd className="text-end">
                     {order.delivery_fee_fils ? formatAED(order.delivery_fee_fils) : "Free"}
                   </dd>

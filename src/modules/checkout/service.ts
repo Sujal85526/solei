@@ -66,6 +66,7 @@ export async function placeOrder(
     cart = resolveCart({ lines: v.lines, emirate: v.emirate }, products, availability, settings, {
       code: check.code,
       discountFils: check.discountFils,
+      freeDelivery: check.freeDelivery,
     });
   }
 
@@ -91,6 +92,7 @@ export async function placeOrder(
         subtotal_fils: pricing.subtotalFils,
         coupon_code: code || null,
         discount_fils: pricing.discountFils,
+        delivery_discount_fils: pricing.deliveryDiscountFils,
         delivery_fee_fils: pricing.deliveryFeeFils,
         vat_fils: pricing.vatFils,
         total_fils: pricing.totalFils,

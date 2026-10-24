@@ -75,7 +75,7 @@ export async function getOrder(id: string) {
   const orderQuery = supabase
     .from("orders")
     .select(
-      "id, number, channel, status, fulfilment, customer_id, contact_name, contact_phone, contact_email, delivery_address, delivery_emirate, delivery_fee_fils, subtotal_fils, discount_fils, coupon_code, vat_fils, total_fils, vat_rate_bp, prices_include_vat, notes, internal_notes, tracking_number, courier, placed_at, created_at, cancelled_at, cancel_reason, event_id, event_day, staff_id, events(name)",
+      "id, number, channel, status, fulfilment, customer_id, contact_name, contact_phone, contact_email, delivery_address, delivery_emirate, delivery_fee_fils, delivery_discount_fils, subtotal_fils, discount_fils, coupon_code, vat_fils, total_fils, vat_rate_bp, prices_include_vat, notes, internal_notes, tracking_number, courier, placed_at, created_at, cancelled_at, cancel_reason, event_id, event_day, staff_id, events(name)",
     )
     .eq("id", id)
     .maybeSingle();

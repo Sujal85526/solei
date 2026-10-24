@@ -37,7 +37,7 @@ async function OrderView({ params, searchParams }: PageProps<"/order/[number]">)
   const { data: order } = await admin
     .from("orders")
     .select(
-      "id, number, status, total_fils, subtotal_fils, discount_fils, coupon_code, delivery_fee_fils, vat_fils, prices_include_vat, contact_name, contact_phone, delivery_address, order_lines(product_name, variant_label, qty, line_total_fils, discount_fils, destination_id, destinations(name))",
+      "id, number, status, total_fils, subtotal_fils, discount_fils, coupon_code, delivery_fee_fils, delivery_discount_fils, vat_fils, prices_include_vat, contact_name, contact_phone, delivery_address, order_lines(product_name, variant_label, qty, line_total_fils, discount_fils, destination_id, destinations(name))",
     )
     .eq("number", number.toUpperCase())
     .maybeSingle();
@@ -138,7 +138,10 @@ async function OrderView({ params, searchParams }: PageProps<"/order/[number]">)
           </div>
         ) : null}
         <div className="flex justify-between">
-          <dt>Delivery</dt>
+          <dt>
+            Delivery
+            {order.delivery_discount_fils && order.coupon_code ? ` (${order.coupon_code})` : ""}
+          </dt>
           <dd>{order.delivery_fee_fils ? formatAED(order.delivery_fee_fils) : "Free"}</dd>
         </div>
         {order.vat_fils ? (

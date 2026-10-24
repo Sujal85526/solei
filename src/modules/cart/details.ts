@@ -47,8 +47,12 @@ export type CartDetailLine = {
   lineTotalFils: Fils;
 };
 
-/** A discount code on the bag: applied (with the amount) or refused (with the reason). */
-export type CartCoupon = { code: string; discountFils: Fils } | { code: string; error: string };
+/**
+ * A discount code on the bag: applied (goods discount, and whether it waives delivery) or refused
+ * (with the reason).
+ */
+export type CartCoupon =
+  { code: string; discountFils: Fils; freeDelivery: boolean } | { code: string; error: string };
 
 export type CartDetails = {
   lines: CartDetailLine[];
@@ -122,6 +126,7 @@ export function resolveCart(
     freeDeliveryThresholdFils: settings.freeDeliveryThresholdFils,
     fulfilment: "delivery",
     discountFils: coupon && "discountFils" in coupon ? coupon.discountFils : 0,
+    waiveDelivery: coupon && "freeDelivery" in coupon ? coupon.freeDelivery : false,
   });
 
   return {

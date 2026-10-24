@@ -375,7 +375,7 @@ function Check({
 }
 
 type CouponProps = {
-  applied: { code: string; discountFils: number } | null;
+  applied: { code: string; discountFils: number; freeDelivery: boolean } | null;
   error: string | null;
   applying: boolean;
   onApply: (code: string) => void;
@@ -430,8 +430,18 @@ function Summary({ details, coupon }: { details: CartDetails | null; coupon: Cou
           </div>
         ) : null}
         <div className="flex justify-between">
-          <dt className="text-muted-foreground">{c.shipping}</dt>
+          <dt className="text-muted-foreground">
+            {c.shipping}
+            {coupon.applied?.freeDelivery && pricing?.deliveryDiscountFils
+              ? ` (${coupon.applied.code})`
+              : ""}
+          </dt>
           <dd>
+            {pricing?.deliveryDiscountFils ? (
+              <s className="text-muted-foreground me-2">
+                {formatAED(pricing.deliveryDiscountFils)}
+              </s>
+            ) : null}
             {pricing?.deliveryFeeFils == null
               ? c.chooseEmirate
               : pricing.deliveryFeeFils === 0

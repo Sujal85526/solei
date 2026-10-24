@@ -189,7 +189,7 @@ export const en = {
       products: "Products",
       inventory: "Inventory",
       customers: "Customers",
-      coupons: "Coupons",
+      coupons: "Promotions",
       reviews: "Reviews",
       calendar: "Calendar",
       bookings: "Bookings",

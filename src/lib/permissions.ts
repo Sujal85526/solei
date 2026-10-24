@@ -17,7 +17,10 @@ export const PERMISSIONS = {
   "orders.price_override": { group: "Sales", description: "Override prices on manual orders" },
   "payments.record": { group: "Sales", description: "Record cash, transfer and terminal payments" },
   "payment_links.create": { group: "Sales", description: "Create and send payment links" },
-  "coupons.manage": { group: "Sales", description: "Create, edit and pause discount coupons" },
+  "coupons.manage": {
+    group: "Sales",
+    description: "Create, edit and pause promotions (discount codes)",
+  },
   "catalog.view": { group: "Catalog", description: "View all products, including inactive" },
   "reviews.manage": { group: "Catalog", description: "Approve or decline customer reviews" },
   "catalog.manage": {

@@ -7,15 +7,15 @@ import { CouponStateBadge } from "@/components/admin/coupons/coupon-state-badge"
 import { PageHeader } from "@/components/admin/page-header";
 import { requirePagePermission } from "@/lib/auth/session";
 import { formatAED } from "@/lib/money";
-import { getCoupon, listCouponProducts } from "@/modules/coupons/queries";
+import { getCoupon, listPromotionScope } from "@/modules/coupons/queries";
 import { couponState, couponValueLabel } from "@/modules/coupons/schema";
 
-export const metadata: Metadata = { title: "Coupon" };
+export const metadata: Metadata = { title: "Promotion" };
 
-export default async function CouponPage({ params }: PageProps<"/admin/coupons/[id]">) {
+export default async function PromotionPage({ params }: PageProps<"/admin/promotions/[id]">) {
   await requirePagePermission("coupons.manage");
   const { id } = await params;
-  const [coupon, products] = await Promise.all([getCoupon(id), listCouponProducts()]);
+  const [coupon, scope] = await Promise.all([getCoupon(id), listPromotionScope()]);
   if (!coupon) notFound();
   return (
     <>
@@ -23,8 +23,8 @@ export default async function CouponPage({ params }: PageProps<"/admin/coupons/[
         title={coupon.code}
         description={
           <>
-            <Link href="/admin/coupons" className="underline underline-offset-4">
-              Coupons
+            <Link href="/admin/promotions" className="underline underline-offset-4">
+              Promotions
             </Link>{" "}
             · {couponValueLabel(coupon)}
           </>
@@ -39,7 +39,7 @@ export default async function CouponPage({ params }: PageProps<"/admin/coupons/[
         }
       />
       <div className="grid max-w-5xl gap-6 lg:grid-cols-[minmax(0,1fr)_16rem] lg:items-start">
-        <CouponForm coupon={coupon} products={products} />
+        <CouponForm coupon={coupon} {...scope} />
         <aside className="bg-card flex flex-col gap-4 rounded-xl border p-5 text-sm lg:order-last">
           <div className="flex items-center justify-between">
             <span className="text-muted-foreground">Status</span>
@@ -57,8 +57,8 @@ export default async function CouponPage({ params }: PageProps<"/admin/coupons/[
             <span className="numeric">{formatAED(coupon.discountFils)}</span>
           </div>
           <p className="text-muted-foreground text-xs leading-relaxed">
-            Counts paid and in-progress orders; cancelled orders and checkouts left unpaid for 2
-            hours give the use back.
+            Counts paid and in-progress orders (free delivery counts the fee waived); cancelled
+            orders and checkouts left unpaid for 2 hours give the use back.
           </p>
         </aside>
       </div>

@@ -61,7 +61,7 @@ export const adminNav: AdminNavItem[] = [
   { href: "/admin/inventory", key: "inventory", icon: Boxes, permission: "inventory.view" },
   { href: "/admin/reviews", key: "reviews", icon: Star, permission: "reviews.manage" },
   { href: "/admin/customers", key: "customers", icon: Users, permission: "customers.view" },
-  { href: "/admin/coupons", key: "coupons", icon: TicketPercent, permission: "coupons.manage" },
+  { href: "/admin/promotions", key: "coupons", icon: TicketPercent, permission: "coupons.manage" },
   { href: "/admin/loyalty", key: "loyalty", icon: Gift, permission: "loyalty.view" },
   { href: "/admin/reports", key: "reports", icon: BarChart3, permission: "reports.view" },
   { href: "/admin/staff", key: "staff", icon: ShieldCheck, permission: "staff.manage" },

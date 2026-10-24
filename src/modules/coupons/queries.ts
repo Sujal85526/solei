@@ -15,9 +15,10 @@ const toCoupon = (r: Row): Coupon => ({
   amountFils: r.amount_fils,
   ...storedDays(r.starts_at, r.ends_at),
   maxUses: r.max_uses,
-  oncePerCustomer: r.once_per_customer,
+  perCustomerLimit: r.per_customer_limit,
   minOrderFils: r.min_order_fils,
   productIds: r.product_ids,
+  categoryIds: r.category_ids,
   active: r.active,
   createdAt: r.created_at,
 });
@@ -55,21 +56,58 @@ export async function getCoupon(id: string): Promise<(Coupon & CouponUsage) | nu
   return { ...toCoupon(data), ...(used.get(id) ?? { uses: 0, discountFils: 0 }) };
 }
 
-/** Products a coupon can be limited to (active and hidden, so a future launch can be prepared). */
-export async function listCouponProducts(): Promise<
-  { id: string; name: string; active: boolean }[]
-> {
+export type ScopeOption = { id: string; name: string; active: boolean };
+
+/**
+ * Categories and products a promotion can be limited to (hidden ones too, so a future launch can
+ * be prepared).
+ */
+export async function listPromotionScope(): Promise<{
+  categories: ScopeOption[];
+  products: ScopeOption[];
+}> {
   await assertPermission("coupons.manage");
-  const { data, error } = await createAdminClient()
-    .from("products")
-    .select("id, name, active")
-    .order("name");
+  const admin = createAdminClient();
+  const [categories, products] = await Promise.all([
+    admin.from("categories").select("id, name, active").order("sort").order("name"),
+    admin.from("products").select("id, name, active").order("name"),
+  ]);
+  if (categories.error) throw new Error(categories.error.message);
+  if (products.error) throw new Error(products.error.message);
+  return { categories: categories.data, products: products.data };
+}
+
+/** Id → name for scope labels. */
+export const scopeNames = (s: { categories: ScopeOption[]; products: ScopeOption[] }) =>
+  new Map([...s.categories, ...s.products].map((o) => [o.id, o.name]));
+
+export type PromotionReportRow = {
+  code: string;
+  couponId: string | null;
+  orders: number;
+  discountFils: number;
+  deliveryDiscountFils: number;
+  salesFils: number;
+};
+
+/** Paid orders that used a code between two business days (inclusive), per code. */
+export async function promotionReport(from: string, to: string): Promise<PromotionReportRow[]> {
+  await assertPermission("reports.view");
+  const supabase = await createClient();
+  const { data, error } = await supabase.rpc("promotion_report", { p_from: from, p_to: to });
   if (error) throw new Error(error.message);
-  return data;
+  return data.map((r) => ({
+    code: r.code,
+    couponId: r.coupon_id,
+    orders: r.orders,
+    discountFils: r.discount_fils,
+    deliveryDiscountFils: r.delivery_discount_fils,
+    salesFils: r.sales_fils,
+  }));
 }
 
 export type CouponCheck =
-  | { ok: true; couponId: string; code: string; discountFils: number }
+  | { ok: true; couponId: string; code: string; discountFils: number; freeDelivery: boolean }
   | { ok: false; reason: CouponRefusal; minOrderFils: number | null };
 
 /**
@@ -95,8 +133,15 @@ export async function checkCoupon(
     coupon_id?: string;
     code?: string;
     discount_fils?: number;
+    free_delivery?: boolean;
   };
   return r.ok
-    ? { ok: true, couponId: r.coupon_id!, code: r.code!, discountFils: r.discount_fils! }
+    ? {
+        ok: true,
+        couponId: r.coupon_id!,
+        code: r.code!,
+        discountFils: r.discount_fils!,
+        freeDelivery: r.free_delivery === true,
+      }
     : { ok: false, reason: r.reason ?? "invalid", minOrderFils: r.min_order_fils ?? null };
 }

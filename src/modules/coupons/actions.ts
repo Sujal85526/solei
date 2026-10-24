@@ -11,22 +11,23 @@ export async function saveCouponAction(_: unknown, fd: FormData): Promise<Action
     id = await saveCoupon({
       ...Object.fromEntries(fd.entries()),
       productIds: fd.getAll("productIds"),
+      categoryIds: fd.getAll("categoryIds"),
     });
   } catch (e) {
     return fail(e);
   }
-  revalidatePath("/admin/coupons");
-  if (!fd.get("id")) redirect(`/admin/coupons/${id}?created=1`);
-  revalidatePath(`/admin/coupons/${id}`);
+  revalidatePath("/admin/promotions");
+  if (!fd.get("id")) redirect(`/admin/promotions/${id}?created=1`);
+  revalidatePath(`/admin/promotions/${id}`);
   return ok(undefined, "Saved.");
 }
 
 export async function setCouponActiveAction(id: string, active: boolean): Promise<ActionResult> {
   try {
     await setCouponActive(id, active);
-    revalidatePath("/admin/coupons");
-    revalidatePath(`/admin/coupons/${id}`);
-    return ok(undefined, active ? "Coupon is live again." : "Coupon paused.");
+    revalidatePath("/admin/promotions");
+    revalidatePath(`/admin/promotions/${id}`);
+    return ok(undefined, active ? "Promotion is live again." : "Promotion paused.");
   } catch (e) {
     return fail(e);
   }
@@ -38,6 +39,6 @@ export async function deleteCouponAction(id: string): Promise<ActionResult> {
   } catch (e) {
     return fail(e);
   }
-  revalidatePath("/admin/coupons");
-  redirect("/admin/coupons");
+  revalidatePath("/admin/promotions");
+  redirect("/admin/promotions");
 }

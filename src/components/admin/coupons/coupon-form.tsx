@@ -11,17 +11,27 @@ import { cn } from "@/lib/utils";
 import { saveCouponAction } from "@/modules/coupons/actions";
 import type { Coupon, CouponKind } from "@/modules/coupons/schema";
 
-type ProductOption = { id: string; name: string; active: boolean };
+type ScopeOption = { id: string; name: string; active: boolean };
 
 /**
- * Create or edit a coupon. Only the code, type and amount are required; every rule below them is
- * optional and left empty means "no limit".
+ * Create or edit a promotion (discount code). Only the code and what it gives are required; every
+ * rule below them is optional and left empty means "no limit".
  */
-export function CouponForm({ coupon, products }: { coupon?: Coupon; products: ProductOption[] }) {
+export function CouponForm({
+  coupon,
+  products,
+  categories,
+}: {
+  coupon?: Coupon;
+  products: ScopeOption[];
+  categories: ScopeOption[];
+}) {
   const [state, action, pending] = useFormAction(saveCouponAction, null);
   const e = useActionToast(state);
   const [kind, setKind] = useState<CouponKind>(coupon?.kind ?? "percent");
-  const [limitProducts, setLimitProducts] = useState((coupon?.productIds.length ?? 0) > 0);
+  const [limitProducts, setLimitProducts] = useState(
+    (coupon?.productIds.length ?? 0) + (coupon?.categoryIds.length ?? 0) > 0,
+  );
   const [limitDates, setLimitDates] = useState(Boolean(coupon?.startsOn || coupon?.endsOn));
 
   const value =
@@ -36,7 +46,7 @@ export function CouponForm({ coupon, products }: { coupon?: Coupon; products: Pr
       {coupon ? <input type="hidden" name="id" value={coupon.id} /> : null}
 
       <section className="bg-card flex flex-col gap-5 rounded-xl border p-6">
-        <h2 className="font-sans text-base font-medium">Coupon</h2>
+        <h2 className="font-sans text-base font-medium">Promotion</h2>
         <div className="grid gap-5 sm:grid-cols-2">
           <Field
             label="Code"
@@ -71,13 +81,14 @@ export function CouponForm({ coupon, products }: { coupon?: Coupon; products: Pr
 
         <fieldset className="flex flex-col gap-3">
           <legend className="mb-1.5 text-sm font-medium">
-            Discount <span className="text-destructive">*</span>
+            What it gives <span className="text-destructive">*</span>
           </legend>
           <div className="flex flex-wrap gap-2">
             {(
               [
                 ["percent", "Percentage off"],
                 ["fixed", "Fixed amount off (AED)"],
+                ["free_delivery", "Free delivery"],
               ] as const
             ).map(([k, label]) => (
               <label
@@ -99,33 +110,41 @@ export function CouponForm({ coupon, products }: { coupon?: Coupon; products: Pr
               </label>
             ))}
           </div>
-          <Field
-            label={kind === "percent" ? "Percentage" : "Amount in AED"}
-            htmlFor="value"
-            error={e.value}
-            hint={
-              kind === "percent"
-                ? "e.g. 10 for 10% off the items"
-                : "e.g. 50 for AED 50 off — never more than the items cost"
-            }
-            className="max-w-48"
-          >
-            <div className="relative">
-              <Input
-                id="value"
-                name="value"
-                inputMode="decimal"
-                defaultValue={value}
-                className="h-11 pe-12"
-              />
-              <span className="text-muted-foreground pointer-events-none absolute inset-y-0 end-3 flex items-center text-sm">
-                {kind === "percent" ? "%" : "AED"}
-              </span>
-            </div>
-          </Field>
-          <p className="text-muted-foreground text-xs">
-            Comes off the products only — delivery is always charged in full.
-          </p>
+          {kind === "free_delivery" ? (
+            <p className="text-muted-foreground text-xs">
+              Waives the delivery fee; the products are charged in full.
+            </p>
+          ) : (
+            <>
+              <Field
+                label={kind === "percent" ? "Percentage" : "Amount in AED"}
+                htmlFor="value"
+                error={e.value}
+                hint={
+                  kind === "percent"
+                    ? "e.g. 10 for 10% off the items"
+                    : "e.g. 50 for AED 50 off — never more than the items cost"
+                }
+                className="max-w-48"
+              >
+                <div className="relative">
+                  <Input
+                    id="value"
+                    name="value"
+                    inputMode="decimal"
+                    defaultValue={value}
+                    className="h-11 pe-12"
+                  />
+                  <span className="text-muted-foreground pointer-events-none absolute inset-y-0 end-3 flex items-center text-sm">
+                    {kind === "percent" ? "%" : "AED"}
+                  </span>
+                </div>
+              </Field>
+              <p className="text-muted-foreground text-xs">
+                Comes off the products only — delivery is always charged in full.
+              </p>
+            </>
+          )}
         </fieldset>
       </section>
 
@@ -165,21 +184,21 @@ export function CouponForm({ coupon, products }: { coupon?: Coupon; products: Pr
               className="h-11"
             />
           </Field>
+          <Field
+            label="Uses per customer"
+            htmlFor="perCustomerLimit"
+            error={e.perCustomerLimit}
+            hint="e.g. 1 — each customer can use it on one order"
+          >
+            <Input
+              id="perCustomerLimit"
+              name="perCustomerLimit"
+              inputMode="numeric"
+              defaultValue={coupon?.perCustomerLimit ?? ""}
+              className="h-11"
+            />
+          </Field>
         </div>
-        <label className="flex items-start gap-3 text-sm">
-          <input
-            type="checkbox"
-            name="oncePerCustomer"
-            defaultChecked={coupon?.oncePerCustomer ?? false}
-            className="accent-primary mt-0.5 size-4"
-          />
-          <span>
-            Once per customer
-            <span className="text-muted-foreground block text-xs">
-              Each customer account can use it on one order only.
-            </span>
-          </span>
-        </label>
 
         <div className="flex flex-col gap-3">
           <label className="flex items-start gap-3 text-sm">
@@ -239,29 +258,27 @@ export function CouponForm({ coupon, products }: { coupon?: Coupon; products: Pr
               className="accent-primary mt-0.5 size-4"
             />
             <span>
-              Only for certain products
+              Only for certain categories or products
               <span className="text-muted-foreground block text-xs">
-                Otherwise it applies to everything in the bag.
+                Otherwise it applies to everything in the bag. An item counts when its category or
+                the product itself is ticked.
               </span>
             </span>
           </label>
           {limitProducts ? (
-            <div className="grid gap-x-6 gap-y-2 rounded-lg border p-4 sm:grid-cols-2">
-              {products.map((p) => (
-                <label key={p.id} className="flex items-center gap-3 text-sm">
-                  <input
-                    type="checkbox"
-                    name="productIds"
-                    value={p.id}
-                    defaultChecked={coupon?.productIds.includes(p.id)}
-                    className="accent-primary size-4"
-                  />
-                  {p.name}
-                  {!p.active ? (
-                    <span className="text-muted-foreground text-xs">(hidden)</span>
-                  ) : null}
-                </label>
-              ))}
+            <div className="flex flex-col gap-4 rounded-lg border p-4">
+              <ScopeList
+                title="Categories"
+                name="categoryIds"
+                options={categories}
+                selected={coupon?.categoryIds ?? []}
+              />
+              <ScopeList
+                title="Products"
+                name="productIds"
+                options={products}
+                selected={coupon?.productIds ?? []}
+              />
             </div>
           ) : null}
         </div>
@@ -278,8 +295,43 @@ export function CouponForm({ coupon, products }: { coupon?: Coupon; products: Pr
       </label>
 
       <Button type="submit" size="lg" disabled={pending} className="self-start">
-        {pending ? "Saving…" : coupon ? "Save changes" : "Create coupon"}
+        {pending ? "Saving…" : coupon ? "Save changes" : "Create promotion"}
       </Button>
     </form>
+  );
+}
+
+function ScopeList({
+  title,
+  name,
+  options,
+  selected,
+}: {
+  title: string;
+  name: string;
+  options: ScopeOption[];
+  selected: string[];
+}) {
+  return (
+    <fieldset>
+      <legend className="text-muted-foreground mb-2 text-xs font-medium tracking-wide uppercase">
+        {title}
+      </legend>
+      <div className="grid gap-x-6 gap-y-2 sm:grid-cols-2">
+        {options.map((o) => (
+          <label key={o.id} className="flex items-center gap-3 text-sm">
+            <input
+              type="checkbox"
+              name={name}
+              value={o.id}
+              defaultChecked={selected.includes(o.id)}
+              className="accent-primary size-4"
+            />
+            {o.name}
+            {!o.active ? <span className="text-muted-foreground text-xs">(hidden)</span> : null}
+          </label>
+        ))}
+      </div>
+    </fieldset>
   );
 }

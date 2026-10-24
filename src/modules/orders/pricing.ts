@@ -12,7 +12,8 @@ import {
  *
  * Rules:
  * - Reward lines (loyalty redemptions) are free: they add nothing to the subtotal.
- * - A coupon discount comes off the goods only (never delivery) and can't exceed the subtotal.
+ * - A coupon discount comes off the goods only and can't exceed the subtotal; a free-delivery
+ *   code instead waives the delivery fee (`waiveDelivery`), reported as `deliveryDiscountFils`.
  * - Delivery is free for pickup, or when the goods subtotal reaches the free-delivery threshold.
  * - VAT applies to goods + delivery. With `pricesIncludeVat` the VAT is contained in the amounts
  *   (total = subtotal + delivery); otherwise it is added on top. VAT is computed once on the
@@ -39,6 +40,8 @@ export type PriceCartInput = {
   fulfilment: Fulfilment;
   /** Coupon discount on the goods (website checkout); default 0. */
   discountFils?: Fils;
+  /** A free-delivery code is applied: no delivery fee (website checkout). */
+  waiveDelivery?: boolean;
 };
 
 export type PricedLine = PricingLine & { lineTotalFils: Fils };
@@ -53,7 +56,9 @@ export type CartPricing = {
   discountFils: Fils;
   /** Delivery charged; `null` when delivery is pending a zone choice. */
   deliveryFeeFils: Fils | null;
-  /** True when the threshold waived a delivery fee (or would, once a zone is chosen). */
+  /** Delivery fee waived by a free-delivery code (0 when none or already free). */
+  deliveryDiscountFils: Fils;
+  /** True when the threshold or a free-delivery code waived a delivery fee (or would, once a zone is chosen). */
   freeDelivery: boolean;
   /** How much more goods would unlock free delivery; `null` when not applicable. */
   amountToFreeDeliveryFils: Fils | null;
@@ -97,13 +102,20 @@ export function priceCart(input: PriceCartInput): CartPricing {
   const isPickup = fulfilment === "pickup";
   const empty = lines.length === 0;
 
+  const waived = !isPickup && !empty && !reachesThreshold && Boolean(input.waiveDelivery);
   let deliveryFeeFils: Fils | null;
+  let deliveryDiscountFils: Fils = 0;
   if (isPickup || empty || reachesThreshold) deliveryFeeFils = 0;
-  else deliveryFeeFils = input.deliveryFeeFils;
+  else if (waived && input.deliveryFeeFils !== null) {
+    deliveryDiscountFils = input.deliveryFeeFils;
+    deliveryFeeFils = 0;
+  } else deliveryFeeFils = input.deliveryFeeFils;
 
-  const freeDelivery = !isPickup && !empty && reachesThreshold;
+  const freeDelivery = !isPickup && !empty && (reachesThreshold || waived);
   const amountToFreeDeliveryFils =
-    isPickup || empty || threshold === null || reachesThreshold ? null : threshold - subtotalFils;
+    isPickup || empty || threshold === null || reachesThreshold || waived
+      ? null
+      : threshold - subtotalFils;
 
   const discountFils = input.discountFils ?? 0;
   assertNonNegative(discountFils, "Discount");
@@ -121,6 +133,7 @@ export function priceCart(input: PriceCartInput): CartPricing {
     subtotalFils,
     discountFils,
     deliveryFeeFils,
+    deliveryDiscountFils,
     freeDelivery,
     amountToFreeDeliveryFils,
     vatFils,

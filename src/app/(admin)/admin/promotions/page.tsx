@@ -7,28 +7,29 @@ import { buttonVariants } from "@/components/ui/button";
 import { requirePagePermission } from "@/lib/auth/session";
 import { formatBusinessDate } from "@/lib/dates";
 import { formatAED } from "@/lib/money";
-import { listCoupons } from "@/modules/coupons/queries";
-import { couponState, couponValueLabel } from "@/modules/coupons/schema";
+import { listCoupons, listPromotionScope, scopeNames } from "@/modules/coupons/queries";
+import { couponScopeLabel, couponState, couponValueLabel } from "@/modules/coupons/schema";
 
-export const metadata: Metadata = { title: "Coupons" };
+export const metadata: Metadata = { title: "Promotions" };
 
-export default async function CouponsPage() {
+export default async function PromotionsPage() {
   await requirePagePermission("coupons.manage");
-  const coupons = await listCoupons();
+  const [coupons, scope] = await Promise.all([listCoupons(), listPromotionScope()]);
+  const names = scopeNames(scope);
   return (
     <>
       <PageHeader
-        title="Coupons"
-        description="Discount codes customers can enter at checkout on the website."
+        title="Promotions"
+        description="Discount codes customers enter at checkout — % off, AED off or free delivery."
         actions={
-          <Link href="/admin/coupons/new" className={buttonVariants()}>
-            <Plus className="size-4" /> New coupon
+          <Link href="/admin/promotions/new" className={buttonVariants()}>
+            <Plus className="size-4" /> New promotion
           </Link>
         }
       />
       {coupons.length === 0 ? (
         <div className="bg-card rounded-xl border p-8 text-center">
-          <p className="font-medium">No coupons yet</p>
+          <p className="font-medium">No promotions yet</p>
           <p className="text-muted-foreground mt-1 text-sm">
             Create one — e.g. <span className="font-mono">WELCOME10</span> for 10% off a first
             order.
@@ -40,15 +41,17 @@ export default async function CouponsPage() {
             const rules = [
               c.endsOn ? `until ${formatBusinessDate(c.endsOn)}` : null,
               c.minOrderFils ? `min ${formatAED(c.minOrderFils)}` : null,
-              c.oncePerCustomer ? "once per customer" : null,
-              c.productIds.length
-                ? `${c.productIds.length} product${c.productIds.length === 1 ? "" : "s"}`
+              c.perCustomerLimit
+                ? c.perCustomerLimit === 1
+                  ? "once per customer"
+                  : `${c.perCustomerLimit}× per customer`
                 : null,
+              c.productIds.length || c.categoryIds.length ? couponScopeLabel(c, names) : null,
             ].filter(Boolean);
             return (
               <li key={c.id}>
                 <Link
-                  href={`/admin/coupons/${c.id}`}
+                  href={`/admin/promotions/${c.id}`}
                   className="hover:bg-muted/50 flex items-center gap-4 px-5 py-4 transition-colors"
                 >
                   <span className="min-w-0 flex-1">

@@ -31,6 +31,11 @@ const nextConfig: NextConfig = {
       { source: "/policies/:path*", destination: "/help", permanent: true },
       // The destinations pages were removed (client): old links land on the collection.
       { source: "/destinations", destination: "/shop", permanent: true },
+      {
+        source: "/admin/coupons/:path*",
+        destination: "/admin/promotions/:path*",
+        permanent: false,
+      },
       { source: "/destinations/:path*", destination: "/shop", permanent: true },
     ];
   },

@@ -16,9 +16,10 @@ export async function saveCoupon(input: unknown): Promise<string> {
     amount_fils: v.amountFils,
     ...dayBounds(v.startsOn, v.endsOn),
     max_uses: v.maxUses,
-    once_per_customer: v.oncePerCustomer,
+    per_customer_limit: v.perCustomerLimit,
     min_order_fils: v.minOrder,
     product_ids: v.productIds,
+    category_ids: v.categoryIds,
     active: v.active,
   };
   const supabase = await createClient();
@@ -30,7 +31,8 @@ export async function saveCoupon(input: unknown): Promise<string> {
         .select("id")
         .single();
   if (error) {
-    if (error.code === "23505") throw new UserError(`There is already a coupon called ${v.code}.`);
+    if (error.code === "23505")
+      throw new UserError(`There is already a promotion with the code ${v.code}.`);
     throw new Error(error.message);
   }
   return data.id;
