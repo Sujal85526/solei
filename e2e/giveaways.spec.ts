@@ -38,15 +38,13 @@ async function giveawayProduct(tag: string) {
     .select("id")
     .eq("is_default", true)
     .single();
-  await admin
-    .from("stock_movements")
-    .insert({
-      variant_id: variant!.id,
-      location_id: location!.id,
-      qty: 200,
-      type: "receive",
-      reason: "e2e",
-    });
+  await admin.from("stock_movements").insert({
+    variant_id: variant!.id,
+    location_id: location!.id,
+    qty: 200,
+    type: "receive",
+    reason: "e2e",
+  });
   return { productId: product!.id, variantId: variant!.id, slug };
 }
 
@@ -92,16 +90,14 @@ test.describe("giveaways customiser", () => {
       { group_id: ribbon!.id, label: "Blush", price_delta_fils: 0, sort: 0 },
       { group_id: ribbon!.id, label: "Gold", price_delta_fils: 500, sort: 1 },
     ]);
-    await admin
-      .from("product_option_groups")
-      .insert({
-        product_id: productId,
-        name: "Names on the tag",
-        kind: "text",
-        required: true,
-        max_length: 30,
-        sort: 1,
-      });
+    await admin.from("product_option_groups").insert({
+      product_id: productId,
+      name: "Names on the tag",
+      kind: "text",
+      required: true,
+      max_length: 30,
+      sort: 1,
+    });
 
     const email = `giveaway.e2e+${Date.now()}@solei.test`;
     const password = "Solei-e2e-2026";

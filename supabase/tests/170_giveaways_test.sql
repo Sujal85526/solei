@@ -56,9 +56,9 @@ select pg_temp.order_with(20, 3000, pg_temp.opts(:'gold', 'Sara & Omar')) as o1 
 select is((select unit_price_fils from public.order_lines where order_id = :'o1'), 3000, 'line priced with options');
 select is((select options -> 1 ->> 'text' from public.order_lines where order_id = :'o1'), 'Sara & Omar', 'tag text kept on the line');
 select is((select total_fils from public.orders where id = :'o1'), 60000, '20 × AED 30');
-select throws_ok($$ select pg_temp.order_with(10, 3000, pg_temp.opts((select id from public.product_options where label = 'Gold'), 'Sara')) $$,
+select throws_ok(format('select pg_temp.order_with(10, 3000, pg_temp.opts(%L, %L))', :'gold', 'Sara'),
   'P0001', null, 'below the minimum quantity is refused');
-select throws_ok($$ select pg_temp.order_with(20, 2500, pg_temp.opts((select id from public.product_options where label = 'Gold'), 'Sara')) $$,
+select throws_ok(format('select pg_temp.order_with(20, 2500, pg_temp.opts(%L, %L))', :'gold', 'Sara'),
   'P0001', null, 'a price that ignores the options is refused');
 
 -- Discount codes and saved bags see the option price.
