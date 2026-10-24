@@ -17,6 +17,8 @@ export async function saveCoupon(input: unknown): Promise<string> {
     ...dayBounds(v.startsOn, v.endsOn),
     max_uses: v.maxUses,
     per_customer_limit: v.perCustomerLimit,
+    // Kept in step for the live site (main) until the old flag is dropped after the merge.
+    once_per_customer: v.perCustomerLimit === 1,
     min_order_fils: v.minOrder,
     product_ids: v.productIds,
     category_ids: v.categoryIds,

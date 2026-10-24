@@ -4,8 +4,7 @@
 
 insert into public.permissions (key, "group", description, sort) values
   ('marketing.manage', 'Customers', 'Build customer segments and send email campaigns', 52);
-insert into public.role_permissions (role_id, permission_key)
-select r.id, 'marketing.manage' from public.roles r where r.key in ('owner', 'manager');
+-- Owner only for now (implicit); the manager grant waits for the merge (docs/PHASE2_MERGE.md).
 
 /*
   Rules (all optional; an empty object = every customer):

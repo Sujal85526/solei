@@ -705,6 +705,7 @@ export type Database = {
           kind: Database["public"]["Enums"]["coupon_kind"]
           max_uses: number | null
           min_order_fils: number | null
+          once_per_customer: boolean
           per_customer_limit: number | null
           percent_bp: number | null
           product_ids: string[]
@@ -724,6 +725,7 @@ export type Database = {
           kind: Database["public"]["Enums"]["coupon_kind"]
           max_uses?: number | null
           min_order_fils?: number | null
+          once_per_customer?: boolean
           per_customer_limit?: number | null
           percent_bp?: number | null
           product_ids?: string[]
@@ -743,6 +745,7 @@ export type Database = {
           kind?: Database["public"]["Enums"]["coupon_kind"]
           max_uses?: number | null
           min_order_fils?: number | null
+          once_per_customer?: boolean
           per_customer_limit?: number | null
           percent_bp?: number | null
           product_ids?: string[]

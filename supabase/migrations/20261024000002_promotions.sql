@@ -1,6 +1,8 @@
 -- Phase 2 promotions engine, built on the coupons table (client 2026-10-19). Adds:
 --   · a "free delivery" code (kind = free_delivery; waives the delivery fee, never the goods)
---   · a per-customer use limit (1 = the old "once per customer"; null = no limit)
+--   · a per-customer use limit (null = no limit). The old once_per_customer flag stays (the live
+--     site on main still writes it) and counts as a limit of 1 when no number is set; drop it in a
+--     migration after phase-2 merges (docs/PHASE2_MERGE.md).
 --   · category scope next to product scope (a line qualifies when either list matches)
 --   · on the order: the delivery fee a code waived + a snapshot of the applied promotion(s)
 --   · a promotions report (uses, discount given, sales) for Admin → Reports.
@@ -13,8 +15,6 @@ update public.permissions
 alter table public.coupons
   add column per_customer_limit int check (per_customer_limit > 0),
   add column category_ids uuid[] not null default '{}';
-update public.coupons set per_customer_limit = 1 where once_per_customer;
-alter table public.coupons drop column once_per_customer;
 
 alter table public.coupons drop constraint coupons_value;
 alter table public.coupons add constraint coupons_value check (
@@ -104,8 +104,10 @@ begin
   if c.max_uses is not null and public.coupon_uses(c.id) >= c.max_uses then
     return jsonb_build_object('ok', false, 'reason', 'used_up');
   end if;
-  if c.per_customer_limit is not null and p_email is not null
-     and public.coupon_uses(c.id, p_email) >= c.per_customer_limit then
+  if coalesce(c.per_customer_limit, case when c.once_per_customer then 1 end) is not null
+     and p_email is not null
+     and public.coupon_uses(c.id, p_email)
+         >= coalesce(c.per_customer_limit, case when c.once_per_customer then 1 end) then
     return jsonb_build_object('ok', false, 'reason', 'already_used');
   end if;
 

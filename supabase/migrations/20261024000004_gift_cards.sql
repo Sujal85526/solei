@@ -16,10 +16,8 @@
 insert into public.permissions (key, "group", description, sort) values
   ('gift_cards.view', 'Sales', 'See gift cards and their balances', 32),
   ('gift_cards.manage', 'Sales', 'Issue, void and adjust gift cards; gift card settings', 33);
-insert into public.role_permissions (role_id, permission_key)
-select r.id, p.key from public.roles r
-  cross join (values ('gift_cards.view'), ('gift_cards.manage')) p(key)
- where r.key in ('owner', 'manager');
+-- The owner holds every permission implicitly. Manager grants wait for the merge: the live
+-- site's role editor (main) rejects permission keys it doesn't know (docs/PHASE2_MERGE.md).
 
 -- Owner-editable rules (Admin → Gift cards → Settings).
 alter table public.settings

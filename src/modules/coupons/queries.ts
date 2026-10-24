@@ -15,7 +15,8 @@ const toCoupon = (r: Row): Coupon => ({
   amountFils: r.amount_fils,
   ...storedDays(r.starts_at, r.ends_at),
   maxUses: r.max_uses,
-  perCustomerLimit: r.per_customer_limit,
+  // Coupons set up on the live site (main) only have the old once-per-customer flag.
+  perCustomerLimit: r.per_customer_limit ?? (r.once_per_customer ? 1 : null),
   minOrderFils: r.min_order_fils,
   productIds: r.product_ids,
   categoryIds: r.category_ids,

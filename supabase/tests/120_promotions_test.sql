@@ -1,6 +1,6 @@
 begin;
 \ir helpers/setup.psql
-select plan(14);
+select plan(17);
 
 select v.id as perfume from public.product_variants v where v.sku = 'SOL-P-CAN-50' \gset
 select v.id as spray from public.product_variants v where v.sku = 'SOL-S-SOH-100' \gset
@@ -78,6 +78,25 @@ select tests.login_anon();
 select throws_ok(
   $$ select * from public.promotion_report(public.business_today() - 1, public.business_today()) $$,
   '42501', null, 'anon cannot run the report');
+
+-- Live-site compatibility (main): a coupon saved with only the old once-per-customer flag still
+-- limits each customer to one order, and an order payload without the Phase 2 keys still works.
+reset role;
+insert into public.coupons (code, kind, percent_bp, once_per_customer) values ('TSTMAINONCE', 'percent', 1000, true);
+select is(
+  public.coupon_evaluate('TSTMAINONCE', jsonb_build_array(jsonb_build_object('variant_id', :'perfume', 'qty', 1)), 'main@solei.test') ->> 'ok',
+  'true', 'main-style coupon works the first time');
+select lives_ok($$ select * from public.create_web_order(jsonb_build_object(
+    'client_uuid', gen_random_uuid(), 'emirate', 'abu_dhabi',
+    'contact', jsonb_build_object('name', 'Main Shopper', 'phone', '+971501110000', 'email', 'main@solei.test'),
+    'address', jsonb_build_object('line1', 'Street 1'),
+    'lines', jsonb_build_array(jsonb_build_object('variant_id', (select id from public.product_variants where sku = 'SOL-P-CAN-50'), 'qty', 1, 'unit_price_fils', 28000)),
+    'subtotal_fils', 28000, 'coupon_code', 'TSTMAINONCE', 'discount_fils', 2800,
+    'delivery_fee_fils', 3000, 'vat_fils', 0, 'total_fils', 28200, 'vat_rate_bp', 0, 'prices_include_vat', true)) $$,
+  'an order shaped like main''s checkout still goes through');
+select is(
+  public.coupon_evaluate('TSTMAINONCE', jsonb_build_array(jsonb_build_object('variant_id', :'perfume', 'qty', 1)), 'main@solei.test') ->> 'reason',
+  'already_used', 'once_per_customer still means once');
 
 select * from finish();
 rollback;
