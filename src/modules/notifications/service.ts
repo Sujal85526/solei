@@ -49,6 +49,18 @@ export function notify(key: string, input: NotifyInput): Promise<NotifyResult> {
   return notifier()(key, input);
 }
 
+/**
+ * Send with content supplied by the caller instead of a stored template (email campaigns),
+ * logged in the outbox under `key`. Same guards: allowlist, logging, never throws.
+ */
+export function notifyWithContent(
+  key: string,
+  content: { subject: string; body: string },
+  input: NotifyInput,
+): Promise<NotifyResult> {
+  return notifier({ loadTemplate: async () => ({ ...content, enabled: true }) })(key, input);
+}
+
 /** The owner's alert address, or null when not set. */
 export async function ownerEmail(): Promise<string | null> {
   const { data } = await createAdminClient()

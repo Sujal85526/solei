@@ -9,6 +9,8 @@ export async function listTemplates() {
     await supabase
       .from("notification_templates")
       .select("key, audience, channel, name, description, subject, enabled, sort, updated_at")
+      // Campaign emails are written in Admin → Campaigns, not here.
+      .neq("key", "campaign")
       .order("sort"),
     "templates",
   );

@@ -193,6 +193,7 @@ export const en = {
       coupons: "Promotions",
       giftCards: "Gift cards",
       carts: "Abandoned carts",
+      campaigns: "Campaigns",
       reviews: "Reviews",
       calendar: "Calendar",
       bookings: "Bookings",
@@ -240,6 +241,14 @@ export const en = {
     empty: "Your bag is empty.",
     shop: "Shop the collection",
     backToBag: "Return to bag",
+  },
+  unsubscribe: {
+    title: "Unsubscribe",
+    body: "Stop receiving news and offers from Solei by email? Order emails still arrive as usual.",
+    button: "Unsubscribe",
+    doneTitle: "You're unsubscribed.",
+    doneBody:
+      "You won't receive marketing emails from Solei any more. Changed your mind? Tick the box next time you check out.",
   },
   cartLinks: {
     restoring: "Bringing back your bag…",

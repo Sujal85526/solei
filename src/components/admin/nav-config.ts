@@ -6,6 +6,7 @@ import {
   ClipboardList,
   Gift,
   LayoutDashboard,
+  Megaphone,
   type LucideIcon,
   Package,
   Settings,
@@ -63,6 +64,12 @@ export const adminNav: AdminNavItem[] = [
   { href: "/admin/inventory", key: "inventory", icon: Boxes, permission: "inventory.view" },
   { href: "/admin/reviews", key: "reviews", icon: Star, permission: "reviews.manage" },
   { href: "/admin/customers", key: "customers", icon: Users, permission: "customers.view" },
+  {
+    href: "/admin/campaigns",
+    key: "campaigns",
+    icon: Megaphone,
+    permission: "marketing.manage",
+  },
   {
     href: "/admin/carts",
     key: "carts",

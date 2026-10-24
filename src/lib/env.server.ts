@@ -90,3 +90,5 @@ function derived(label: string, explicit?: string) {
 export const mockPaymentSecret = () => derived("mock-payments", serverEnv().MOCK_PAYMENT_SECRET);
 export const orderLinkSecret = () => derived("order-links", serverEnv().ORDER_LINK_SECRET);
 export const cartLinkSecret = () => derived("cart-links", serverEnv().CART_LINK_SECRET);
+/** Signs campaign unsubscribe links (same derivation as the cart links). */
+export const unsubscribeSecret = () => derived("unsubscribe", serverEnv().CART_LINK_SECRET);

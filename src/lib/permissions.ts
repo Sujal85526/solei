@@ -38,6 +38,10 @@ export const PERMISSIONS = {
   "inventory.transfer": { group: "Inventory", description: "Transfer stock between locations" },
   "customers.view": { group: "Customers", description: "View customers" },
   "customers.manage": { group: "Customers", description: "Create and edit customers" },
+  "marketing.manage": {
+    group: "Customers",
+    description: "Build customer segments and send email campaigns",
+  },
   "events.view": { group: "Events", description: "View the event calendar" },
   "events.manage": {
     group: "Events",
