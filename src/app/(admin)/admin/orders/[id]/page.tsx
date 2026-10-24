@@ -7,6 +7,7 @@ import {
   OrderStatusBadge,
   PaymentStatusBadge,
 } from "@/components/admin/orders/order-badges";
+import { CourierPanel } from "@/components/admin/orders/courier-panel";
 import { OrderActions } from "@/components/admin/orders/order-actions";
 import { OrderNotes } from "@/components/admin/orders/order-notes";
 import { PaymentLinkPanel } from "@/components/admin/orders/payment-link-panel";
@@ -316,6 +317,10 @@ export default async function OrderDetailPage({ params }: PageProps<"/admin/orde
         </div>
 
         <div className="flex min-w-0 flex-col gap-6">
+          <CourierPanel
+            order={{ id: order.id, status: order.status, fulfilment: order.fulfilment }}
+            canUpdate={can(staff.permissions, "orders.update")}
+          />
           <AdminSection title="Customer">
             <dl className="grid gap-3 text-sm">
               <div>
