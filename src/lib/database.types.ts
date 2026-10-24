@@ -496,6 +496,7 @@ export type Database = {
         Row: {
           active: boolean
           amount_fils: number | null
+          category_ids: string[]
           code: string
           created_at: string
           created_by: string | null
@@ -505,7 +506,7 @@ export type Database = {
           kind: Database["public"]["Enums"]["coupon_kind"]
           max_uses: number | null
           min_order_fils: number | null
-          once_per_customer: boolean
+          per_customer_limit: number | null
           percent_bp: number | null
           product_ids: string[]
           starts_at: string | null
@@ -514,6 +515,7 @@ export type Database = {
         Insert: {
           active?: boolean
           amount_fils?: number | null
+          category_ids?: string[]
           code: string
           created_at?: string
           created_by?: string | null
@@ -523,7 +525,7 @@ export type Database = {
           kind: Database["public"]["Enums"]["coupon_kind"]
           max_uses?: number | null
           min_order_fils?: number | null
-          once_per_customer?: boolean
+          per_customer_limit?: number | null
           percent_bp?: number | null
           product_ids?: string[]
           starts_at?: string | null
@@ -532,6 +534,7 @@ export type Database = {
         Update: {
           active?: boolean
           amount_fils?: number | null
+          category_ids?: string[]
           code?: string
           created_at?: string
           created_by?: string | null
@@ -541,7 +544,7 @@ export type Database = {
           kind?: Database["public"]["Enums"]["coupon_kind"]
           max_uses?: number | null
           min_order_fils?: number | null
-          once_per_customer?: boolean
+          per_customer_limit?: number | null
           percent_bp?: number | null
           product_ids?: string[]
           starts_at?: string | null
@@ -1643,6 +1646,7 @@ export type Database = {
       }
       orders: {
         Row: {
+          applied_promotions: Json
           booking_id: string | null
           cancel_reason: string | null
           cancelled_at: string | null
@@ -1658,6 +1662,7 @@ export type Database = {
           customer_id: string | null
           delivery_address: Json | null
           delivery_emirate: Database["public"]["Enums"]["emirate"] | null
+          delivery_discount_fils: number
           delivery_fee_fils: number
           discount_fils: number
           event_day: string | null
@@ -1680,6 +1685,7 @@ export type Database = {
           vat_rate_bp: number
         }
         Insert: {
+          applied_promotions?: Json
           booking_id?: string | null
           cancel_reason?: string | null
           cancelled_at?: string | null
@@ -1695,6 +1701,7 @@ export type Database = {
           customer_id?: string | null
           delivery_address?: Json | null
           delivery_emirate?: Database["public"]["Enums"]["emirate"] | null
+          delivery_discount_fils?: number
           delivery_fee_fils?: number
           discount_fils?: number
           event_day?: string | null
@@ -1717,6 +1724,7 @@ export type Database = {
           vat_rate_bp?: number
         }
         Update: {
+          applied_promotions?: Json
           booking_id?: string | null
           cancel_reason?: string | null
           cancelled_at?: string | null
@@ -1732,6 +1740,7 @@ export type Database = {
           customer_id?: string | null
           delivery_address?: Json | null
           delivery_emirate?: Database["public"]["Enums"]["emirate"] | null
+          delivery_discount_fils?: number
           delivery_fee_fils?: number
           discount_fils?: number
           event_day?: string | null
@@ -3183,6 +3192,19 @@ export type Database = {
         Args: { p_day?: string; p_event_id: string }
         Returns: Json
       }
+      promotion_report: {
+        Args: { p_from: string; p_to: string }
+        Returns: {
+          code: string
+          coupon_id: string
+          delivery_discount_fils: number
+          discount_fils: number
+          first_order_at: string
+          last_order_at: string
+          orders: number
+          sales_fils: number
+        }[]
+      }
       quote_payment_order: {
         Args: { p_kind: string; p_token: string }
         Returns: string
@@ -3386,7 +3408,7 @@ export type Database = {
         | "completed"
         | "rejected"
         | "cancelled"
-      coupon_kind: "percent" | "fixed"
+      coupon_kind: "percent" | "fixed" | "free_delivery"
       customer_source:
         | "website"
         | "pos"
@@ -3623,7 +3645,7 @@ export const Constants = {
         "rejected",
         "cancelled",
       ],
-      coupon_kind: ["percent", "fixed"],
+      coupon_kind: ["percent", "fixed", "free_delivery"],
       customer_source: [
         "website",
         "pos",
