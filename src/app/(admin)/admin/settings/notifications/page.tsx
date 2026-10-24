@@ -6,12 +6,13 @@ import {
   OwnerEmailForm,
 } from "@/components/admin/notifications/owner-email-form";
 import { TemplateToggle } from "@/components/admin/notifications/template-toggle";
+import { WhatsAppSwitch } from "@/components/admin/notifications/whatsapp-switch";
 import { PageHeader } from "@/components/admin/page-header";
 import { AdminSection } from "@/components/admin/section";
 import { Badge } from "@/components/ui/badge";
 import { requirePagePermission } from "@/lib/auth/session";
 import { can } from "@/lib/permissions";
-import { listTemplates, ownerAlertEmail } from "@/modules/notifications/queries";
+import { listTemplates, ownerAlertEmail, whatsAppUpdates } from "@/modules/notifications/queries";
 
 export const metadata: Metadata = { title: "Notifications" };
 
@@ -22,7 +23,11 @@ const AUDIENCES = [
 
 export default async function NotificationsPage() {
   const staff = await requirePagePermission("notifications.manage");
-  const [templates, owner] = await Promise.all([listTemplates(), ownerAlertEmail()]);
+  const [templates, owner, whatsapp] = await Promise.all([
+    listTemplates(),
+    ownerAlertEmail(),
+    whatsAppUpdates(),
+  ]);
   const canOwner = can(staff.permissions, "settings.manage") && owner.readable;
 
   return (
@@ -44,6 +49,11 @@ export default async function NotificationsPage() {
             <OwnerEmailForm email={owner.email} />
           </AdminSection>
         ) : null}
+        {can(staff.permissions, "settings.manage") ? (
+          <AdminSection title="WhatsApp">
+            <WhatsAppSwitch on={whatsapp.enabled} provider={whatsapp.provider} />
+          </AdminSection>
+        ) : null}
         {AUDIENCES.map((a) => (
           <AdminSection key={a.key} title={a.title}>
             <ul className="divide-y">
@@ -57,6 +67,9 @@ export default async function NotificationsPage() {
                     >
                       <span className="flex items-center gap-2 font-medium group-hover:underline">
                         {t.name}
+                        {t.channel === "whatsapp" ? (
+                          <Badge variant="outline">WhatsApp</Badge>
+                        ) : null}
                         {!t.enabled ? <Badge variant="muted">Off</Badge> : null}
                       </span>
                       <span className="text-muted-foreground block truncate text-sm">

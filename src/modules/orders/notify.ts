@@ -6,7 +6,7 @@ import { createAdminClient } from "@/lib/supabase/server";
 import { orderUrl } from "@/modules/checkout/service";
 import { notifyGiftCardPurchase } from "@/modules/gift-cards/notify";
 import { notifyPassportForOrder } from "@/modules/loyalty/notify";
-import { notify, ownerEmail } from "@/modules/notifications/service";
+import { notify, notifyWhatsApp, ownerEmail } from "@/modules/notifications/service";
 import { formatOrderLines, humanize, trackingText } from "./format";
 import { CHANNEL_LABELS, CUSTOMER_STATUS_TEMPLATES, type OrderStatus } from "./status";
 
@@ -74,7 +74,19 @@ export function notifyOrderPaid(orderId: string) {
     if (o.channel === "booking") return;
     // Gift card purchases: the card itself (and a receipt) instead of an order confirmation.
     if (o.gift_card_purchase) await notifyGiftCardPurchase(o);
-    else await notify("order_confirmation", { ...refs(o), vars: customerVars(o) });
+    else {
+      await notify("order_confirmation", { ...refs(o), vars: customerVars(o) });
+      // WhatsApp too, when the owner has it on (not for till sales — the customer is right there).
+      if (o.channel !== "pos") {
+        await notifyWhatsApp("order_confirmation_whatsapp", {
+          to: o.contact_phone,
+          vars: customerVars(o),
+          customerId: o.customer_id,
+          orderId: o.id,
+          dedupeKey: `order:${o.id}`,
+        });
+      }
+    }
 
     // POS sales happen in front of the owner's team; alert only for remote orders.
     if (o.channel !== "pos") {
@@ -106,10 +118,17 @@ export function notifyOrderStatus(orderId: string, status: OrderStatus) {
   if (!key) return Promise.resolve();
   return guard(`status ${status}`, async () => {
     const o = await loadOrder(orderId);
-    await notify(key, {
-      ...refs(o),
-      vars: { ...customerVars(o), tracking: trackingText(o.tracking_number, o.courier) },
-    });
+    const vars = { ...customerVars(o), tracking: trackingText(o.tracking_number, o.courier) };
+    await notify(key, { ...refs(o), vars });
+    if (status === "dispatched") {
+      await notifyWhatsApp("order_dispatched_whatsapp", {
+        to: o.contact_phone,
+        vars,
+        customerId: o.customer_id,
+        orderId: o.id,
+        dedupeKey: `dispatched:${o.id}`,
+      });
+    }
   });
 }
 

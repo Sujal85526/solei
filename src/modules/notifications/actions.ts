@@ -54,3 +54,13 @@ export async function saveOwnerEmailAction(_: unknown, fd: FormData): Promise<Ac
     return fail(e);
   }
 }
+
+export async function setWhatsAppUpdatesAction(on: boolean): Promise<ActionResult> {
+  try {
+    await notifications.setWhatsAppUpdates(on);
+    revalidatePath("/admin/settings/notifications");
+    return ok(undefined, on ? "WhatsApp updates are on." : "WhatsApp updates are off.");
+  } catch (e) {
+    return fail(e);
+  }
+}

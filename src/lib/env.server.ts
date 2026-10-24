@@ -27,6 +27,10 @@ const serverSchema = z
     ORDER_LINK_SECRET: z.string().optional(),
     /** Signs the "return to your bag" / "stop reminders" links in cart reminder emails. */
     CART_LINK_SECRET: z.string().optional(),
+    /** WhatsApp sender: only "log" (stand-in) until a WhatsApp Business account exists. */
+    MESSAGING_PROVIDER: z.enum(["log"]).optional(),
+    /** Courier: only "mock" (stand-in) until a courier account exists. */
+    COURIER_PROVIDER: z.enum(["mock"]).optional(),
     /** Bearer token the scheduler sends to /api/cron/* (Vercel Cron sets it automatically). */
     CRON_SECRET: z
       .string()

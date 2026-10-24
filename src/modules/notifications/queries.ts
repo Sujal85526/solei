@@ -1,6 +1,6 @@
 import "server-only";
 import { must } from "@/lib/supabase/must";
-import { createClient } from "@/lib/supabase/server";
+import { createAdminClient, createClient } from "@/lib/supabase/server";
 import type { OutboxFilters } from "./schema";
 
 export async function listTemplates() {
@@ -60,4 +60,17 @@ export async function listOutbox(filters: OutboxFilters) {
   }
   const res = await q;
   return { rows: must(res, "outbox"), total: res.count ?? 0, page };
+}
+
+/** WhatsApp order updates switch and which sender is configured ("log" = stand-in). */
+export async function whatsAppUpdates(): Promise<{ enabled: boolean; provider: string }> {
+  const { data } = await createAdminClient()
+    .from("settings")
+    .select("whatsapp_updates_enabled")
+    .eq("id", 1)
+    .maybeSingle();
+  return {
+    enabled: Boolean(data?.whatsapp_updates_enabled),
+    provider: process.env.MESSAGING_PROVIDER ?? "log",
+  };
 }

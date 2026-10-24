@@ -4,7 +4,9 @@ import { assertPermission } from "@/lib/auth/session";
 import { publicEnv } from "@/lib/env";
 import { createAdminClient, createClient } from "@/lib/supabase/server";
 import { emailProvider, recipientAllowed } from "@/providers/email";
+import { messagingProvider } from "@/providers/messaging";
 import { createNotifier, type NotifierDeps, type NotifyInput, type NotifyResult } from "./notifier";
+import { createWhatsAppNotifier, type WhatsAppNotifyInput } from "./whatsapp-notifier";
 import { sampleVars } from "./samples";
 import { ownerEmailSchema, templateSchema, testSendSchema, toggleSchema } from "./schema";
 
@@ -59,6 +61,59 @@ export function notifyWithContent(
   input: NotifyInput,
 ): Promise<NotifyResult> {
   return notifier({ loadTemplate: async () => ({ ...content, enabled: true }) })(key, input);
+}
+
+/**
+ * WhatsApp order update (transactional, to the order's mobile) — only while the owner has
+ * WhatsApp updates on. Never throws; logged in the outbox under channel `whatsapp`.
+ */
+export function notifyWhatsApp(key: string, input: WhatsAppNotifyInput): Promise<NotifyResult> {
+  const admin = createAdminClient();
+  return createWhatsAppNotifier({
+    enabled: async () => {
+      const { data } = await admin
+        .from("settings")
+        .select("whatsapp_updates_enabled")
+        .eq("id", 1)
+        .maybeSingle();
+      return Boolean(data?.whatsapp_updates_enabled);
+    },
+    loadTemplate: async (k) => {
+      const { data, error } = await admin
+        .from("notification_templates")
+        .select("subject, body, enabled")
+        .eq("key", k)
+        .eq("channel", "whatsapp")
+        .maybeSingle();
+      if (error) throw new Error(`template load failed: ${error.message}`);
+      return data;
+    },
+    sentSince: async (k, dedupeKey, since) => {
+      const { count } = await admin
+        .from("notification_log")
+        .select("id", { count: "exact", head: true })
+        .eq("template_key", k)
+        .eq("dedupe_key", dedupeKey)
+        .neq("status", "failed")
+        .gte("created_at", since.toISOString());
+      return (count ?? 0) > 0;
+    },
+    writeLog: async (row) => {
+      const { error } = await admin.from("notification_log").insert(row);
+      if (error) throw new Error(error.message);
+    },
+    provider: messagingProvider,
+  })(key, input);
+}
+
+/** Owner switch for WhatsApp order updates (Settings → Notifications). */
+export async function setWhatsAppUpdates(on: boolean) {
+  const staff = await assertPermission("settings.manage");
+  const { error } = await createAdminClient()
+    .from("settings")
+    .update({ whatsapp_updates_enabled: on, updated_by: staff.userId })
+    .eq("id", 1);
+  if (error) throw new Error(error.message);
 }
 
 /** The owner's alert address, or null when not set. */
