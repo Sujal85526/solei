@@ -33,7 +33,10 @@ const productSelect = `
   category:categories (slug, name),
   destination:destinations (slug, name, region, mood, accent_colour),
   product_images (url, alt, sort),
-  product_variants (id, label, size_ml, sku, price_fils, active, sort)
+  product_variants (id, label, size_ml, sku, price_fils, active, sort),
+  min_order_qty,
+  product_option_groups (id, name, kind, required, max_length, sort,
+    product_options (id, label, price_delta_fils, active, sort))
 ` as const;
 
 function productQuery() {
@@ -83,6 +86,20 @@ function toStoreProducts(rows: ProductRow[]): StoreProduct[] {
           ? p.product_images.map((i) => ({ url: i.url, alt: i.alt }))
           : [{ url: FALLBACK_IMAGE, alt: "" }],
         variants,
+        optionGroups: [...(p.product_option_groups ?? [])]
+          .sort((a, b) => a.sort - b.sort)
+          .map((g) => ({
+            id: g.id,
+            name: g.name,
+            kind: g.kind,
+            required: g.required,
+            maxLength: g.max_length,
+            options: [...g.product_options]
+              .filter((o) => o.active)
+              .sort((a, b) => a.sort - b.sort)
+              .map((o) => ({ id: o.id, label: o.label, priceDeltaFils: o.price_delta_fils })),
+          })),
+        minOrderQty: p.min_order_qty ?? 1,
       },
     ];
   });

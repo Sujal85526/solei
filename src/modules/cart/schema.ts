@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { Constants } from "@/lib/database.types";
+import { lineOptionsSchema } from "@/modules/catalog/options";
 
 /** Upper bound per line — a sanity cap against tampered storage, not a business rule. */
 export const MAX_LINE_QTY = 99;
@@ -13,6 +14,8 @@ export type Emirate = z.infer<typeof emirateSchema>;
 export const cartLineSchema = z.object({
   variantId: z.guid(),
   qty: z.int().min(1).max(MAX_LINE_QTY),
+  /** Giveaways: the chosen options (absent for ordinary products). */
+  options: lineOptionsSchema.optional(),
 });
 export type CartLine = z.infer<typeof cartLineSchema>;
 

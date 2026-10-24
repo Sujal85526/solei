@@ -140,3 +140,33 @@ export async function deleteImageAction(imageId: string): Promise<ActionResult> 
     return fail(e);
   }
 }
+
+export async function saveOptionGroupAction(input: unknown): Promise<ActionResult<string>> {
+  try {
+    const id = await catalog.saveOptionGroup(input);
+    refreshCatalog();
+    return ok(id, "Options saved.");
+  } catch (e) {
+    return fail(e);
+  }
+}
+
+export async function deleteOptionGroupAction(groupId: string): Promise<ActionResult> {
+  try {
+    await catalog.deleteOptionGroup(groupId);
+    refreshCatalog();
+    return ok(undefined, "Choice removed.");
+  } catch (e) {
+    return fail(e);
+  }
+}
+
+export async function setMinOrderQtyAction(_: unknown, fd: FormData): Promise<ActionResult> {
+  try {
+    await catalog.setMinOrderQty(String(fd.get("productId")), Number(fd.get("minOrderQty")));
+    refreshCatalog();
+    return ok(undefined, "Minimum saved.");
+  } catch (e) {
+    return fail(e);
+  }
+}

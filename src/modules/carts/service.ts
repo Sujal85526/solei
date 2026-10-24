@@ -7,13 +7,30 @@ import { formatAED } from "@/lib/money";
 import { createAdminClient } from "@/lib/supabase/server";
 import { currentAccount } from "@/modules/account/service";
 import { notify } from "@/modules/notifications/service";
+import {
+  describeChoices,
+  fromDbOptions,
+  toDbOptions,
+  unitPriceWithOptions,
+  type LineOptions,
+} from "@/modules/catalog/options";
 import { formatOrderLines } from "@/modules/orders/format";
 import { fetchProductsForVariants } from "@/modules/storefront/queries";
 import { cartToken, verifyCartToken, type CartLinkPurpose } from "./links";
 import { getCartReminderSettings } from "./queries";
 import { cartReminderSettingsSchema, savedLinesSchema } from "./schema";
 
-type StoredLine = { variant_id: string; qty: number };
+type StoredLine = {
+  variant_id: string;
+  qty: number;
+  options?: { group_id: string; option_ids?: string[]; text?: string | null }[];
+};
+type SavedLine = { variantId: string; qty: number; options?: LineOptions };
+const fromStored = (l: StoredLine): SavedLine => ({
+  variantId: l.variant_id,
+  qty: l.qty,
+  ...(l.options?.length ? { options: fromDbOptions(l.options) } : {}),
+});
 
 export const cartLink = (cartId: string, purpose: CartLinkPurpose) =>
   `${publicEnv.NEXT_PUBLIC_SITE_URL}/cart/${purpose === "restore" ? "restore" : "stop"}?c=${cartId}&t=${cartToken(cartId, purpose, cartLinkSecret())}`;
@@ -28,13 +45,17 @@ export async function syncMyCart(input: unknown): Promise<void> {
     p_user: account.user.id,
     p_email: account.user.email,
     p_name: name,
-    p_lines: lines.map((l) => ({ variant_id: l.variantId, qty: l.qty })),
+    p_lines: lines.map((l) => ({
+      variant_id: l.variantId,
+      qty: l.qty,
+      options: toDbOptions(l.options),
+    })),
   });
   if (error) throw new Error(`cart_sync failed: ${error.message}`);
 }
 
 /** The signed-in customer's saved bag (to bring it back on another device after signing in). */
-export async function mySavedCart(): Promise<{ variantId: string; qty: number }[]> {
+export async function mySavedCart(): Promise<SavedLine[]> {
   const account = await currentAccount();
   if (!account) return [];
   const { data } = await createAdminClient()
@@ -43,17 +64,11 @@ export async function mySavedCart(): Promise<{ variantId: string; qty: number }[
     .eq("user_id", account.user.id)
     .eq("status", "open")
     .maybeSingle();
-  return ((data?.lines ?? []) as StoredLine[]).map((l) => ({
-    variantId: l.variant_id,
-    qty: l.qty,
-  }));
+  return ((data?.lines ?? []) as StoredLine[]).map(fromStored);
 }
 
 /** "Return to your bag" from the email: the bag's lines (empty once it was bought). */
-export async function restoreCartFromLink(
-  cartId: string,
-  token: string,
-): Promise<{ variantId: string; qty: number }[]> {
+export async function restoreCartFromLink(cartId: string, token: string): Promise<SavedLine[]> {
   if (!verifyCartToken(cartId, "restore", token, cartLinkSecret())) {
     throw new UserError("This link isn't valid any more.");
   }
@@ -61,7 +76,7 @@ export async function restoreCartFromLink(
   const { data } = await admin.from("carts").select("status, lines").eq("id", cartId).maybeSingle();
   if (!data || data.status !== "open") return [];
   await admin.from("carts").update({ link_opened_at: new Date().toISOString() }).eq("id", cartId);
-  return (data.lines as StoredLine[]).map((l) => ({ variantId: l.variant_id, qty: l.qty }));
+  return (data.lines as StoredLine[]).map(fromStored);
 }
 
 /** "Turn them off" from the email (a button on the page, so link scanners can't trigger it). */
@@ -122,9 +137,20 @@ export async function sendDueCartReminders(): Promise<{ sent: number; skipped: n
       return [
         {
           product_name: m.product.name,
-          variant_label: m.product.variants.length > 1 ? m.variant.label : null,
+          variant_label:
+            [
+              m.product.variants.length > 1 ? m.variant.label : "",
+              describeChoices(m.product.optionGroups, fromDbOptions(l.options)),
+            ]
+              .filter(Boolean)
+              .join(" · ") || null,
           qty: l.qty,
-          line_total_fils: m.variant.priceFils * l.qty,
+          line_total_fils:
+            unitPriceWithOptions(
+              m.variant.priceFils,
+              m.product.optionGroups,
+              fromDbOptions(l.options),
+            ) * l.qty,
         },
       ];
     });

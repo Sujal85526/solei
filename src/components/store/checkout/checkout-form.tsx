@@ -315,7 +315,7 @@ function DeliveryForm({
       });
       onDetails(fresh);
       const allowed = new Map(
-        fresh.lines.filter((l) => l.status !== "ok").map((l) => [l.variantId, l.qty]),
+        fresh.lines.filter((l) => l.status !== "ok").map((l) => [l.key, l.qty]),
       );
       if (allowed.size) cart.reconcile(allowed);
     });
@@ -484,7 +484,7 @@ function Summary({
       </h2>
       <ul className="flex flex-col gap-4">
         {lines.map((l) => (
-          <li key={l.variantId} className="flex items-center gap-4">
+          <li key={l.key} className="flex items-center gap-4">
             <div className="border-border relative size-16 shrink-0 rounded-sm border bg-white">
               {l.product?.image ? (
                 <Image
@@ -503,6 +503,9 @@ function Summary({
               <p className="font-display truncate text-lg leading-tight">{l.product?.name}</p>
               {l.hasVariants ? (
                 <p className="text-muted-foreground text-xs">{l.variantLabel}</p>
+              ) : null}
+              {l.optionsText ? (
+                <p className="text-muted-foreground text-xs">{l.optionsText}</p>
               ) : null}
             </div>
             <p className="numeric text-sm">{formatAED(l.lineTotalFils)}</p>

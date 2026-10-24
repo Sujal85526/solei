@@ -5,6 +5,7 @@ import { UserError } from "@/lib/action-result";
 import { createAdminClient } from "@/lib/supabase/server";
 import { currentAccount, rememberOrder, saveAddress } from "@/modules/account/service";
 import { resolveCart } from "@/modules/cart/details";
+import { toDbOptions } from "@/modules/catalog/options";
 import { checkCoupon } from "@/modules/coupons/queries";
 import { normaliseCode, refusalMessage } from "@/modules/coupons/schema";
 import { checkGiftCard } from "@/modules/gift-cards/queries";
@@ -117,6 +118,7 @@ export async function placeOrder(
           variant_id: l.variantId,
           qty: l.qty,
           unit_price_fils: l.unitPriceFils,
+          options: toDbOptions(l.options),
         })),
         subtotal_fils: pricing.subtotalFils,
         coupon_code: code || null,
@@ -166,7 +168,7 @@ export async function placeOrder(
 
   const lines: CheckoutLine[] = cart.lines.map((l) => ({
     name: l.product?.name ?? "Solei",
-    description: l.variantLabel || undefined,
+    description: [l.variantLabel, l.optionsText].filter(Boolean).join(" · ") || undefined,
     unitAmountFils: l.unitPriceFils,
     quantity: l.qty,
     imageUrl: l.product?.image?.url.startsWith("http") ? l.product.image.url : undefined,

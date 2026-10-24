@@ -85,7 +85,7 @@ export async function getOrder(id: string) {
     supabase
       .from("order_lines")
       .select(
-        "id, variant_id, product_name, variant_label, sku, qty, list_price_fils, unit_price_fils, price_override_reason, discount_fils, line_total_fils, is_reward, created_at, order_line_costs(unit_cost_fils)",
+        "id, variant_id, product_name, variant_label, sku, qty, list_price_fils, unit_price_fils, price_override_reason, discount_fils, line_total_fils, is_reward, options, created_at, order_line_costs(unit_cost_fils)",
       )
       .eq("order_id", id)
       .order("created_at"),

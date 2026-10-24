@@ -50,7 +50,7 @@ export function useCartDetails({
             });
             // Clamp / drop lines the server can't fulfil; this re-runs the effect once.
             const allowed = new Map(
-              res.lines.filter((l) => l.status !== "ok").map((l) => [l.variantId, l.qty]),
+              res.lines.filter((l) => l.status !== "ok").map((l) => [l.key, l.qty]),
             );
             if (allowed.size) cart.reconcile(allowed);
           } catch {
@@ -64,15 +64,13 @@ export function useCartDetails({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [key, attempt, enabled]);
 
-  const byVariant = useMemo(
-    () => new Map(details?.lines.map((l) => [l.variantId, l]) ?? []),
-    [details],
-  );
+  /** Server details per cart line (by line key). */
+  const byKey = useMemo(() => new Map(details?.lines.map((l) => [l.key, l]) ?? []), [details]);
 
   return {
     state,
     details,
-    byVariant,
+    byKey,
     error,
     notices,
     /** True while totals are being (re)computed. */

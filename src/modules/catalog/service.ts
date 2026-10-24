@@ -12,6 +12,8 @@ import {
   variantSchema,
 } from "./schema";
 
+import { optionGroupFormSchema } from "./options";
+
 const PRODUCT_BUCKET = "products";
 
 function uniqueViolation(error: { code?: string; message: string }, what: string): never {
@@ -203,4 +205,54 @@ export async function deleteImage(imageId: string) {
   const { error } = await supabase.from("product_images").delete().eq("id", imageId);
   if (error) throw new Error(error.message);
   if (img?.storage_path) await supabase.storage.from(PRODUCT_BUCKET).remove([img.storage_path]);
+}
+
+/** Save a giveaway option group with its options (one transaction in the database). */
+export async function saveOptionGroup(input: unknown): Promise<string> {
+  await assertPermission("catalog.manage");
+  const v = optionGroupFormSchema.parse(input);
+  const supabase = await createClient();
+  const { data, error } = await supabase.rpc("product_option_group_save", {
+    p: {
+      id: v.id ?? null,
+      product_id: v.productId,
+      name: v.name,
+      kind: v.kind,
+      required: v.required,
+      max_length: v.maxLength,
+      options: v.options.map((o) => ({
+        id: o.id ?? null,
+        label: o.label,
+        price_delta_fils: o.priceDelta,
+        active: o.active,
+      })),
+    },
+  });
+  if (error) {
+    if (error.code === "22023")
+      throw new UserError(error.message.charAt(0).toUpperCase() + error.message.slice(1));
+    throw new Error(error.message);
+  }
+  return data;
+}
+
+/** Orders keep what was chosen (their own snapshot), so a group can go at any time. */
+export async function deleteOptionGroup(groupId: string) {
+  await assertPermission("catalog.manage");
+  const supabase = await createClient();
+  const { error } = await supabase.from("product_option_groups").delete().eq("id", groupId);
+  if (error) throw new Error(error.message);
+}
+
+export async function setMinOrderQty(productId: string, qty: number) {
+  await assertPermission("catalog.manage");
+  if (!Number.isSafeInteger(qty) || qty < 1 || qty > 10_000) {
+    throw new UserError("A whole number, 1 or more.");
+  }
+  const supabase = await createClient();
+  const { error } = await supabase
+    .from("products")
+    .update({ min_order_qty: qty })
+    .eq("id", productId);
+  if (error) throw new Error(error.message);
 }

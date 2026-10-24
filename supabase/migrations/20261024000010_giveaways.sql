@@ -162,6 +162,65 @@ begin
 end;
 $$;
 
+/*
+  Save one option group with its options in one go (catalog.manage). p = { id?, product_id, name,
+  kind, required, max_length, options: [{ id?, label, price_delta_fils, active }] } — options not in
+  the list are removed (orders keep their own snapshot). Returns the group id.
+*/
+create or replace function public.product_option_group_save(p jsonb)
+returns uuid
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  v_id uuid := nullif(p ->> 'id', '')::uuid;
+  v_kind public.option_group_kind := (p ->> 'kind')::public.option_group_kind;
+  v_keep uuid[];
+  o jsonb;
+  i int := 0;
+begin
+  perform public.require_permission('catalog.manage');
+  if v_kind <> 'text' and jsonb_array_length(coalesce(p -> 'options', '[]'::jsonb)) = 0 then
+    raise exception 'add at least one option' using errcode = '22023';
+  end if;
+  if v_id is null then
+    insert into product_option_groups (product_id, name, kind, required, max_length, sort)
+    values ((p ->> 'product_id')::uuid, trim(p ->> 'name'), v_kind, (p ->> 'required')::boolean,
+            coalesce((p ->> 'max_length')::int, 40),
+            coalesce((select max(sort) + 1 from product_option_groups where product_id = (p ->> 'product_id')::uuid), 0))
+    returning id into v_id;
+  else
+    update product_option_groups set name = trim(p ->> 'name'), kind = v_kind,
+           required = (p ->> 'required')::boolean, max_length = coalesce((p ->> 'max_length')::int, 40)
+     where id = v_id;
+    if not found then raise exception 'option group not found' using errcode = 'P0002'; end if;
+  end if;
+
+  if v_kind = 'text' then
+    delete from product_options where group_id = v_id;
+    return v_id;
+  end if;
+  select coalesce(array_agg((x ->> 'id')::uuid) filter (where nullif(x ->> 'id', '') is not null), '{}')
+    into v_keep from jsonb_array_elements(p -> 'options') x;
+  delete from product_options where group_id = v_id and not (id = any (v_keep));
+  for o in select * from jsonb_array_elements(p -> 'options') loop
+    if nullif(o ->> 'id', '') is null then
+      insert into product_options (group_id, label, price_delta_fils, active, sort)
+      values (v_id, trim(o ->> 'label'), (o ->> 'price_delta_fils')::int, coalesce((o ->> 'active')::boolean, true), i);
+    else
+      update product_options set label = trim(o ->> 'label'), price_delta_fils = (o ->> 'price_delta_fils')::int,
+             active = coalesce((o ->> 'active')::boolean, true), sort = i
+       where id = (o ->> 'id')::uuid and group_id = v_id;
+    end if;
+    i := i + 1;
+  end loop;
+  return v_id;
+end;
+$$;
+revoke all on function public.product_option_group_save(jsonb) from public, anon;
+grant execute on function public.product_option_group_save(jsonb) to authenticated;
+
 revoke all on function public.line_unit_price_fils(uuid, jsonb) from public, anon, authenticated;
 revoke all on function public.line_options_check(uuid, jsonb) from public, anon, authenticated;
 

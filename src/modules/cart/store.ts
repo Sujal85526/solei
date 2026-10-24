@@ -12,6 +12,7 @@ import {
   type CartState,
 } from "./logic";
 import type { Emirate } from "./schema";
+import type { LineOptions } from "@/modules/catalog/options";
 
 /**
  * Client cart persisted in localStorage and read with `useSyncExternalStore` — no provider, works
@@ -77,9 +78,11 @@ export const getServerSnapshot = (): CartState | null => null;
 
 export const cart = {
   get: read,
-  add: (variantId: string, qty = 1) => write(addLine(read(), variantId, qty)),
-  setQty: (variantId: string, qty: number) => write(setQty(read(), variantId, qty)),
-  remove: (variantId: string) => write(removeLine(read(), variantId)),
+  add: (variantId: string, qty = 1, options?: LineOptions) =>
+    write(addLine(read(), variantId, qty, options)),
+  /** By line key (the variant id for ordinary lines). */
+  setQty: (key: string, qty: number) => write(setQty(read(), key, qty)),
+  remove: (key: string) => write(removeLine(read(), key)),
   setEmirate: (emirate: Emirate | null) => write(setEmirate(read(), emirate)),
   reconcile: (allowed: Map<string, number>) => write(reconcile(read(), allowed)),
   clear: () => write({ ...read(), lines: [] }),

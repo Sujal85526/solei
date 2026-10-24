@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { lineOptionsSchema } from "@/modules/catalog/options";
 
 /** Owner rules for bag reminders (Admin → Abandoned carts → Settings). */
 export type CartReminderSettings = {
@@ -44,7 +45,13 @@ export const cartReminderSettingsSchema = z
 
 /** Lines as stored / synced. */
 export const savedLinesSchema = z
-  .array(z.object({ variantId: z.uuid(), qty: z.number().int().min(1).max(99) }))
+  .array(
+    z.object({
+      variantId: z.uuid(),
+      qty: z.number().int().min(1).max(99),
+      options: lineOptionsSchema.optional(),
+    }),
+  )
   .max(50);
 
 export type CartRowStatus =

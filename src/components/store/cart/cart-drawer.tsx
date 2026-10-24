@@ -9,6 +9,7 @@ import { t } from "@/content/en";
 import { formatAED } from "@/lib/money";
 import { cn } from "@/lib/utils";
 import type { CartDetailLine } from "@/modules/cart/details";
+import { keyOf } from "@/modules/cart/logic";
 import { cartDrawer, useCartDrawerOpen } from "@/modules/cart/drawer";
 import { MAX_LINE_QTY } from "@/modules/cart/schema";
 import { cart } from "@/modules/cart/store";
@@ -24,7 +25,7 @@ import { QtyStepper } from "./qty-stepper";
  */
 export function CartDrawer() {
   const open = useCartDrawerOpen();
-  const { state, details, byVariant, notices, stale } = useCartDetails({
+  const { state, details, byKey, notices, stale } = useCartDetails({
     enabled: open,
     describe: noticesFor,
   });
@@ -104,11 +105,11 @@ export function CartDrawer() {
           <ul className="divide-burgundy/15 border-burgundy/15 mt-5 divide-y border-b">
             {state!.lines.map((line, i) => (
               <li
-                key={line.variantId}
+                key={keyOf(line)}
                 className="drawer-item"
                 style={{ "--i": i } as React.CSSProperties}
               >
-                <DrawerLine qty={line.qty} detail={byVariant.get(line.variantId)} />
+                <DrawerLine qty={line.qty} detail={byKey.get(keyOf(line))} />
               </li>
             ))}
           </ul>
@@ -212,6 +213,9 @@ function DrawerLine({ qty, detail }: { qty: number; detail: CartDetailLine | und
             <p className="text-burgundy/60 mt-0.5 text-xs">
               {[p.typeLabel, detail.variantLabel].filter(Boolean).join(" · ")}
             </p>
+            {detail.optionsText ? (
+              <p className="text-burgundy/60 mt-0.5 text-xs">{detail.optionsText}</p>
+            ) : null}
           </div>
           <p className="numeric text-burgundy shrink-0 text-sm font-medium">
             {formatAED(detail.unitPriceFils * qty)}
@@ -220,15 +224,16 @@ function DrawerLine({ qty, detail }: { qty: number; detail: CartDetailLine | und
         <div className="mt-3 flex items-center justify-between gap-3">
           <QtyStepper
             value={Math.min(qty, max)}
+            min={Math.min(detail.minQty, max)}
             max={max}
             size="md"
-            onChange={(n) => cart.setQty(detail.variantId, n)}
+            onChange={(n) => cart.setQty(detail.key, n)}
             shape="square"
             label={`${t.product.quantity}: ${p.name}`}
           />
           <button
             type="button"
-            onClick={() => cart.remove(detail.variantId)}
+            onClick={() => cart.remove(detail.key)}
             aria-label={t.cart.removeItem(p.name)}
             className="text-burgundy/70 hover:text-burgundy -me-2 flex size-10 items-center justify-center transition-colors"
           >

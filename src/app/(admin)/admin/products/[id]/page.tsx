@@ -4,6 +4,7 @@ import { notFound } from "next/navigation";
 import { ArrowLeft, ExternalLink } from "lucide-react";
 import { ConfirmButton } from "@/components/admin/confirm-button";
 import { ImageManager } from "@/components/admin/catalog/image-manager";
+import { OptionsEditor } from "@/components/admin/catalog/options-editor";
 import { ProductForm } from "@/components/admin/catalog/product-form";
 import { VariantsEditor } from "@/components/admin/catalog/variants-editor";
 import { PageHeader } from "@/components/admin/page-header";
@@ -92,6 +93,17 @@ export default async function ProductPage({ params }: PageProps<"/admin/products
         ) : (
           <p className="text-muted-foreground text-sm">You can view but not edit variants.</p>
         )}
+      </AdminSection>
+      <AdminSection
+        title="Customisation"
+        description="For giveaways: choices the customer makes (ribbon, box, a name on the tag) and the minimum per order."
+      >
+        <OptionsEditor
+          productId={product.id}
+          groups={product.product_option_groups}
+          minOrderQty={product.min_order_qty}
+          canManage={canManage}
+        />
       </AdminSection>
       <AdminSection title="Photos">
         {canManage ? (

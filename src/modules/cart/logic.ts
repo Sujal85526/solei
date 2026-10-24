@@ -1,3 +1,4 @@
+import { lineKey, type LineOptions } from "@/modules/catalog/options";
 import {
   cartLineSchema,
   emirateSchema,
@@ -22,30 +23,51 @@ export const EMPTY_CART: CartState = Object.freeze({ lines: [], emirate: null })
 
 const clampQty = (qty: number) => Math.max(0, Math.min(MAX_LINE_QTY, Math.trunc(qty)));
 
-/** Add `qty` units of a variant, merging with an existing line. */
-export function addLine(state: CartState, variantId: string, qty = 1): CartState {
+/** A line's identity: the variant, plus its options for customised products. */
+export const keyOf = (line: Pick<CartLine, "variantId" | "options">) =>
+  lineKey(line.variantId, line.options);
+
+/**
+ * Add `qty` units of a variant (with its chosen options, for giveaways), merging with the same
+ * line if it's already in the cart.
+ */
+export function addLine(
+  state: CartState,
+  variantId: string,
+  qty = 1,
+  options?: LineOptions,
+): CartState {
   if (qty <= 0) return state;
-  const existing = state.lines.find((l) => l.variantId === variantId);
-  if (existing) return setQty(state, variantId, existing.qty + qty);
+  const opts = options?.length ? options : undefined;
+  const key = lineKey(variantId, opts);
+  const existing = state.lines.find((l) => keyOf(l) === key);
+  if (existing) return setQty(state, key, existing.qty + qty);
   if (state.lines.length >= MAX_LINES) return state;
   const next = clampQty(qty);
-  return next ? { ...state, lines: [...state.lines, { variantId, qty: next }] } : state;
-}
-
-/** Set a line's quantity; 0 (or less) removes it. */
-export function setQty(state: CartState, variantId: string, qty: number): CartState {
-  const next = clampQty(qty);
-  if (next === 0) return removeLine(state, variantId);
-  if (!state.lines.some((l) => l.variantId === variantId)) return state;
+  if (!next) return state;
   return {
     ...state,
-    lines: state.lines.map((l) => (l.variantId === variantId ? { ...l, qty: next } : l)),
+    lines: [
+      ...state.lines,
+      opts ? { variantId, qty: next, options: opts } : { variantId, qty: next },
+    ],
   };
 }
 
-export function removeLine(state: CartState, variantId: string): CartState {
-  if (!state.lines.some((l) => l.variantId === variantId)) return state;
-  return { ...state, lines: state.lines.filter((l) => l.variantId !== variantId) };
+/** Set a line's quantity (by its key — the variant id for ordinary lines); 0 removes it. */
+export function setQty(state: CartState, key: string, qty: number): CartState {
+  const next = clampQty(qty);
+  if (next === 0) return removeLine(state, key);
+  if (!state.lines.some((l) => keyOf(l) === key)) return state;
+  return {
+    ...state,
+    lines: state.lines.map((l) => (keyOf(l) === key ? { ...l, qty: next } : l)),
+  };
+}
+
+export function removeLine(state: CartState, key: string): CartState {
+  if (!state.lines.some((l) => keyOf(l) === key)) return state;
+  return { ...state, lines: state.lines.filter((l) => keyOf(l) !== key) };
 }
 
 export function setEmirate(state: CartState, emirate: Emirate | null): CartState {
@@ -53,13 +75,13 @@ export function setEmirate(state: CartState, emirate: Emirate | null): CartState
 }
 
 /**
- * Reconcile the cart with the server's view: `allowed` maps each variant to the quantity it may
- * keep (0 = remove). Variants missing from the map are left untouched.
+ * Reconcile the cart with the server's view: `allowed` maps each line key to the quantity it may
+ * keep (0 = remove). Lines missing from the map are left untouched.
  */
 export function reconcile(state: CartState, allowed: Map<string, number>): CartState {
   let changed = false;
   const lines = state.lines.flatMap((l) => {
-    const max = allowed.get(l.variantId);
+    const max = allowed.get(keyOf(l));
     if (max === undefined || l.qty <= max) return [l];
     changed = true;
     return max > 0 ? [{ ...l, qty: max }] : [];
@@ -71,8 +93,9 @@ export function itemCount(state: CartState): number {
   return state.lines.reduce((sum, l) => sum + l.qty, 0);
 }
 
+/** Units of a variant in the cart, across all its lines. */
 export function qtyOf(state: CartState, variantId: string): number {
-  return state.lines.find((l) => l.variantId === variantId)?.qty ?? 0;
+  return state.lines.filter((l) => l.variantId === variantId).reduce((s, l) => s + l.qty, 0);
 }
 
 /**
@@ -96,7 +119,8 @@ export function parseCart(raw: string | null): CartState {
   if (Array.isArray(obj.lines)) {
     for (const item of obj.lines) {
       const line = cartLineSchema.safeParse(item);
-      if (line.success) state = addLine(state, line.data.variantId, line.data.qty);
+      if (line.success)
+        state = addLine(state, line.data.variantId, line.data.qty, line.data.options);
     }
   }
   return state;

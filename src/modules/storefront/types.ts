@@ -1,5 +1,6 @@
 import type { Fils } from "@/lib/money";
 import type { Emirate } from "@/modules/cart/schema";
+import type { OptionGroup } from "@/modules/catalog/options";
 
 /** Storefront read models (public, serialisable — safe to pass to client components). */
 
@@ -33,6 +34,10 @@ export type StoreProduct = {
   images: StoreImage[];
   /** Active variants, sorted; always at least one. */
   variants: StoreVariant[];
+  /** Giveaways: choices the customer makes (empty for ordinary products). */
+  optionGroups: OptionGroup[];
+  /** Fewest pieces per order (1 for ordinary products). */
+  minOrderQty: number;
 };
 
 export type StoreCategory = {

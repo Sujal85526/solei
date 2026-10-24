@@ -61,6 +61,8 @@ export function fallbackProducts(): StoreProduct[] {
           priceFils: seedPrices[d.category],
         },
       ],
+      optionGroups: [],
+      minOrderQty: 1,
     };
   });
 }

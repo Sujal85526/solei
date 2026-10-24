@@ -1,4 +1,5 @@
 import { formatAED } from "@/lib/money";
+import { describeSnapshot, type OptionsSnapshot } from "@/modules/catalog/options";
 
 export type FormattableLine = {
   product_name: string;
@@ -6,11 +7,14 @@ export type FormattableLine = {
   qty: number;
   line_total_fils: number;
   is_reward?: boolean | null;
+  /** Giveaways: what the customer chose (order_lines.options). */
+  options?: unknown;
 };
 
 /** "2 × Capri Perfume · 50 ml — AED 560" (one line per order line) for emails and summaries. */
 export function formatOrderLine(l: FormattableLine): string {
-  const name = l.variant_label ? `${l.product_name} · ${l.variant_label}` : l.product_name;
+  const opts = describeSnapshot(l.options as OptionsSnapshot | null | undefined);
+  const name = [l.product_name, l.variant_label, opts].filter(Boolean).join(" · ");
   const price = l.is_reward ? "Reward" : formatAED(l.line_total_fils);
   return `${l.qty} × ${name} — ${price}`;
 }

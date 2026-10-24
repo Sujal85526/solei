@@ -27,7 +27,7 @@ export function CartSync() {
     if (state.lines.length) return;
     mySavedCartAction()
       .then((lines) => {
-        for (const l of lines) cart.add(l.variantId, l.qty);
+        for (const l of lines) cart.add(l.variantId, l.qty, l.options);
       })
       .catch(() => {});
   }, [signedIn, state]);
@@ -39,7 +39,11 @@ export function CartSync() {
       last.current = key;
       return;
     }
-    const lines = state.lines.map((l) => ({ variantId: l.variantId, qty: l.qty }));
+    const lines = state.lines.map((l) => ({
+      variantId: l.variantId,
+      qty: l.qty,
+      ...(l.options ? { options: l.options } : {}),
+    }));
     const id = window.setTimeout(() => {
       last.current = key;
       void syncCartAction(lines);

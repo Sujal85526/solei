@@ -7,6 +7,13 @@ import type {
   StoreImage,
   StoreProduct,
 } from "@/modules/storefront/types";
+import {
+  describeChoices,
+  optionsProblem,
+  unitPriceWithOptions,
+  type LineOptions,
+} from "@/modules/catalog/options";
+import { keyOf } from "./logic";
 import type { CartDetailsInput, Emirate } from "./schema";
 
 /**
@@ -25,7 +32,14 @@ export type CartLineStatus =
   | "unavailable";
 
 export type CartDetailLine = {
+  /** Line identity (variant id, plus options for customised products). */
+  key: string;
   variantId: string;
+  /** Giveaways: the choices, and the same in words ("Ribbon: Gold · Name on the tag: Sara"). */
+  options?: LineOptions;
+  optionsText: string;
+  /** Fewest pieces of this product per order (1 for ordinary products). */
+  minQty: number;
   requestedQty: number;
   /** Quantity that can actually be bought (0 for sold out / unavailable). */
   qty: number;
@@ -97,11 +111,18 @@ export function resolveCart(
     products.flatMap((p) => p.variants.map((v) => [v.id, { product: p, variant: v }] as const)),
   );
 
+  // Stock is per variant: lines of the same variant (different options) share it.
+  const used = new Map<string, number>();
   const lines = input.lines.map((line): CartDetailLine => {
     const match = byVariant.get(line.variantId);
+    const key = keyOf(line);
     if (!match) {
       return {
+        key,
         variantId: line.variantId,
+        options: line.options,
+        optionsText: "",
+        minQty: 1,
         requestedQty: line.qty,
         qty: 0,
         available: 0,
@@ -114,11 +135,31 @@ export function resolveCart(
       };
     }
     const { product, variant } = match;
-    const available = Math.max(0, availability[variant.id] ?? 0);
+    // Options the product no longer offers (or changed): the line can't be bought as it is.
+    const optionsOk = optionsProblem(product.optionGroups, line.options) === null;
+    const available = optionsOk
+      ? Math.max(0, (availability[variant.id] ?? 0) - (used.get(variant.id) ?? 0))
+      : 0;
     const qty = Math.min(line.qty, available);
-    const status: CartLineStatus = available === 0 ? "sold_out" : qty < line.qty ? "clamped" : "ok";
+    used.set(variant.id, (used.get(variant.id) ?? 0) + qty);
+    const status: CartLineStatus = !optionsOk
+      ? "unavailable"
+      : available === 0
+        ? "sold_out"
+        : qty < line.qty
+          ? "clamped"
+          : "ok";
+    const unitPriceFils = unitPriceWithOptions(
+      variant.priceFils,
+      product.optionGroups,
+      line.options,
+    );
     return {
+      key,
       variantId: line.variantId,
+      options: line.options,
+      optionsText: describeChoices(product.optionGroups, line.options),
+      minQty: product.minOrderQty,
       requestedQty: line.qty,
       qty,
       available,
@@ -133,8 +174,8 @@ export function resolveCart(
       },
       variantLabel: variant.label,
       hasVariants: product.variants.length > 1,
-      unitPriceFils: variant.priceFils,
-      lineTotalFils: variant.priceFils * qty,
+      unitPriceFils,
+      lineTotalFils: unitPriceFils * qty,
     };
   });
 

@@ -1,5 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
+import { Plus } from "lucide-react";
 import { QuickAdd } from "@/components/store/cart/quick-add";
 import { t } from "@/content/en";
 import { formatAED } from "@/lib/money";
@@ -62,7 +63,16 @@ export function ProductCard({
             {varies ? `${t.shop.from} ` : ""}
             {formatAED(Math.min(...prices))}
           </span>
-          {soldOut ? null : (
+          {soldOut ? null : product.optionGroups.length || product.minOrderQty > 1 ? (
+            // Giveaways need choices (and a quantity) first: the + opens the product.
+            <Link
+              href={`/products/${product.slug}`}
+              aria-label={`${t.product.customise}: ${product.name}`}
+              className="border-primary/40 text-primary hover:bg-primary hover:text-primary-foreground z-10 flex size-10 shrink-0 items-center justify-center rounded-full border transition-colors duration-300"
+            >
+              <Plus className="size-4" strokeWidth={1.25} />
+            </Link>
+          ) : (
             <QuickAdd variantId={product.variants[0].id} name={product.name} tone="outline" />
           )}
         </div>

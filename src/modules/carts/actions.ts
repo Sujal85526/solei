@@ -30,7 +30,7 @@ export async function mySavedCartAction() {
 export async function restoreCartAction(
   cartId: string,
   token: string,
-): Promise<ActionResult<{ variantId: string; qty: number }[]>> {
+): Promise<ActionResult<Awaited<ReturnType<typeof restoreCartFromLink>>>> {
   try {
     return ok(await restoreCartFromLink(cartId, token));
   } catch (e) {

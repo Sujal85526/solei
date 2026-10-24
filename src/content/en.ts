@@ -73,6 +73,10 @@ export const en = {
     breadcrumb: "Breadcrumb",
   },
   product: {
+    optional: "optional",
+    each: "each",
+    minPieces: (n: number) => `Minimum ${n} pieces per order.`,
+    customise: "Choose options",
     notes: "The notes",
     notesTop: "Top",
     notesHeart: "Heart",

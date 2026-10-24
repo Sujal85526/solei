@@ -2,6 +2,7 @@ import "server-only";
 import { assertPermission } from "@/lib/auth/session";
 import type { Database } from "@/lib/database.types";
 import { createAdminClient, createClient } from "@/lib/supabase/server";
+import { toDbOptions, type LineOptions } from "@/modules/catalog/options";
 import { storedDays, type Coupon, type CouponRefusal } from "./schema";
 
 type Row = Database["public"]["Tables"]["coupons"]["Row"];
@@ -117,12 +118,16 @@ export type CouponCheck =
  */
 export async function checkCoupon(
   code: string,
-  lines: { variantId: string; qty: number }[],
+  lines: { variantId: string; qty: number; options?: LineOptions }[],
   email: string | null,
 ): Promise<CouponCheck> {
   const { data, error } = await createAdminClient().rpc("coupon_evaluate", {
     p_code: code,
-    p_lines: lines.map((l) => ({ variant_id: l.variantId, qty: l.qty })),
+    p_lines: lines.map((l) => ({
+      variant_id: l.variantId,
+      qty: l.qty,
+      options: toDbOptions(l.options),
+    })),
     // null = not signed in yet: the once-per-customer rule is checked again when ordering.
     p_email: email as string,
   });

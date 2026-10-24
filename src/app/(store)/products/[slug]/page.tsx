@@ -59,7 +59,11 @@ export default async function ProductPage({ params }: PageProps<"/products/[slug
     : settings.pricesIncludeVat
       ? t.product.vatIncluded
       : t.product.vatExcluded;
-  const purchaseProps = { variants: product.variants };
+  const purchaseProps = {
+    variants: product.variants,
+    optionGroups: product.optionGroups,
+    minOrderQty: product.minOrderQty,
+  };
   const prices = product.variants.map((v) => v.priceFils);
   const title = product.destination
     ? [product.destination.name, productTypeLabel(product.category)]

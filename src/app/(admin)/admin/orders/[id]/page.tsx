@@ -16,6 +16,7 @@ import { AdminSection } from "@/components/admin/section";
 import { Badge } from "@/components/ui/badge";
 import { requirePagePermission } from "@/lib/auth/session";
 import { formatAED } from "@/lib/money";
+import { describeSnapshot, type OptionsSnapshot } from "@/modules/catalog/options";
 import { can } from "@/lib/permissions";
 import { formatPhone } from "@/lib/phone";
 import { cn } from "@/lib/utils";
@@ -144,6 +145,9 @@ export default async function OrderDetailPage({ params }: PageProps<"/admin/orde
                           </Badge>
                         ) : null}
                       </p>
+                      {l.options ? (
+                        <p className="text-sm">{describeSnapshot(l.options as OptionsSnapshot)}</p>
+                      ) : null}
                       <p className="numeric text-muted-foreground text-xs">
                         <span className="font-mono">{l.sku}</span> · {l.qty} ×{" "}
                         {formatAED(l.unit_price_fils)}

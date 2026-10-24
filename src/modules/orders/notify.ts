@@ -25,7 +25,7 @@ async function loadOrder(orderId: string) {
   const { data: order, error } = await admin
     .from("orders")
     .select(
-      "id, number, channel, status, gift_card_purchase, customer_id, contact_name, contact_email, contact_phone, total_fils, delivery_emirate, fulfilment, tracking_number, courier, order_lines(product_name, variant_label, qty, line_total_fils, is_reward, variant_id, created_at)",
+      "id, number, channel, status, gift_card_purchase, customer_id, contact_name, contact_email, contact_phone, total_fils, delivery_emirate, fulfilment, tracking_number, courier, order_lines(product_name, variant_label, qty, line_total_fils, is_reward, variant_id, options, created_at)",
     )
     .eq("id", orderId)
     .single();

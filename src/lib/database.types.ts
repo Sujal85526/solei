@@ -4026,6 +4026,7 @@ export type Database = {
         Args: { p_day?: string; p_event_id: string }
         Returns: Json
       }
+      product_option_group_save: { Args: { p: Json }; Returns: string }
       promotion_report: {
         Args: { p_from: string; p_to: string }
         Returns: {

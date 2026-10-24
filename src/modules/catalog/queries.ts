@@ -46,7 +46,7 @@ export async function getProduct(id: string) {
   const { data } = await supabase
     .from("products")
     .select(
-      "*, product_variants(*, variant_costs(cost_fils)), product_images(id, url, alt, sort, storage_path)",
+      "*, product_variants(*, variant_costs(cost_fils)), product_images(id, url, alt, sort, storage_path), product_option_groups(id, name, kind, required, max_length, sort, product_options(id, label, price_delta_fils, active, sort))",
     )
     .eq("id", id)
     .maybeSingle();
@@ -57,6 +57,12 @@ export async function getProduct(id: string) {
       (a, b) => a.sort - b.sort || a.sku.localeCompare(b.sku),
     ),
     product_images: [...data.product_images].sort((a, b) => a.sort - b.sort),
+    product_option_groups: [...data.product_option_groups]
+      .sort((a, b) => a.sort - b.sort)
+      .map((g) => ({
+        ...g,
+        product_options: [...g.product_options].sort((a, b) => a.sort - b.sort),
+      })),
   };
 }
 

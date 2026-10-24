@@ -10,6 +10,7 @@ import { Button } from "@/components/ui/button";
 import { t } from "@/content/en";
 import { orderLinkSecret } from "@/lib/env.server";
 import { formatAED } from "@/lib/money";
+import { describeSnapshot, type OptionsSnapshot } from "@/modules/catalog/options";
 import { formatPhone } from "@/lib/phone";
 import { createAdminClient } from "@/lib/supabase/server";
 import { cn } from "@/lib/utils";
@@ -38,7 +39,7 @@ async function OrderView({ params, searchParams }: PageProps<"/order/[number]">)
   const { data: order } = await admin
     .from("orders")
     .select(
-      "id, number, status, total_fils, subtotal_fils, discount_fils, coupon_code, delivery_fee_fils, delivery_discount_fils, vat_fils, prices_include_vat, contact_name, contact_phone, contact_email, delivery_address, gift_card_purchase, gift_cards(initial_fils, recipient_name, recipient_email), order_lines(product_name, variant_label, qty, line_total_fils, discount_fils, destination_id, destinations(name))",
+      "id, number, status, total_fils, subtotal_fils, discount_fils, coupon_code, delivery_fee_fils, delivery_discount_fils, vat_fils, prices_include_vat, contact_name, contact_phone, contact_email, delivery_address, gift_card_purchase, gift_cards(initial_fils, recipient_name, recipient_email), order_lines(product_name, variant_label, qty, line_total_fils, discount_fils, destination_id, options, destinations(name))",
     )
     .eq("number", number.toUpperCase())
     .maybeSingle();
@@ -161,6 +162,11 @@ async function OrderView({ params, searchParams }: PageProps<"/order/[number]">)
               {l.product_name}
               {l.variant_label ? ` · ${l.variant_label}` : ""}{" "}
               <span className="text-pearl-muted">× {l.qty}</span>
+              {l.options ? (
+                <span className="text-pearl-muted block text-xs">
+                  {describeSnapshot(l.options as OptionsSnapshot)}
+                </span>
+              ) : null}
             </span>
             <span className="numeric">{formatAED(l.line_total_fils + l.discount_fils)}</span>
           </li>
