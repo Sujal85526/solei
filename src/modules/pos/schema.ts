@@ -2,12 +2,15 @@ import { z } from "zod";
 
 export const POS_METHODS = ["cash", "card_terminal", "soft_pos", "bank_transfer"] as const;
 export type PosMethod = (typeof POS_METHODS)[number];
-export const POS_METHOD_LABELS: Record<PosMethod, string> = {
+export const POS_METHOD_LABELS: Record<PosMethod | "gift_card", string> = {
   cash: "Cash",
   card_terminal: "Card terminal",
   soft_pos: "Soft POS",
   bank_transfer: "Bank transfer",
+  gift_card: "Gift card",
 };
+/** Payment methods a sale can carry: the buttons above plus a gift card (code as reference). */
+export type PosPaymentMethod = PosMethod | "gift_card";
 
 export const posSaleSchema = z.object({
   clientUuid: z.uuid(),
@@ -30,11 +33,13 @@ export const posSaleSchema = z.object({
     .max(50),
   payments: z
     .array(
-      z.object({
-        method: z.enum(POS_METHODS),
-        amountFils: z.number().int().positive(),
-        reference: z.string().trim().max(60).optional(),
-      }),
+      z
+        .object({
+          method: z.enum([...POS_METHODS, "gift_card"]),
+          amountFils: z.number().int().positive(),
+          reference: z.string().trim().max(60).optional(),
+        })
+        .refine((p) => p.method !== "gift_card" || p.reference, "A gift card needs its code"),
     )
     .min(1),
 });

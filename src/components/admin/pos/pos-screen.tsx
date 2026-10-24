@@ -5,6 +5,7 @@ import { useCallback, useEffect, useMemo, useState, useSyncExternalStore } from 
 import {
   Check,
   CloudOff,
+  Gift,
   Minus,
   Plus,
   RefreshCw,
@@ -19,6 +20,8 @@ import { Input } from "@/components/ui/input";
 import { NativeSelect } from "@/components/ui/native-select";
 import { formatAED } from "@/lib/money";
 import { cn } from "@/lib/utils";
+import { checkGiftCardAtTillAction } from "@/modules/gift-cards/actions";
+import { giftCardApplies, giftCardRefusalMessage, maskGiftCode } from "@/modules/gift-cards/schema";
 import { daySummaryAction } from "@/modules/pos/actions";
 import type { DaySummary, PosEvent, PosProduct } from "@/modules/pos/queries";
 import { queue, send, type QueuedSale } from "@/modules/pos/queue";
@@ -28,22 +31,29 @@ import {
   POS_METHOD_LABELS,
   POS_METHODS,
   type PosMethod,
+  type PosPaymentMethod,
 } from "@/modules/pos/schema";
 
 type CartLine = { variantId: string; qty: number };
 type SplitRow = { method: PosMethod; amount: string };
 type Done = { label: string; offline: boolean } | null;
+type SalePayment = { method: PosPaymentMethod; amountFils: number; reference?: string };
+/** A checked gift card: how much of it this sale takes. */
+type TillGift = { code: string; balanceFils: number; appliedFils: number };
 
 export function PosScreen({
   events,
   eventId,
   products: initialProducts,
   summary: initialSummary,
+  giftCards,
 }: {
   events: PosEvent[];
   eventId: string;
   products: PosProduct[];
   summary: DaySummary;
+  /** The owner lets the till take gift cards (Admin → Gift cards → Settings). */
+  giftCards: boolean;
 }) {
   const router = useRouter();
   const [products, setProducts] = useState(initialProducts);
@@ -55,6 +65,11 @@ export function PosScreen({
   const [phone, setPhone] = useState("");
   const [email, setEmail] = useState("");
   const [split, setSplit] = useState<SplitRow[] | null>(null);
+  // Gift card: null = not in use; "entering" = typing the code; else the checked card.
+  const [gift, setGift] = useState<TillGift | "entering" | null>(null);
+  const [giftCode, setGiftCode] = useState("");
+  const [giftError, setGiftError] = useState<string | null>(null);
+  const [checkingGift, setCheckingGift] = useState(false);
   const [busy, setBusy] = useState(false);
   const [done, setDone] = useState<Done>(null);
   const [pendingCount, setPendingCount] = useState(0);
@@ -130,7 +145,27 @@ export function PosScreen({
         : prev.map((l) => (l.variantId === id ? { ...l, qty } : l)),
     );
 
-  async function complete(payments: { method: PosMethod; amountFils: number }[]) {
+  async function checkGift() {
+    setCheckingGift(true);
+    setGiftError(null);
+    const res = await checkGiftCardAtTillAction(giftCode);
+    setCheckingGift(false);
+    if (!res.ok) return setGiftError(res.error);
+    if (!res.data.ok) return setGiftError(giftCardRefusalMessage(res.data.reason));
+    setGift({
+      code: res.data.code,
+      balanceFils: res.data.balanceFils,
+      appliedFils: giftCardApplies(res.data.balanceFils, total),
+    });
+  }
+
+  function resetGift() {
+    setGift(null);
+    setGiftCode("");
+    setGiftError(null);
+  }
+
+  async function complete(payments: SalePayment[]) {
     if (!lines.length || busy) return;
     setBusy(true);
     const sale: QueuedSale = {
@@ -169,6 +204,7 @@ export function PosScreen({
     setPhone("");
     setEmail("");
     setSplit(null);
+    resetGift();
     setPayOpen(false);
     setCartOpen(false);
     setBusy(false);
@@ -265,7 +301,7 @@ export function PosScreen({
           <div className="col-span-3 flex flex-wrap justify-center gap-1.5 border-t pt-2">
             {Object.entries(summary.by_method).map(([m, amount]) => (
               <span key={m} className="numeric bg-muted rounded-full px-2.5 py-0.5 text-xs">
-                {POS_METHOD_LABELS[m as PosMethod] ?? m} {formatAED(amount)}
+                {POS_METHOD_LABELS[m as PosPaymentMethod] ?? m} {formatAED(amount)}
               </span>
             ))}
           </div>
@@ -423,7 +459,16 @@ export function PosScreen({
       </Dialog>
 
       {/* Payment */}
-      <Dialog open={payOpen} onOpenChange={(o) => (setPayOpen(o), o ? null : setSplit(null))}>
+      <Dialog
+        open={payOpen}
+        onOpenChange={(o) => {
+          setPayOpen(o);
+          if (!o) {
+            setSplit(null);
+            resetGift();
+          }
+        }}
+      >
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
             <DialogTitle className="numeric text-4xl">{formatAED(total)}</DialogTitle>
@@ -454,7 +499,99 @@ export function PosScreen({
               className="h-12 text-base"
             />
           </fieldset>
-          {split ? (
+          {gift === "entering" ? (
+            <form
+              className="flex flex-col gap-2"
+              onSubmit={(e) => {
+                e.preventDefault();
+                void checkGift();
+              }}
+            >
+              <Input
+                autoFocus
+                aria-label="Gift card code"
+                autoCapitalize="characters"
+                autoComplete="off"
+                value={giftCode}
+                onChange={(e) => setGiftCode(e.target.value)}
+                placeholder="Gift card code — XXXX-XXXX-XXXX"
+                className="h-12 font-mono text-base uppercase"
+              />
+              {giftError ? (
+                <p role="alert" className="text-destructive text-sm">
+                  {giftError}
+                </p>
+              ) : null}
+              <div className="grid grid-cols-2 gap-2">
+                <Button type="button" variant="ghost" size="xl" onClick={resetGift}>
+                  Back
+                </Button>
+                <Button type="submit" size="xl" disabled={checkingGift || !giftCode.trim()}>
+                  {checkingGift ? "Checking…" : "Check card"}
+                </Button>
+              </div>
+            </form>
+          ) : gift ? (
+            <div className="flex flex-col gap-3">
+              <div className="flex items-center justify-between rounded-lg border p-3 text-sm">
+                <span className="flex items-center gap-2">
+                  <Gift className="text-primary size-4" />
+                  <span className="font-mono">{maskGiftCode(gift.code)}</span>
+                  <span className="text-muted-foreground">
+                    balance {formatAED(gift.balanceFils)}
+                  </span>
+                </span>
+                <span className="numeric font-semibold">−{formatAED(gift.appliedFils)}</span>
+              </div>
+              {total - gift.appliedFils === 0 ? (
+                <Button
+                  size="xl"
+                  disabled={busy}
+                  onClick={() =>
+                    complete([
+                      { method: "gift_card", amountFils: gift.appliedFils, reference: gift.code },
+                    ])
+                  }
+                >
+                  Complete sale
+                </Button>
+              ) : (
+                <>
+                  <p className="text-sm">
+                    <span className="numeric font-semibold">
+                      {formatAED(total - gift.appliedFils)}
+                    </span>{" "}
+                    left to pay by:
+                  </p>
+                  <div className="grid grid-cols-2 gap-2">
+                    {POS_METHODS.map((m) => (
+                      <Button
+                        key={m}
+                        size="xl"
+                        variant="outline"
+                        disabled={busy}
+                        onClick={() =>
+                          complete([
+                            {
+                              method: "gift_card",
+                              amountFils: gift.appliedFils,
+                              reference: gift.code,
+                            },
+                            { method: m, amountFils: total - gift.appliedFils },
+                          ])
+                        }
+                      >
+                        {POS_METHOD_LABELS[m]}
+                      </Button>
+                    ))}
+                  </div>
+                </>
+              )}
+              <Button variant="ghost" onClick={resetGift}>
+                <X /> Remove gift card
+              </Button>
+            </div>
+          ) : split ? (
             <div className="flex flex-col gap-2">
               {split.map((row, i) => (
                 <div key={i} className="flex gap-2">
@@ -540,6 +677,17 @@ export function PosScreen({
                   {POS_METHOD_LABELS[m]}
                 </Button>
               ))}
+              {giftCards ? (
+                <Button
+                  size="xl"
+                  variant="outline"
+                  className="col-span-2"
+                  disabled={busy || !online}
+                  onClick={() => setGift("entering")}
+                >
+                  <Gift /> Gift card{online ? "" : " (needs a connection)"}
+                </Button>
+              ) : null}
               <Button
                 variant="ghost"
                 className="col-span-2"
