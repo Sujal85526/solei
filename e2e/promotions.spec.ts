@@ -68,7 +68,8 @@ test.describe("promotions", () => {
     if (await fold.isVisible()) await fold.click();
     const box = page.getByRole("textbox", { name: "Discount code" }).locator("visible=true");
     await box.fill(code);
-    await page.getByRole("button", { name: "Apply" }).locator("visible=true").click();
+    // The first Apply is the discount code (the second is the gift card).
+    await page.getByRole("button", { name: "Apply" }).locator("visible=true").first().click();
     await expect(page.getByText(code).locator("visible=true").first()).toBeVisible();
     await expect(page.getByText("AED 30").locator("visible=true").first()).toBeVisible(); // struck through
 
