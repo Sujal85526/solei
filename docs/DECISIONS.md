@@ -383,3 +383,18 @@ Open client questions are built as configurable defaults. Each row: what we chos
   client's answers (returns 7 days; passport after two products in one order; essential cookies only).
   Migration `20261015000002_client_answers.sql`; owner edits continue in Admin → Settings → Help & policies.
 - **T100 — Email via Resend** once the domain DNS is available; photography comes last.
+
+## Phase 2 — promotions (branch `phase-2`, 2026-10-24)
+- **P2-1 — Promotions = the coupons engine, extended.** Same table/permission (`coupons`, `coupons.manage`),
+  admin UI renamed to Admin → Promotions (`/admin/promotions`; `/admin/coupons` redirects). Kinds: % off,
+  AED off, **free delivery** (waives the zone fee; goods untouched; recorded as
+  `orders.delivery_discount_fils`, `delivery_fee_fils = 0`). Per-customer limit is a number
+  (`per_customer_limit`, counted by email; replaces `once_per_customer`). Scope = products **or** categories
+  (empty = whole bag). One code per order; `orders.applied_promotions` is a list snapshot so stacking/BOGO can
+  come later without a schema change. A free-delivery code on a bag that already reaches the free-delivery
+  threshold is accepted but waives nothing.
+- **P2-2 — Promotions report** in Admin → Reports (`promotion_report(from, to)`, `reports.view`): paid
+  orders (past `pending_payment`, not cancelled) per code — orders, goods discount, delivery waived, sales.
+- **P2-3 — Phase 2 DB is local only.** Docker via Colima; `pnpm db:start`; a gitignored
+  `.env.development.local` points `pnpm dev` and the e2e helpers at local Supabase (e2e `localEnv()` now
+  layers it over `.env.local`, so tests never hit the shared hosted DB). Nothing pushed to the hosted DB.

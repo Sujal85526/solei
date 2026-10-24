@@ -23,6 +23,32 @@ Phase 1 milestones (one branch + PR each, in order). See `docs/BUILD_PROMPT.md` 
 | 16 | `feat/dashboard-exports` | ✅ merged | [#21](https://github.com/Sujal85526/solei/pull/21) |
 | 17 | `chore/hardening` | ⬜ | |
 
+## Phase 2 (branch `phase-2`)
+Work happens only on `phase-2` (never merged/pushed to main; no PR). DB changes are applied to **local
+Supabase only** (Colima + `pnpm db:start`; `.env.development.local` points the app and e2e at it — see
+DECISIONS P2-3). Local owner login: `owner@solei.test` / `Solei-dev-2026` (re-enrol TOTP on /admin/mfa
+after a `db:reset`).
+
+| # | Feature | Status |
+|---|---|---|
+| 1 | Promotions / discount engine | ✅ built (`20261024000001/2_promotions*.sql`) |
+| 2 | Gift cards | ⬜ |
+| 3 | Abandoned cart | ⬜ |
+| 4 | CRM segments & campaigns | ⬜ |
+| 5 | Points & VIP tiers + birthday offer | ⬜ |
+| 6 | Giveaways customiser | ⬜ |
+| 7 | WhatsApp API · courier API · staff attendance · PDF reports (mock providers) | ⬜ |
+
+**1 — Promotions:** Admin → Promotions (`/admin/promotions`): % off / AED off / free delivery, minimum
+order, start/end dates, total uses, uses per customer, category + product scope, pause/delete. Checkout
+applies the code server-side (summary shows the discount, or the waived delivery struck through); the order
+stores `discount_fils`, `delivery_discount_fils`, `coupon_code` and `applied_promotions`. Admin → Reports →
+Promotions shows orders / discount / delivery waived / sales per code. Tests: `coupons/schema.test.ts`,
+`orders/pricing.test.ts`, pgTAP `120_promotions_test.sql`, e2e `e2e/promotions.spec.ts` (all 3 viewports).
+Not done: the orders Excel export has no code column yet. Stale Phase 1 tests (pgTAP 070/080/110, e2e
+helpers) predate later Phase 1 changes; the e2e helpers were patched (exact "Password" label, dashboard
+heading "Hello, …").
+
 ## Current notes
 - **CI is paused** (manual-only workflow) at the user's request — merge after local checks; re-enable in M17.
 - **Dev DB is hosted** (see DECISIONS T38): `.env.local` points at `https://ljjpyjzkbexucaqmxbas.supabase.co`.
