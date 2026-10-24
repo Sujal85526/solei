@@ -68,137 +68,135 @@ export function GiftCardForm({
   const label = "text-muted-foreground text-[0.6rem] tracking-[0.2em] uppercase";
 
   return (
-    <div className="grid grid-cols-1 gap-12 lg:grid-cols-12 lg:gap-20">
-      <div className="lg:col-span-6">
-        {intro}
-        <form onSubmit={onSubmit} noValidate className="mt-12 flex flex-col gap-8">
-          <fieldset className="flex flex-col gap-3">
-            <legend className={cn(label, "mb-3")}>{c.amount}</legend>
-            <div className="flex flex-wrap gap-2">
-              {amountsFils.map((a) => (
-                <label
-                  key={a}
-                  className={cn(
-                    "numeric flex h-12 min-w-24 cursor-pointer items-center justify-center border px-5 text-sm transition-colors",
-                    a === amount
-                      ? "border-burgundy bg-burgundy text-pink"
-                      : "border-burgundy/30 hover:border-burgundy",
-                  )}
-                >
-                  <input
-                    type="radio"
-                    name="amount"
-                    value={a}
-                    checked={a === amount}
-                    onChange={() => setAmount(a)}
-                    className="sr-only"
-                  />
-                  {formatAED(a)}
-                </label>
-              ))}
-            </div>
-          </fieldset>
-
-          <div role="radiogroup" aria-label="Who it's for" className="flex gap-6 text-sm">
-            {(
-              [
-                [true, c.forSomeoneElse],
-                [false, c.forMe],
-              ] as const
-            ).map(([value, text]) => (
-              <button
-                key={text}
-                type="button"
-                role="radio"
-                aria-checked={forOther === value}
-                onClick={() => setForOther(value)}
-                className={cn(
-                  "border-b pb-1 transition-colors",
-                  forOther === value
-                    ? "border-burgundy text-burgundy"
-                    : "text-foreground/60 hover:text-burgundy border-transparent",
-                )}
-              >
-                {text}
-              </button>
-            ))}
-          </div>
-
-          {forOther ? (
-            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-              <TextField
-                label={c.recipientName}
-                name="recipientName"
-                autoComplete="off"
-                value={recipient}
-                onChange={(e) => setRecipient(e.target.value)}
-                error={errors.recipientName}
-              />
-              <TextField
-                label={c.recipientEmail}
-                name="recipientEmail"
-                type="email"
-                autoComplete="off"
-                error={errors.recipientEmail}
-              />
-              <TextField
-                label={c.senderName}
-                name="senderName"
-                autoComplete="name"
-                defaultValue={signedIn ? account.firstName : ""}
-                error={errors.senderName}
-                className="sm:col-span-2"
-              />
-            </div>
-          ) : null}
-
-          <div className="flex flex-col gap-1.5">
-            <label htmlFor="gift-message" className={label}>
-              {c.message}
-            </label>
-            <textarea
-              id="gift-message"
-              name="message"
-              rows={3}
-              maxLength={300}
-              value={message}
-              onChange={(e) => setMessage(e.target.value)}
-              placeholder={c.messagePlaceholder}
-              className="border-input focus:border-primary min-h-24 w-full rounded-sm border bg-white px-3 py-2 text-sm outline-none placeholder:text-[#b9a5ab]"
-            />
-            {errors.message ? (
-              <p className="text-destructive text-[0.7rem]">{errors.message}</p>
-            ) : null}
-          </div>
-
-          <div className="flex flex-col gap-3">
-            {account.status === "signed_out" ? (
-              <SignInToBuy />
-            ) : (
-              <button
-                type="submit"
-                disabled={pending || redirecting || account.status === "loading"}
-                className="bg-burgundy text-pink hover:bg-burgundy/90 inline-flex h-12 items-center justify-center gap-3 px-6 text-[0.7rem] tracking-[0.22em] uppercase transition-colors disabled:opacity-60 sm:self-start"
-              >
-                {pending || redirecting ? c.buying : c.buy(formatAED(amount))}
-                <ArrowRight className="size-4 rtl:rotate-180" strokeWidth={1.5} />
-              </button>
-            )}
-            {formError ? (
-              <p role="alert" className="text-destructive text-sm">
-                {formError}
-              </p>
-            ) : null}
-            <p className="text-foreground/70 max-w-md text-xs leading-relaxed">
-              {c.delivery(atPos, expiryMonths)}
-            </p>
-          </div>
-        </form>
-      </div>
-
-      <div className="lg:col-span-5 lg:col-start-8 lg:pt-6">
+    <div className="grid grid-cols-1 gap-12 lg:grid-cols-12 lg:gap-x-20">
+      {/* Phones: heading, card, form. Wide screens: heading and form beside the card. */}
+      <div className="lg:col-span-6">{intro}</div>
+      <div className="lg:col-span-5 lg:col-start-8 lg:row-span-2 lg:row-start-1 lg:pt-6">
         <CardPreview amount={amount} recipient={forOther ? recipient : ""} message={message} />
       </div>
+      <form onSubmit={onSubmit} noValidate className="flex flex-col gap-8 lg:col-span-6">
+        <fieldset className="flex flex-col gap-3">
+          <legend className={cn(label, "mb-3")}>{c.amount}</legend>
+          <div className="flex flex-wrap gap-2">
+            {amountsFils.map((a) => (
+              <label
+                key={a}
+                className={cn(
+                  "numeric flex h-12 min-w-24 cursor-pointer items-center justify-center border px-5 text-sm transition-colors",
+                  a === amount
+                    ? "border-burgundy bg-burgundy text-pink"
+                    : "border-burgundy/30 hover:border-burgundy",
+                )}
+              >
+                <input
+                  type="radio"
+                  name="amount"
+                  value={a}
+                  checked={a === amount}
+                  onChange={() => setAmount(a)}
+                  className="sr-only"
+                />
+                {formatAED(a)}
+              </label>
+            ))}
+          </div>
+        </fieldset>
+
+        <div role="radiogroup" aria-label="Who it's for" className="flex gap-6 text-sm">
+          {(
+            [
+              [true, c.forSomeoneElse],
+              [false, c.forMe],
+            ] as const
+          ).map(([value, text]) => (
+            <button
+              key={text}
+              type="button"
+              role="radio"
+              aria-checked={forOther === value}
+              onClick={() => setForOther(value)}
+              className={cn(
+                "border-b pb-1 transition-colors",
+                forOther === value
+                  ? "border-burgundy text-burgundy"
+                  : "text-foreground/60 hover:text-burgundy border-transparent",
+              )}
+            >
+              {text}
+            </button>
+          ))}
+        </div>
+
+        {forOther ? (
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+            <TextField
+              label={c.recipientName}
+              name="recipientName"
+              autoComplete="off"
+              value={recipient}
+              onChange={(e) => setRecipient(e.target.value)}
+              error={errors.recipientName}
+            />
+            <TextField
+              label={c.recipientEmail}
+              name="recipientEmail"
+              type="email"
+              autoComplete="off"
+              error={errors.recipientEmail}
+            />
+            <TextField
+              label={c.senderName}
+              name="senderName"
+              autoComplete="name"
+              defaultValue={signedIn ? account.firstName : ""}
+              error={errors.senderName}
+              className="sm:col-span-2"
+            />
+          </div>
+        ) : null}
+
+        <div className="flex flex-col gap-1.5">
+          <label htmlFor="gift-message" className={label}>
+            {c.message}
+          </label>
+          <textarea
+            id="gift-message"
+            name="message"
+            rows={3}
+            maxLength={300}
+            value={message}
+            onChange={(e) => setMessage(e.target.value)}
+            placeholder={c.messagePlaceholder}
+            className="border-input focus:border-primary min-h-24 w-full rounded-sm border bg-white px-3 py-2 text-sm outline-none placeholder:text-[#b9a5ab]"
+          />
+          {errors.message ? (
+            <p className="text-destructive text-[0.7rem]">{errors.message}</p>
+          ) : null}
+        </div>
+
+        <div className="flex flex-col gap-3">
+          {account.status === "signed_out" ? (
+            <SignInToBuy />
+          ) : (
+            <button
+              type="submit"
+              disabled={pending || redirecting || account.status === "loading"}
+              className="bg-burgundy text-pink hover:bg-burgundy/90 inline-flex h-12 items-center justify-center gap-3 px-6 text-[0.7rem] tracking-[0.22em] uppercase transition-colors disabled:opacity-60 sm:self-start"
+            >
+              {pending || redirecting ? c.buying : c.buy(formatAED(amount))}
+              <ArrowRight className="size-4 rtl:rotate-180" strokeWidth={1.5} />
+            </button>
+          )}
+          {formError ? (
+            <p role="alert" className="text-destructive text-sm">
+              {formError}
+            </p>
+          ) : null}
+          <p className="text-foreground/70 max-w-md text-xs leading-relaxed">
+            {c.delivery(atPos, expiryMonths)}
+          </p>
+        </div>
+      </form>
     </div>
   );
 }

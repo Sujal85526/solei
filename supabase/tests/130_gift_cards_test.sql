@@ -1,6 +1,6 @@
 begin;
 \ir helpers/setup.psql
-select plan(24);
+select plan(28);
 
 -- Buy a AED 200 gift card online.
 select order_id as buy_order from public.create_gift_card_order(jsonb_build_object(
@@ -46,7 +46,7 @@ select is(public.gift_card_balance(:'card'), 5000, 'AED 150 spent, AED 50 left')
 select is((select outstanding_fils from public.order_payment_summary where order_id = :'o1'), 13000, 'AED 130 left to pay by card');
 select is((select status::text from public.orders where id = :'o1'), 'pending_payment', 'partly paid order waits for the card payment');
 select throws_ok(
-  $$ select pg_temp.web_order(gen_random_uuid(), (select code from public.gift_cards where recipient_name = 'Mira'), 6000) $$,
+  format('select pg_temp.web_order(gen_random_uuid(), %L, 6000)', :'card_code'),
   'P0001', null, 'cannot spend more than the balance');
 
 -- The checkout is abandoned: after 24 h the hold is released.
@@ -86,6 +86,35 @@ select is(
     where o.status not in ('cancelled', 'pending_payment') and not o.gift_card_purchase
       and public.business_day(o.placed_at) = public.business_today()),
   'dashboard counts only non-gift-card orders');
+
+-- At the till: AED 280 sale = AED 200 from a card + AED 80 cash.
+reset role;
+insert into public.events (name, status, start_date, end_date)
+values ('Gift Test Pop-up', 'confirmed', public.business_today(), public.business_today()) returning id as ev \gset
+select tests.login_as((select user_id from public.staff_profiles where email = 'gift-owner@solei.test'));
+select public.gift_card_issue(jsonb_build_object('amount_fils', 20000)) as card3 \gset
+select code as card3_code from public.gift_cards where id = :'card3' \gset
+create function pg_temp.till_sale(p_event uuid, p_code text)
+returns uuid language sql as $$
+  select order_id from public.pos_complete_sale(jsonb_build_object(
+    'client_uuid', gen_random_uuid(), 'event_id', p_event,
+    'lines', jsonb_build_array(jsonb_build_object('variant_id', (select id from public.product_variants where sku = 'SOL-P-CAN-50'), 'qty', 1)),
+    'payments', jsonb_build_array(
+      jsonb_build_object('method', 'gift_card', 'amount_fils', 20000, 'reference', p_code),
+      jsonb_build_object('method', 'cash', 'amount_fils', 8000))));
+$$;
+select isnt(pg_temp.till_sale(:'ev', lower(:'card3_code')), null, 'till sale with a gift card and cash');
+select is(public.gift_card_balance(:'card3'), 0, 'card spent at the till');
+
+-- The owner switches till redemption off.
+select public.gift_card_issue(jsonb_build_object('amount_fils', 20000)) as card4 \gset
+select code as card4_code from public.gift_cards where id = :'card4' \gset
+reset role;
+update public.settings set gift_cards_at_pos = false where id = 1;
+select tests.login_as((select user_id from public.staff_profiles where email = 'gift-owner@solei.test'));
+select throws_ok(format('select pg_temp.till_sale(%L, %L)', :'ev', :'card4_code'),
+  'P0001', 'gift cards can''t be used at the till', 'till refuses cards when switched off');
+select is(public.gift_card_balance(:'card4'), 20000, 'refused card keeps its balance');
 
 select * from finish();
 rollback;
