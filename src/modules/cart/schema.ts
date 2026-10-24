@@ -24,5 +24,7 @@ export const cartDetailsInputSchema = z.object({
   coupon: z.string().trim().max(40).nullish(),
   /** Gift card code applied at checkout (signed-in customers). */
   giftCard: z.string().trim().max(40).nullish(),
+  /** Spend the signed-in customer's points (when the programme is on). */
+  usePoints: z.boolean().nullish(),
 });
 export type CartDetailsInput = z.infer<typeof cartDetailsInputSchema>;

@@ -14,6 +14,7 @@ import {
   normaliseGiftCode,
 } from "@/modules/gift-cards/schema";
 import { onOrderPaid } from "@/modules/orders/events";
+import { pointsForCheckout } from "@/modules/points/service";
 import {
   fetchAvailability,
   fetchProductsForVariants,
@@ -80,14 +81,25 @@ export async function placeOrder(
   const pricing = cart.pricing;
   if (pricing.deliveryFeeFils === null) throw new UserError("Choose your emirate for delivery.");
 
-  // Gift card: spends as much of the balance as the order needs; the order RPC re-checks it.
+  // Points first (when chosen), then a gift card for what's left; the order RPC re-checks both.
+  let points = 0;
+  let pointsCustomer: string | null = null;
+  let dueFils = pricing.totalFils;
+  if (v.usePoints) {
+    const p = await pointsForCheckout(dueFils);
+    if (!p?.usable)
+      throw new UserError("Your points can't be used on this order — please review it.");
+    points = p.points;
+    pointsCustomer = p.customerId;
+    dueFils -= p.valueFils;
+  }
   let giftCode: string | null = null;
   let giftFils = 0;
   if (v.giftCard) {
     giftCode = normaliseGiftCode(v.giftCard);
     const check = giftCode ? await checkGiftCard(giftCode) : null;
     if (!check?.ok) throw new UserError(giftCardRefusalMessage(check?.reason ?? "invalid"));
-    giftFils = giftCardApplies(check.balanceFils, pricing.totalFils);
+    giftFils = giftCardApplies(check.balanceFils, dueFils);
   }
 
   const admin = createAdminClient();
@@ -117,6 +129,8 @@ export async function placeOrder(
         prices_include_vat: settings.pricesIncludeVat,
         gift_card_code: giftFils > 0 ? giftCode : null,
         gift_card_fils: giftFils,
+        points,
+        points_customer: pointsCustomer,
       },
     })
     .single();

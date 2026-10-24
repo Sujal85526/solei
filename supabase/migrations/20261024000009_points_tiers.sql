@@ -451,6 +451,38 @@ as $$
   where public.has_permission('loyalty.view');
 $$;
 
+/*
+  Replace the tier list in one go (loyalty.manage). p = [{ name, min_spend_fils, points_multiplier_bp,
+  perks }]; the lowest must start at 0. Spend thresholds must differ.
+*/
+create or replace function public.loyalty_tiers_save(p jsonb)
+returns int
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  n int;
+begin
+  perform public.require_permission('loyalty.manage');
+  n := jsonb_array_length(coalesce(p, '[]'::jsonb));
+  if n < 1 or n > 6 then raise exception 'between 1 and 6 tiers' using errcode = '22023'; end if;
+  if not exists (select 1 from jsonb_array_elements(p) t where (t ->> 'min_spend_fils')::int = 0) then
+    raise exception 'the first tier must start at AED 0' using errcode = '22023';
+  end if;
+  delete from loyalty_tiers;
+  insert into loyalty_tiers (name, min_spend_fils, points_multiplier_bp, perks)
+  select trim(t ->> 'name'), (t ->> 'min_spend_fils')::int, (t ->> 'points_multiplier_bp')::int,
+         nullif(trim(t ->> 'perks'), '')
+    from jsonb_array_elements(p) t;
+  return n;
+exception when unique_violation then
+  raise exception 'two tiers have the same spend' using errcode = 'P0001';
+end;
+$$;
+revoke all on function public.loyalty_tiers_save(jsonb) from public, anon;
+grant execute on function public.loyalty_tiers_save(jsonb) to authenticated;
+
 revoke all on function public.order_cash_paid(uuid) from public, anon, authenticated;
 revoke all on function public.customer_tier_spend(uuid) from public, anon, authenticated;
 revoke all on function public.customer_tier(uuid) from public, anon, authenticated;
@@ -711,7 +743,8 @@ begin
   -- Points first, then a gift card: both spent in the same transaction; the order settles at once
   -- when together they cover it.
   if v_points > 0 then
-    perform public.points_redeem(v_customer, v_points, v_order.id);
+    -- The signed-in customer's record (the order's customer is matched by phone first).
+    perform public.points_redeem(coalesce((p ->> 'points_customer')::uuid, v_customer), v_points, v_order.id);
     select v_points * point_value_fils into v_points_fils from rewards_settings where id = 1;
     if v_points_fils > v_order.total_fils then
       raise exception 'that''s more points than the order needs' using errcode = '22023';

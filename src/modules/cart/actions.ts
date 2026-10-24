@@ -6,6 +6,7 @@ import { checkCoupon } from "@/modules/coupons/queries";
 import { normaliseCode, refusalMessage } from "@/modules/coupons/schema";
 import { checkGiftCardForCustomer } from "@/modules/gift-cards/service";
 import { giftCardApplies, giftCardRefusalMessage } from "@/modules/gift-cards/schema";
+import { pointsForCheckout } from "@/modules/points/service";
 import { fetchAvailability, getCartSettings, listProducts } from "@/modules/storefront/queries";
 import { resolveCart, type CartCoupon, type CartDetails, type CartGiftCard } from "./details";
 import { cartDetailsInputSchema } from "./schema";
@@ -42,21 +43,37 @@ export async function getCartDetails(input: unknown): Promise<CartDetails> {
       : { code, error: refusalMessage(check.reason, check.minOrderFils) };
     details = resolveCart(parsed, products, availability, settings, coupon);
   }
-  if (parsed.giftCard) details.giftCard = await giftCardFor(parsed.giftCard, details);
+  // Points come off first, then a gift card covers what it can of the rest.
+  let dueFils = details.pricing.totalFils;
+  const points = details.lines.some((l) => l.qty > 0) ? await pointsForCheckout(dueFils) : null;
+  if (points) {
+    const applied = points.usable && Boolean(parsed.usePoints);
+    details.points = points.usable
+      ? {
+          usable: true,
+          balance: points.balance,
+          points: points.points,
+          valueFils: points.valueFils,
+          applied,
+        }
+      : points;
+    if (applied && points.usable) dueFils -= points.valueFils;
+  }
+  if (parsed.giftCard) details.giftCard = await giftCardFor(parsed.giftCard, dueFils);
   return details;
 }
 
 /** How much of the gift card this order would spend (the order RPC re-checks the balance). */
-async function giftCardFor(code: string, details: CartDetails): Promise<CartGiftCard> {
+async function giftCardFor(code: string, dueFils: number): Promise<CartGiftCard> {
   try {
     const check = await checkGiftCardForCustomer(code);
     if (!check.ok) return { code, error: giftCardRefusalMessage(check.reason) };
-    const appliedFils = giftCardApplies(check.balanceFils, details.pricing.totalFils);
+    const appliedFils = giftCardApplies(check.balanceFils, dueFils);
     return {
       code: check.code,
       appliedFils,
       balanceFils: check.balanceFils,
-      dueFils: details.pricing.totalFils - appliedFils,
+      dueFils: dueFils - appliedFils,
     };
   } catch (e) {
     if (e instanceof UserError) return { code, error: e.message };

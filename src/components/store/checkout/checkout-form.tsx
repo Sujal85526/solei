@@ -59,7 +59,11 @@ export function CheckoutFlow({
   // Gift card being applied (signed-in customers); dropped again if the server refuses it.
   const [giftCard, setGiftCard] = useState<string | null>(null);
   const [giftError, setGiftError] = useState<string | null>(null);
-  const key = state ? JSON.stringify([state.lines, state.emirate, coupon, giftCard]) : null;
+  // Spend points (signed-in, programme on).
+  const [usePoints, setUsePoints] = useState(false);
+  const key = state
+    ? JSON.stringify([state.lines, state.emirate, coupon, giftCard, usePoints])
+    : null;
 
   // A saved address picks the emirate (and so the delivery fee) when none is chosen yet.
   useEffect(() => {
@@ -77,6 +81,7 @@ export function CheckoutFlow({
         emirate: state.emirate,
         coupon,
         giftCard,
+        usePoints,
       });
       if (id !== req.current) return;
       setDetails(res);
@@ -156,11 +161,23 @@ export function CheckoutFlow({
             </span>
           </summary>
           <div className="px-5 pb-8 sm:px-10">
-            <Summary details={details} coupon={couponProps} giftCard={giftProps} />
+            <Summary
+              details={details}
+              coupon={couponProps}
+              giftCard={giftProps}
+              usePoints={usePoints}
+              onUsePoints={setUsePoints}
+            />
           </div>
         </details>
         <div className="sticky top-0 hidden max-w-md px-12 py-14 lg:block">
-          <Summary details={details} coupon={couponProps} giftCard={giftProps} />
+          <Summary
+            details={details}
+            coupon={couponProps}
+            giftCard={giftProps}
+            usePoints={usePoints}
+            onUsePoints={setUsePoints}
+          />
         </div>
       </aside>
 
@@ -175,6 +192,7 @@ export function CheckoutFlow({
               details={details}
               couponCode={applied?.code ?? null}
               giftCardCode={appliedGift?.code ?? null}
+              usePoints={Boolean(details?.points?.usable && details.points.applied)}
               onDetails={setDetails}
               redirecting={redirecting}
               onRedirect={() => setRedirecting(true)}
@@ -240,6 +258,7 @@ function DeliveryForm({
   details,
   couponCode,
   giftCardCode,
+  usePoints,
   onDetails,
   redirecting,
   onRedirect,
@@ -250,6 +269,7 @@ function DeliveryForm({
   details: CartDetails | null;
   couponCode: string | null;
   giftCardCode: string | null;
+  usePoints: boolean;
   onDetails: (d: CartDetails) => void;
   redirecting: boolean;
   onRedirect: () => void;
@@ -276,6 +296,7 @@ function DeliveryForm({
         lines: state.lines,
         coupon: couponCode ?? "",
         giftCard: giftCardCode ?? "",
+        usePoints,
       });
       if (res.ok) {
         onRedirect();
@@ -290,6 +311,7 @@ function DeliveryForm({
         emirate: state.emirate,
         coupon: couponCode,
         giftCard: giftCardCode,
+        usePoints,
       });
       onDetails(fresh);
       const allowed = new Map(
@@ -375,7 +397,7 @@ function DeliveryForm({
           <Lock className="size-3.5" />
           {submitting || redirecting
             ? c.paying
-            : details?.giftCard && "dueFils" in details.giftCard && details.giftCard.dueFils === 0
+            : details && amountDue(details) === 0
               ? c.placeOrder
               : c.pay}
         </Button>
@@ -430,15 +452,29 @@ type CouponProps = {
   onRemove: () => void;
 };
 
+/** Left to pay on the card page after points and a gift card (null when nothing is applied). */
+function amountDue(details: CartDetails): number | null {
+  const pts = details.points?.usable && details.points.applied ? details.points.valueFils : 0;
+  const gift = details.giftCard && "dueFils" in details.giftCard ? details.giftCard : null;
+  if (gift) return gift.dueFils;
+  return pts ? details.pricing.totalFils - pts : null;
+}
+
 function Summary({
   details,
   coupon,
   giftCard,
+  usePoints,
+  onUsePoints,
 }: {
   details: CartDetails | null;
   coupon: CouponProps;
   giftCard: GiftCardProps | null;
+  usePoints: boolean;
+  onUsePoints: (on: boolean) => void;
 }) {
+  const points = details?.points;
+  const due = details ? amountDue(details) : null;
   const pricing = details?.pricing;
   const lines = (details?.lines ?? []).filter((l) => l.qty > 0);
   return (
@@ -483,6 +519,28 @@ function Summary({
           className="border-t-0 pt-0"
         />
       ) : null}
+      {points ? (
+        points.usable ? (
+          <label className="flex items-start gap-3 text-sm">
+            <input
+              type="checkbox"
+              checked={usePoints}
+              onChange={(e) => onUsePoints(e.target.checked)}
+              className="accent-primary mt-0.5 size-4"
+            />
+            <span>
+              {c.usePoints(points.points.toLocaleString("en-GB"), formatAED(points.valueFils))}
+              <span className="text-muted-foreground block text-xs">
+                {c.pointsBalance(points.balance.toLocaleString("en-GB"))}
+              </span>
+            </span>
+          </label>
+        ) : (
+          <p className="text-muted-foreground text-xs">
+            {c.pointsBalance(points.balance.toLocaleString("en-GB"))} {points.reason}
+          </p>
+        )
+      ) : null}
       <dl className="numeric border-border flex flex-col gap-2.5 border-t pt-5 text-sm">
         <div className="flex justify-between">
           <dt className="text-muted-foreground">{c.subtotal}</dt>
@@ -523,19 +581,25 @@ function Summary({
             {pricing ? formatAED(pricing.totalFils).replace(/^AED\s*/, "") : "—"}
           </dd>
         </div>
+        {points?.usable && points.applied ? (
+          <div className="flex justify-between">
+            <dt className="text-muted-foreground">{c.points}</dt>
+            <dd className="text-primary">−{formatAED(points.valueFils)}</dd>
+          </div>
+        ) : null}
         {giftCard?.applied ? (
-          <>
-            <div className="flex justify-between">
-              <dt className="text-muted-foreground">
-                {c.giftCard} {maskGiftCode(giftCard.applied.code)}
-              </dt>
-              <dd className="text-primary">−{formatAED(giftCard.applied.appliedFils)}</dd>
-            </div>
-            <div className="flex justify-between font-medium">
-              <dt>{c.toPay}</dt>
-              <dd>{formatAED(giftCard.applied.dueFils)}</dd>
-            </div>
-          </>
+          <div className="flex justify-between">
+            <dt className="text-muted-foreground">
+              {c.giftCard} {maskGiftCode(giftCard.applied.code)}
+            </dt>
+            <dd className="text-primary">−{formatAED(giftCard.applied.appliedFils)}</dd>
+          </div>
+        ) : null}
+        {due !== null ? (
+          <div className="flex justify-between font-medium">
+            <dt>{c.toPay}</dt>
+            <dd>{formatAED(due)}</dd>
+          </div>
         ) : null}
       </dl>
     </div>

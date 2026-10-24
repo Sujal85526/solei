@@ -3842,6 +3842,7 @@ export type Database = {
         Args: { p_customer_id: string; p_order_id?: string }
         Returns: number
       }
+      loyalty_tiers_save: { Args: { p: Json }; Returns: number }
       marketing_opt_in: {
         Args: { p_channel: string; p_email?: string; p_phone?: string }
         Returns: undefined

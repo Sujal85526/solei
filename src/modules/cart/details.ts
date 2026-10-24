@@ -67,6 +67,20 @@ export type CartDetails = {
   pricing: CartPricing;
   coupon: CartCoupon | null;
   giftCard?: CartGiftCard | null;
+  /**
+   * The signed-in customer's points at checkout (programme on): whether they can be used here and,
+   * when chosen, how many come off (before any gift card).
+   */
+  points?:
+    | {
+        usable: true;
+        balance: number;
+        points: number;
+        valueFils: Fils;
+        applied: boolean;
+      }
+    | { usable: false; balance: number; reason: string }
+    | null;
   emirate: Emirate | null;
   zoneName: string | null;
   settings: Pick<CartSettings, "vatRateBp" | "pricesIncludeVat" | "freeDeliveryThresholdFils">;

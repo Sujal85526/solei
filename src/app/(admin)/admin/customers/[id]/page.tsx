@@ -10,6 +10,7 @@ import {
   PaymentStatusBadge,
 } from "@/components/admin/orders/order-badges";
 import { PassportPanel } from "@/components/admin/customers/passport-panel";
+import { PointsPanel } from "@/components/admin/customers/points-panel";
 import {
   EditContactDialog,
   NotesForm,
@@ -245,6 +246,14 @@ export default async function CustomerPage({ params }: PageProps<"/admin/custome
           {/* Streams in on its own so the customer details don't wait for the passport. */}
           <Suspense fallback={<Skeleton className="h-64 rounded-xl" />}>
             <PassportPanel customerId={c.id} />
+          </Suspense>
+          <Suspense fallback={<Skeleton className="h-48 rounded-xl" />}>
+            <PointsPanel
+              customerId={c.id}
+              birthday={
+                c.birth_month && c.birth_day ? { month: c.birth_month, day: c.birth_day } : null
+              }
+            />
           </Suspense>
         </div>
       </div>
