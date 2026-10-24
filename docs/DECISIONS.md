@@ -468,3 +468,20 @@ Open client questions are built as configurable defaults. Each row: what we chos
 - **P2-20 — Prices from the database:** `line_unit_price_fils` (variant price + chosen active options of that
   product) and `line_options_check` (required answered, one choice for "pick one", text length, nothing foreign)
   are used by `create_web_order`, `coupon_evaluate` and `cart_sync`; the browser's unit price must match.
+
+## Phase 2 — operations (branch `phase-2`, 2026-10-24)
+- **P2-21 — WhatsApp behind a messaging provider:** `MessagingProvider.sendWhatsApp` with a logging stand-in
+  (`MESSAGING_PROVIDER=log`, the default) until the client's WhatsApp Business account is approved; a real
+  provider (Meta Cloud API or a BSP) plugs into `src/providers/messaging/index.ts`. Only transactional order
+  updates (confirmed, dispatched) to the order's mobile, from admin-editable templates, with an owner switch that
+  is **off by default**. Marketing stays email-only (WhatsApp marketing needs approved templates and opt-in).
+- **P2-22 — Courier behind a courier provider:** `CourierProvider` (book, track, label) with a deterministic mock
+  ("Mock Express": picked up 1 h, in transit 4 h, out for delivery 24 h, delivered 30 h after booking) until an
+  account exists (e.g. Aramex / Quiqup). Bookings live in `fulfilments` (provider-neutral, scans as JSON);
+  booking marks the order dispatched through the normal order-status path (emails, WhatsApp), a delivered scan
+  marks it delivered. Reuses `orders.view` / `orders.update` (no new permission keys, P2-13).
+- **P2-23 — Attendance:** self-service clock in/out for every staff member (RPCs on `auth.uid()`, one open shift
+  per person); corrections and paper timesheets need `staff.manage`. No payroll or rota — hours only.
+- **P2-24 — PDF reports:** generated on the server with `pdf-lib` from the same report model as the Excel
+  download (one renderer for every report); standard Helvetica, so non-Latin characters print as "?" until a
+  brand font is embedded (Arabic is out of scope for Phase 2).

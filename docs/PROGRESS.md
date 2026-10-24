@@ -37,7 +37,7 @@ after a `db:reset`).
 | 4 | CRM segments & campaigns | ✅ built (`20261024000007_segments_campaigns.sql`) |
 | 5 | Points & VIP tiers + birthday offer | ✅ built, **off by default** (`20261024000008/9_points*.sql`) |
 | 6 | Giveaways customiser | ✅ built (`20261024000010_giveaways.sql`, local only — not on the hosted DB yet) |
-| 7 | WhatsApp API · courier API · staff attendance · PDF reports (mock providers) | ⬜ |
+| 7 | WhatsApp API · courier API · staff attendance · PDF reports (mock providers) | ✅ built (`20261024000011_operations.sql`, local only — not on the hosted DB yet) |
 
 **1 — Promotions:** Admin → Promotions (`/admin/promotions`): % off / AED off / free delivery, minimum
 order, start/end dates, total uses, uses per customer, category + product scope, pause/delete. Checkout
@@ -104,6 +104,27 @@ saved bags/reminders, the order (`order_lines.options` snapshot), the order page
 re-prices and re-checks every line (`line_unit_price_fils`, `line_options_check`) and refuses orders below the
 minimum. Not built: choices at the till (POS) and on staff manual orders. Tests: `catalog/options.test.ts`, pgTAP
 `170_giveaways_test.sql`, e2e `e2e/giveaways.spec.ts`.
+
+**7 — Operations (stand-in providers until real accounts exist):**
+- *WhatsApp order updates* (`src/providers/messaging`, `MESSAGING_PROVIDER`, only `log` today): "Order
+  confirmed" when an order is paid and "On its way" (with tracking) when it is dispatched, to the order's E.164
+  mobile, from editable templates (`order_confirmation_whatsapp`, `order_dispatched_whatsapp`, Settings →
+  Notifications). **Off by default** (`settings.whatsapp_updates_enabled`, switch on Settings → Notifications);
+  every send is in the outbox with channel `whatsapp`. Transactional only — campaigns stay email.
+- *Courier* (`src/providers/courier`, `COURIER_PROVIDER`, only `mock` "Mock Express" today): Admin → order →
+  Courier: "Book courier" on a paid delivery order (books the parcel, stores the tracking number, marks the order
+  dispatched and sends the dispatch email/WhatsApp), "Refresh tracking", "Print label" (HTML label at
+  `/admin/orders/[id]/label`). A delivered scan marks the order delivered. `GET /api/cron/tracking` (Bearer
+  `CRON_SECRET`) refreshes every open parcel — needs the scheduler (P2-9). Uses `orders.update`; no new keys.
+- *Staff attendance*: every staff member clocks in/out on the dashboard (optionally at a running event); Admin →
+  Attendance shows hours per person and shift (own shifts for everyone, all staff with `staff.manage`, who can
+  add/correct/delete shifts, e.g. a forgotten clock-out). One open shift per person.
+- *PDF reports*: event report and event comparison download as PDF (A4 landscape, same sections as the Excel
+  file, `pdf-lib`) beside Excel and CSV.
+
+Not built: a real WhatsApp/courier integration (needs the accounts), courier for event/POS orders, payroll.
+Tests: `providers/courier/mock.test.ts`, `notifications/whatsapp-notifier.test.ts`, `attendance/attendance.test.ts`,
+`reports/pdf.test.ts`, pgTAP `180_operations_test.sql`, e2e `e2e/operations.spec.ts` + `e2e/event-reports.spec.ts`.
 
 **Preview deployment (2026-10-24):** migrations `20261024000001`–`…009` applied to the hosted DB (after the
 main-compatibility check; production checked afterwards). `phase-2` pushed; Vercel preview at the stable branch URL

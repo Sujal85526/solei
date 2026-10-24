@@ -4,6 +4,8 @@ select plan(11);
 
 select tests.create_staff('ops-sales@solei.test', 'sales_staff') as sales \gset
 select tests.create_staff('ops-owner@solei.test', 'owner') as owner \gset
+-- Shifts already in the database (e2e runs leave some behind).
+select count(*)::int as before from public.staff_attendance \gset
 
 -- Attendance: sales staff clock themselves in and out.
 select tests.login_as(:'sales');
@@ -17,7 +19,7 @@ select throws_ok($$ select public.attendance_save('{}'::jsonb) $$, '42501', null
 -- The owner sees everyone and corrects a forgotten clock-out.
 select tests.login_as(:'owner');
 select public.attendance_clock_in() as open_shift \gset
-select is((select count(*)::int from public.staff_attendance), 2, 'owner sees every shift');
+select is((select count(*)::int from public.staff_attendance), :before + 2, 'owner sees every shift');
 select public.attendance_save(jsonb_build_object('id', :'open_shift', 'user_id', :'owner',
   'clock_in', now() - interval '8 hours', 'clock_out', now() - interval '1 hour', 'note', 'Forgot to clock out'));
 select is((select round(extract(epoch from clock_out - clock_in) / 3600)::int from public.staff_attendance where id = :'open_shift'),
