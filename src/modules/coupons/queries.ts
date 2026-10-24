@@ -1,4 +1,5 @@
 import "server-only";
+import { isUuid } from "@/lib/ids";
 import { assertPermission } from "@/lib/auth/session";
 import type { Database } from "@/lib/database.types";
 import { createAdminClient, createClient } from "@/lib/supabase/server";
@@ -48,6 +49,7 @@ export async function listCoupons(): Promise<(Coupon & CouponUsage)[]> {
 
 export async function getCoupon(id: string): Promise<(Coupon & CouponUsage) | null> {
   await assertPermission("coupons.manage");
+  if (!isUuid(id)) return null;
   const supabase = await createClient();
   const [{ data, error }, used] = await Promise.all([
     supabase.from("coupons").select("*").eq("id", id).maybeSingle(),

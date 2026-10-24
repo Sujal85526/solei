@@ -1,4 +1,5 @@
 import "server-only";
+import { isUuid } from "@/lib/ids";
 import { assertPermission } from "@/lib/auth/session";
 import { createClient } from "@/lib/supabase/server";
 import type { SegmentRules } from "./schema";
@@ -78,6 +79,7 @@ export async function listSegments(): Promise<(Segment & { total: number; emaila
 
 export async function getSegment(id: string): Promise<Segment | null> {
   await assertPermission("marketing.manage");
+  if (!isUuid(id)) return null;
   const supabase = await createClient();
   const { data, error } = await supabase
     .from("customer_segments")
@@ -164,6 +166,7 @@ export async function listCampaigns(): Promise<Campaign[]> {
 
 export async function getCampaign(id: string): Promise<Campaign | null> {
   await assertPermission("marketing.manage");
+  if (!isUuid(id)) return null;
   const supabase = await createClient();
   const { data, error } = await supabase
     .from("campaigns")

@@ -1,4 +1,5 @@
 import "server-only";
+import { isUuid } from "@/lib/ids";
 import { cacheLife, cacheTag } from "next/cache";
 import { assertPermission } from "@/lib/auth/session";
 import { createAdminClient, createClient, createPublicClient } from "@/lib/supabase/server";
@@ -124,6 +125,7 @@ export async function getGiftCard(
   id: string,
 ): Promise<(GiftCardRow & { ledger: LedgerEntry[] }) | null> {
   await assertPermission("gift_cards.view");
+  if (!isUuid(id)) return null;
   const supabase = await createClient();
   const [card, ledger] = await Promise.all([
     supabase.from("gift_cards").select(CARD_COLUMNS).eq("id", id).maybeSingle(),
