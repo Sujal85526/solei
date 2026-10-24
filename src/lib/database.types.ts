@@ -456,6 +456,97 @@ export type Database = {
         }
         Relationships: []
       }
+      cart_reminder_optouts: {
+        Row: {
+          created_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      carts: {
+        Row: {
+          closed_at: string | null
+          created_at: string
+          email: string
+          id: string
+          item_count: number
+          last_reminder_at: string | null
+          lines: Json
+          link_opened_at: string | null
+          name: string | null
+          order_id: string | null
+          reminders_sent: number
+          status: Database["public"]["Enums"]["cart_status"]
+          updated_at: string
+          user_id: string
+          value_fils: number
+        }
+        Insert: {
+          closed_at?: string | null
+          created_at?: string
+          email: string
+          id?: string
+          item_count?: number
+          last_reminder_at?: string | null
+          lines?: Json
+          link_opened_at?: string | null
+          name?: string | null
+          order_id?: string | null
+          reminders_sent?: number
+          status?: Database["public"]["Enums"]["cart_status"]
+          updated_at?: string
+          user_id: string
+          value_fils?: number
+        }
+        Update: {
+          closed_at?: string | null
+          created_at?: string
+          email?: string
+          id?: string
+          item_count?: number
+          last_reminder_at?: string | null
+          lines?: Json
+          link_opened_at?: string | null
+          name?: string | null
+          order_id?: string | null
+          reminders_sent?: number
+          status?: Database["public"]["Enums"]["cart_status"]
+          updated_at?: string
+          user_id?: string
+          value_fils?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "carts_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "admin_orders"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "carts_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "order_payment_summary"
+            referencedColumns: ["order_id"]
+          },
+          {
+            foreignKeyName: "carts_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "orders"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       categories: {
         Row: {
           active: boolean
@@ -2597,6 +2688,9 @@ export type Database = {
           booking_flower_base_fils: number
           booking_quote_validity_days: number
           business_name: string
+          cart_reminder_first_hours: number
+          cart_reminder_second_hours: number | null
+          cart_reminders_enabled: boolean
           contact_email: string | null
           contact_phone: string | null
           currency: string
@@ -2623,6 +2717,9 @@ export type Database = {
           booking_flower_base_fils?: number
           booking_quote_validity_days?: number
           business_name?: string
+          cart_reminder_first_hours?: number
+          cart_reminder_second_hours?: number | null
+          cart_reminders_enabled?: boolean
           contact_email?: string | null
           contact_phone?: string | null
           currency?: string
@@ -2649,6 +2746,9 @@ export type Database = {
           booking_flower_base_fils?: number
           booking_quote_validity_days?: number
           business_name?: string
+          cart_reminder_first_hours?: number
+          cart_reminder_second_hours?: number | null
+          cart_reminders_enabled?: boolean
           contact_email?: string | null
           contact_phone?: string | null
           currency?: string
@@ -3105,6 +3205,52 @@ export type Database = {
       cancel_order: {
         Args: { p_order_id: string; p_reason: string; p_restock?: boolean }
         Returns: number
+      }
+      cart_order_paid: { Args: { p_order_id: string }; Returns: undefined }
+      cart_reminder_sent: { Args: { p_cart: string }; Returns: undefined }
+      cart_set_optout: {
+        Args: { p_out: boolean; p_user: string }
+        Returns: undefined
+      }
+      cart_stats: {
+        Args: { p_from: string }
+        Returns: {
+          abandoned: number
+          abandoned_fils: number
+          recovered: number
+          recovered_fils: number
+          reminded: number
+        }[]
+      }
+      cart_sync: {
+        Args: { p_email: string; p_lines: Json; p_name: string; p_user: string }
+        Returns: string
+      }
+      carts_due_for_reminder: {
+        Args: never
+        Returns: {
+          closed_at: string | null
+          created_at: string
+          email: string
+          id: string
+          item_count: number
+          last_reminder_at: string | null
+          lines: Json
+          link_opened_at: string | null
+          name: string | null
+          order_id: string | null
+          reminders_sent: number
+          status: Database["public"]["Enums"]["cart_status"]
+          updated_at: string
+          user_id: string
+          value_fils: number
+        }[]
+        SetofOptions: {
+          from: "*"
+          to: "carts"
+          isOneToOne: false
+          isSetofReturn: true
+        }
       }
       close_event_stock: {
         Args: {
@@ -3651,6 +3797,7 @@ export type Database = {
         | "completed"
         | "rejected"
         | "cancelled"
+      cart_status: "open" | "converted" | "emptied"
       coupon_kind: "percent" | "fixed" | "free_delivery"
       customer_source:
         | "website"
@@ -3871,6 +4018,7 @@ export const Constants = {
         "rejected",
         "cancelled",
       ],
+      cart_status: ["open", "converted", "emptied"],
       coupon_kind: ["percent", "fixed", "free_delivery"],
       customer_source: [
         "website",
