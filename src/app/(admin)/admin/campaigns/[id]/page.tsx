@@ -57,7 +57,10 @@ export default async function CampaignPage({ params }: PageProps<"/admin/campaig
   const recipients = await campaignRecipients(id);
   const email = renderTemplate(
     { subject: campaign.subject, body: withFooter(campaign.body) },
-    { first_name: "Layla", unsubscribe_link: "#unsubscribe" },
+    {
+      first_name: "Layla",
+      unsubscribe_link: `${process.env.NEXT_PUBLIC_SITE_URL ?? ""}/unsubscribe`,
+    },
   );
   return (
     <>

@@ -57,7 +57,10 @@ export function CampaignEditor({
     () =>
       renderTemplate(
         { subject, body: withFooter(body) },
-        { first_name: "Layla", unsubscribe_link: "#unsubscribe" },
+        {
+          first_name: "Layla",
+          unsubscribe_link: `${process.env.NEXT_PUBLIC_SITE_URL ?? ""}/unsubscribe`,
+        },
       ),
     [subject, body],
   );
