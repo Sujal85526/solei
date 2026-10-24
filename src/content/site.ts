@@ -1,3 +1,5 @@
+import { FEATURES } from "@/lib/features";
+
 /**
  * The header shows the first three; the menu and footer show all. `soon` pages are listed but
  * locked (shown with a "Coming soon" tag, not linked).
@@ -9,7 +11,7 @@ export const storeNav: readonly {
 }[] = [
   { href: "/", key: "home" },
   { href: "/shop", key: "collections" },
-  { href: "/events", key: "events", soon: true },
+  { href: "/events", key: "events", soon: !FEATURES.bookings },
   { href: "/story", key: "story" },
   { href: "/passport", key: "passport" },
   { href: "/gift-cards", key: "giftCards" },
