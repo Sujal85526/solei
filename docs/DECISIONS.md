@@ -415,3 +415,17 @@ Open client questions are built as configurable defaults. Each row: what we chos
   the old payment page later, the order shows the gift card part outstanding.
 - **P2-7 — Security:** codes are 12 characters from 32 unambiguous symbols (bearer secrets); lookups need a
   signed-in customer (checkout) or `pos.use` (till). Gift cards can't buy gift cards.
+
+## Phase 2 — abandoned carts (branch `phase-2`, 2026-10-24)
+- **P2-8 — Who and when:** only signed-in customers (we need an email and the bag lives in the browser).
+  The bag is mirrored on every change (debounced 1.5 s; one open bag per customer). Reminder timing counts
+  from the last change; at most two reminders per bag, only for bags changed in the last 30 days. Skipped
+  for customers who turned reminders off (email button or Account → Emails) or unsubscribed from marketing.
+  Owner settings: on/off, first delay (hours), second delay (hours, empty = one reminder). Wording: the
+  `cart_reminder` template in Settings → Notifications.
+- **P2-9 — Scheduler (decision needed before launch):** reminders go out from `GET /api/cron/cart-reminders`
+  (Bearer `CRON_SECRET`) and the admin "Send due reminders now" button. Vercel Hobby only allows daily cron
+  jobs, so hourly sending needs Vercel Pro (a `crons` entry in `vercel.json`) or an external pinger / Supabase
+  pg_cron + pg_net. Not added to `vercel.json` yet so a deploy can't fail on the plan limit.
+- **P2-10 — Recovered:** a paid website order converts the buyer's open bag (or the bag the order page emptied
+  in the hour before); it counts as recovered when at least one reminder was sent.

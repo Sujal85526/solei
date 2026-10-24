@@ -33,7 +33,7 @@ after a `db:reset`).
 |---|---|---|
 | 1 | Promotions / discount engine | ✅ built (`20261024000001/2_promotions*.sql`) |
 | 2 | Gift cards | ✅ built (`20261024000003–5_gift_card*.sql`) |
-| 3 | Abandoned cart | ⬜ |
+| 3 | Abandoned cart | ✅ built (`20261024000006_abandoned_carts.sql`) |
 | 4 | CRM segments & campaigns | ⬜ |
 | 5 | Points & VIP tiers + birthday offer | ⬜ |
 | 6 | Giveaways customiser | ⬜ |
@@ -58,6 +58,16 @@ card page with balance history, resend / adjust / void, Issue gift card, Setting
 months valid, accept at the till). Refunds to "Gift card" (order page) and cancellations credit the card;
 unpaid checkouts give the held balance back after 24 h. Tests: `gift-cards/schema.test.ts`, pgTAP
 `130_gift_cards_test.sql` (28), e2e `e2e/gift-cards.spec.ts` (3 viewports).
+
+**3 — Abandoned carts:** signed-in customers' bags are mirrored to `carts` (and brought back on another device
+with an empty bag). A bag left untouched gets a "Bag reminder" email after the owner's delay (default 4 h) and
+optionally a second (default 48 h) — never more than two, only within 30 days, never to opted-out or
+unsubscribed customers. The email links "Return to your bag" (`/cart/restore`, puts the bag back and opens
+checkout) and "Turn them off" (`/cart/stop`, a button page). Account → Emails switches reminders on/off. A paid
+order closes the bag ("Recovered" when a reminder had gone out). Admin → Abandoned carts: figures, In bags now /
+Recovered / All, Reminders settings (on/off, hours), "Send due reminders now". Automatic sending needs a
+scheduler calling `GET /api/cron/cart-reminders` with `Authorization: Bearer $CRON_SECRET` (see DECISIONS
+P2-9). Tests: `carts/carts.test.ts`, pgTAP `140_abandoned_carts_test.sql`, e2e `e2e/abandoned-carts.spec.ts`.
 
 **Left for the hardening pass (M17):**
 - pgTAP `070_orders_admin`, `080_bookings`, `110_reports` fail on stale expectations from later Phase 1
