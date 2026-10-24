@@ -4,6 +4,7 @@ import {
   CalendarDays,
   CreditCard,
   ClipboardList,
+  Clock,
   Gift,
   LayoutDashboard,
   Megaphone,
@@ -86,6 +87,7 @@ export const adminNav: AdminNavItem[] = [
   { href: "/admin/loyalty", key: "loyalty", icon: Gift, permission: "loyalty.view" },
   { href: "/admin/reports", key: "reports", icon: BarChart3, permission: "reports.view" },
   { href: "/admin/staff", key: "staff", icon: ShieldCheck, permission: "staff.manage" },
+  { href: "/admin/attendance", key: "attendance", icon: Clock, permission: "dashboard.view" },
   { href: "/admin/settings", key: "settings", icon: Settings, permission: "settings.manage" },
   { href: "/admin/activity", key: "activity", icon: History, permission: "audit.view" },
 ];

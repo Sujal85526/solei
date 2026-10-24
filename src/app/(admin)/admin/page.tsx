@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { FEATURES } from "@/lib/features";
 import { ArrowRight, MonitorSmartphone, Plus } from "lucide-react";
+import { ClockCard } from "@/components/admin/attendance/clock-card";
 import { ExportsPanel } from "@/components/admin/dashboard/exports-panel";
 import { StatusBadge } from "@/components/admin/events/event-style";
 import { PageHeader } from "@/components/admin/page-header";
@@ -13,6 +14,7 @@ import { requirePagePermission } from "@/lib/auth/session";
 import { formatBusinessDate } from "@/lib/dates";
 import { formatAED } from "@/lib/money";
 import { can } from "@/lib/permissions";
+import { eventsOn, myOpenShift } from "@/modules/attendance/queries";
 import { changeBp, formatChange, startsIn } from "@/modules/dashboard/logic";
 import { dashboardSummary } from "@/modules/dashboard/queries";
 import type { PeriodFigures, PeriodKey } from "@/modules/dashboard/types";
@@ -65,7 +67,11 @@ const linkCls = "text-primary inline-flex items-center gap-1 text-sm font-medium
 
 export default async function AdminDashboard() {
   const staff = await requirePagePermission("dashboard.view");
-  const d = await dashboardSummary();
+  const [d, openShift, todaysEvents] = await Promise.all([
+    dashboardSummary(),
+    myOpenShift(),
+    eventsOn(),
+  ]);
   const perms = staff.permissions;
   const firstName = staff.name.split(" ")[0] || staff.name;
   const exportKinds = EXPORT_KINDS.filter((k) => can(perms, EXPORT_PERMISSION[k]));
@@ -96,6 +102,8 @@ export default async function AdminDashboard() {
           </>
         }
       />
+
+      <ClockCard open={openShift} events={todaysEvents} />
 
       <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
         {PERIODS.map((p, i) => periodKpi(d.periods[p.key], p.label, p.vs, d.money, i === 0))}

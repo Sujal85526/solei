@@ -198,6 +198,7 @@ export const en = {
       giftCards: "Gift cards",
       carts: "Abandoned carts",
       campaigns: "Campaigns",
+      attendance: "Attendance",
       reviews: "Reviews",
       calendar: "Calendar",
       bookings: "Bookings",
