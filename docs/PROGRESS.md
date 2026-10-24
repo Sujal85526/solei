@@ -35,7 +35,7 @@ after a `db:reset`).
 | 2 | Gift cards | ✅ built (`20261024000003–5_gift_card*.sql`) |
 | 3 | Abandoned cart | ✅ built (`20261024000006_abandoned_carts.sql`) |
 | 4 | CRM segments & campaigns | ✅ built (`20261024000007_segments_campaigns.sql`) |
-| 5 | Points & VIP tiers + birthday offer | ⬜ |
+| 5 | Points & VIP tiers + birthday offer | ✅ built, **off by default** (`20261024000008/9_points*.sql`) |
 | 6 | Giveaways customiser | ⬜ |
 | 7 | WhatsApp API · courier API · staff attendance · PDF reports (mock providers) | ⬜ |
 
@@ -79,6 +79,20 @@ sending starts, each send is logged (outbox key `campaign`, recipients table), "
 interruption. Every email ends with the recipient's own unsubscribe link (`/unsubscribe`, a button page →
 consent off, `unsubscribed_at`). Sends go through the log provider until Resend. Tests:
 `campaigns/campaigns.test.ts`, pgTAP `150_segments_test.sql`, e2e `e2e/campaigns.spec.ts`.
+
+**5 — Points, VIP tiers, birthday bonus:** beside the Solei Passport (stamps untouched — pgTAP checks them with
+points on and off; main's Passport e2e still passes on the Phase 2 DB). **Master switch off by default**
+(`rewards_settings.points_enabled`); Admin → Loyalty → Points & tiers edits everything: points per AED (1), point
+value (AED 0.05), minimum to spend (200), birthday bonus on/off and points (250), tiers (Explorer AED 0 ×1 ·
+Voyager AED 1,000 ×1.25 · Globetrotter AED 3,000 ×1.5, by spend in the last 12 months, with perks text), "Send
+today's birthday bonuses", figures. Earning: when an order is paid, on what was paid by money (not gift card or
+points), × tier multiplier; gift card purchases don't earn; cancelling takes points back. Spending: checkout
+"Use N points (AED x off)" before a gift card, as a `loyalty_points` payment; refunds / cancellations / unpaid
+checkouts (24 h) give points back. Birthday: customers add day + month in Account → Rewards (staff on the customer
+page); bonus once a year with the `birthday_points` email, via `GET /api/cron/birthdays` (daily, Bearer
+`CRON_SECRET`) or the admin button. Customer profile: points, tier, history, Adjust points, birthday. Not built:
+spending points at the till (staff can adjust points by hand), points expiry. Tests: `points/points.test.ts`,
+pgTAP `160_points_test.sql`, e2e `e2e/points.spec.ts`.
 
 **Preview deployment (2026-10-24):** migrations `20261024000001`–`…009` applied to the hosted DB (after the
 main-compatibility check; production checked afterwards). `phase-2` pushed; Vercel preview at the stable branch URL

@@ -440,3 +440,20 @@ Open client questions are built as configurable defaults. Each row: what we chos
   sends would move to a queue (not needed yet).
 - **P2-13 — Shared DB rules:** Phase 2 migrations stay additive while the live site runs `main` on the same DB —
   no drops/renames main uses, same RPC signatures, no permission grants main's role editor can't save.
+
+## Phase 2 — points, VIP tiers, birthday (branch `phase-2`, 2026-10-24)
+- **P2-14 — Separate from the Passport:** points live in `points_ledger` and `rewards_settings`; the 12-sticker
+  Passport (stamps, rewards, rule versions) is not touched and keeps earning on the same orders. Existing
+  permissions are reused (`loyalty.view` / `loyalty.manage` / `loyalty.adjust`) so the live site's role editor
+  (main) keeps working on the shared DB.
+- **P2-15 — Defaults (all editable, programme off until the owner switches it on):** 1 point per AED paid by
+  money; 1 point = AED 0.05 (5% back); spend from 200 points; tiers by 12-month spend Explorer 0 ×1, Voyager
+  AED 1,000 ×1.25, Globetrotter AED 3,000 ×1.5; birthday bonus 250 points. The tier for an order is the one held
+  before it.
+- **P2-16 — Spending points is a payment** (`payments.method = loyalty_points`, like gift cards) so prices, VAT
+  and the coupon discount stay as they are; refunds of that payment credit points back at the rate spent.
+  Points are spent from the signed-in customer's record; earned points go to the order's customer (matched by
+  phone first, like Passport stamps) — the same record in practice.
+- **P2-17 — Birthday:** day + month only (no year); 29 Feb is celebrated on 28 Feb in other years; only customers
+  with an email who have bought at least once; once per calendar year. Needs the daily scheduler (P2-9) or the
+  admin button.
