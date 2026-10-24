@@ -7,11 +7,11 @@ import type { BookingConfig } from "@/modules/bookings/types";
 export function PackageCompare({ packages }: { packages: BookingConfig["packages"] }) {
   const rows = [...new Set(packages.flatMap((p) => p.inclusions))];
   return (
-    <div className="border-pink/15 overflow-x-auto border">
+    <div className="bg-cream overflow-x-auto rounded-sm">
       <table className="w-full min-w-[34rem] border-collapse text-sm">
         <caption className="sr-only">{c.packages.compare}</caption>
         <thead>
-          <tr className="border-pink/15 border-b">
+          <tr className="border-burgundy/15 border-b">
             <th scope="col" className="w-2/5 p-4 text-start font-normal">
               <span className="sr-only">Inclusion</span>
             </th>
@@ -19,7 +19,7 @@ export function PackageCompare({ packages }: { packages: BookingConfig["packages
               <th
                 key={p.id}
                 scope="col"
-                className="font-display text-pink p-4 text-start text-xl font-normal"
+                className="font-display text-burgundy p-4 text-start text-xl font-normal"
               >
                 {p.name}
               </th>
@@ -27,28 +27,28 @@ export function PackageCompare({ packages }: { packages: BookingConfig["packages
           </tr>
         </thead>
         <tbody>
-          <tr className="border-pink/10 border-b">
-            <th scope="row" className="text-pearl-muted p-4 text-start font-normal">
+          <tr className="border-burgundy/10 border-b">
+            <th scope="row" className="text-ink-muted p-4 text-start font-normal">
               {c.packages.price}
             </th>
             {packages.map((p) => (
-              <td key={p.id} className="numeric text-pearl p-4">
+              <td key={p.id} className="numeric text-burgundy p-4">
                 {formatAED(p.basePriceFils)}
               </td>
             ))}
           </tr>
           {rows.map((row) => (
-            <tr key={row} className="border-pink/10 border-b last:border-0">
-              <th scope="row" className="text-pearl/85 p-4 text-start font-normal">
+            <tr key={row} className="border-burgundy/10 border-b last:border-0">
+              <th scope="row" className="text-ink/85 p-4 text-start font-normal">
                 {row}
               </th>
               {packages.map((p) => (
                 <td key={p.id} className="p-4">
                   {p.inclusions.includes(row) ? (
-                    <Check className="text-pink size-4" aria-label={c.packages.included} />
+                    <Check className="text-burgundy size-4" aria-label={c.packages.included} />
                   ) : (
                     <Minus
-                      className="text-pearl-muted/50 size-4"
+                      className="text-ink-muted/50 size-4"
                       aria-label={c.packages.notIncluded}
                     />
                   )}

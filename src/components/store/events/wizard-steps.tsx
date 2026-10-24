@@ -194,7 +194,7 @@ export function DetailsStep({ draft, errors, update }: StepProps) {
           {...aria("emirate")}
           value={draft.emirate}
           onChange={(e) => update({ emirate: e.target.value })}
-          className="[&_select]:bg-noir [&_select]:h-12 [&_select]:text-base"
+          className="[&_select]:bg-burgundy-deep [&_select]:h-12 [&_select]:text-base"
         >
           <option value="">{w.fields.chooseEmirate}</option>
           {Constants.public.Enums.emirate.map((e) => (
@@ -482,7 +482,7 @@ export function ContactStep({ draft, errors, update }: StepProps) {
           placeholder={f.requestsPlaceholder}
           value={draft.specialRequests}
           onChange={(e) => update({ specialRequests: e.target.value })}
-          className="bg-noir text-base"
+          className="bg-burgundy-deep text-base"
         />
       </Field>
       <div className="flex flex-col gap-3 sm:col-span-2" data-field="consent">
