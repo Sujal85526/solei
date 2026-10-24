@@ -456,6 +456,114 @@ export type Database = {
         }
         Relationships: []
       }
+      campaign_recipients: {
+        Row: {
+          campaign_id: string
+          created_at: string
+          customer_id: string | null
+          email: string
+          error: string | null
+          id: number
+          sent_at: string | null
+          status: Database["public"]["Enums"]["campaign_recipient_status"]
+        }
+        Insert: {
+          campaign_id: string
+          created_at?: string
+          customer_id?: string | null
+          email: string
+          error?: string | null
+          id?: never
+          sent_at?: string | null
+          status?: Database["public"]["Enums"]["campaign_recipient_status"]
+        }
+        Update: {
+          campaign_id?: string
+          created_at?: string
+          customer_id?: string | null
+          email?: string
+          error?: string | null
+          id?: never
+          sent_at?: string | null
+          status?: Database["public"]["Enums"]["campaign_recipient_status"]
+        }
+        Relationships: [
+          {
+            foreignKeyName: "campaign_recipients_campaign_id_fkey"
+            columns: ["campaign_id"]
+            isOneToOne: false
+            referencedRelation: "campaigns"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "campaign_recipients_customer_id_fkey"
+            columns: ["customer_id"]
+            isOneToOne: false
+            referencedRelation: "customer_summary"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "campaign_recipients_customer_id_fkey"
+            columns: ["customer_id"]
+            isOneToOne: false
+            referencedRelation: "customers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      campaigns: {
+        Row: {
+          body: string
+          created_at: string
+          created_by: string | null
+          id: string
+          name: string
+          segment_id: string | null
+          segment_name: string | null
+          sent_at: string | null
+          sent_by: string | null
+          status: Database["public"]["Enums"]["campaign_status"]
+          subject: string
+          updated_at: string
+        }
+        Insert: {
+          body?: string
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          name: string
+          segment_id?: string | null
+          segment_name?: string | null
+          sent_at?: string | null
+          sent_by?: string | null
+          status?: Database["public"]["Enums"]["campaign_status"]
+          subject?: string
+          updated_at?: string
+        }
+        Update: {
+          body?: string
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          name?: string
+          segment_id?: string | null
+          segment_name?: string | null
+          sent_at?: string | null
+          sent_by?: string | null
+          status?: Database["public"]["Enums"]["campaign_status"]
+          subject?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "campaigns_segment_id_fkey"
+            columns: ["segment_id"]
+            isOneToOne: false
+            referencedRelation: "customer_segments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       cart_reminder_optouts: {
         Row: {
           created_at: string
@@ -639,6 +747,36 @@ export type Database = {
           percent_bp?: number | null
           product_ids?: string[]
           starts_at?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      customer_segments: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          description: string | null
+          id: string
+          name: string
+          rules: Json
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          id?: string
+          name: string
+          rules?: Json
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          id?: string
+          name?: string
+          rules?: Json
           updated_at?: string
         }
         Relationships: []
@@ -3347,6 +3485,7 @@ export type Database = {
           isSetofReturn: false
         }
       }
+      customer_unsubscribe: { Args: { p_customer: string }; Returns: undefined }
       dashboard_summary: { Args: never; Returns: Json }
       event_report_data: { Args: { p_event_ids: string[] }; Returns: Json }
       event_staff_options: {
@@ -3665,6 +3804,20 @@ export type Database = {
           status: Database["public"]["Enums"]["review_status"]
         }[]
       }
+      segment_members: {
+        Args: { p_rules: Json }
+        Returns: {
+          customer_id: string
+          email: string
+          emailable: boolean
+          emirate: Database["public"]["Enums"]["emirate"]
+          has_passport: boolean
+          last_purchase_at: string
+          name: string
+          order_count: number
+          total_spent_fils: number
+        }[]
+      }
       send_booking_quote: {
         Args: { p: Json }
         Returns: {
@@ -3797,6 +3950,8 @@ export type Database = {
         | "completed"
         | "rejected"
         | "cancelled"
+      campaign_recipient_status: "pending" | "sent" | "failed" | "skipped"
+      campaign_status: "draft" | "sending" | "sent"
       cart_status: "open" | "converted" | "emptied"
       coupon_kind: "percent" | "fixed" | "free_delivery"
       customer_source:
@@ -4018,6 +4173,8 @@ export const Constants = {
         "rejected",
         "cancelled",
       ],
+      campaign_recipient_status: ["pending", "sent", "failed", "skipped"],
+      campaign_status: ["draft", "sending", "sent"],
       cart_status: ["open", "converted", "emptied"],
       coupon_kind: ["percent", "fixed", "free_delivery"],
       customer_source: [
