@@ -21,7 +21,7 @@ export function adminClient() {
 export async function signIn(page: Page, email: string, password = DEV_PASSWORD) {
   await page.goto("/admin/login");
   await page.getByLabel("Email").fill(email);
-  await page.getByLabel("Password").fill(password);
+  await page.getByLabel("Password", { exact: true }).fill(password);
   await page.getByRole("button", { name: "Sign in" }).click();
 }
 
@@ -59,12 +59,12 @@ export async function signInAsOwner(page: Page, owner?: TotpUser) {
   await expect(page.getByRole("heading", { name: "Verify it's you" })).toBeVisible();
   await page.getByLabel("6-digit code").fill(totp(who.totpSecret));
   await page.getByRole("button", { name: "Verify" }).click();
-  await expect(page.getByRole("heading", { level: 1, name: "Dashboard" })).toBeVisible();
+  await expect(page.getByRole("heading", { level: 1, name: /^Hello/ })).toBeVisible();
 }
 
 export async function signInAsSales(page: Page) {
   await signIn(page, SALES.email);
-  await expect(page.getByRole("heading", { level: 1, name: "Dashboard" })).toBeVisible();
+  await expect(page.getByRole("heading", { level: 1, name: /^Hello/ })).toBeVisible();
 }
 
 /** Create a throwaway staff user directly (for tests that mutate state). */

@@ -1,10 +1,9 @@
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
 
-/** Read .env.local (Playwright doesn't load it) so tests can reach local Supabase. */
-export function localEnv(): Record<string, string> {
+function readEnvFile(name: string): Record<string, string> {
   try {
-    const raw = readFileSync(join(process.cwd(), ".env.local"), "utf8");
+    const raw = readFileSync(join(process.cwd(), name), "utf8");
     return Object.fromEntries(
       raw
         .split("\n")
@@ -23,6 +22,14 @@ export function localEnv(): Record<string, string> {
   } catch {
     return {};
   }
+}
+
+/**
+ * Read .env.local, overridden by .env.development.local (as `next dev` does), so tests reach the
+ * same Supabase as the dev server. Playwright doesn't load either itself.
+ */
+export function localEnv(): Record<string, string> {
+  return { ...readEnvFile(".env.local"), ...readEnvFile(".env.development.local") };
 }
 
 export const MAILPIT_URL = process.env.MAILPIT_URL ?? "http://127.0.0.1:54324";
