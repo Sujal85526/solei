@@ -788,6 +788,8 @@ export type Database = {
         Row: {
           address: Json | null
           auth_user_id: string | null
+          birth_day: number | null
+          birth_month: number | null
           created_at: string
           email: string | null
           emirate: Database["public"]["Enums"]["emirate"] | null
@@ -805,6 +807,8 @@ export type Database = {
         Insert: {
           address?: Json | null
           auth_user_id?: string | null
+          birth_day?: number | null
+          birth_month?: number | null
           created_at?: string
           email?: string | null
           emirate?: Database["public"]["Enums"]["emirate"] | null
@@ -822,6 +826,8 @@ export type Database = {
         Update: {
           address?: Json | null
           auth_user_id?: string | null
+          birth_day?: number | null
+          birth_month?: number | null
           created_at?: string
           email?: string | null
           emirate?: Database["public"]["Enums"]["emirate"] | null
@@ -1726,6 +1732,36 @@ export type Database = {
           },
         ]
       }
+      loyalty_tiers: {
+        Row: {
+          created_at: string
+          id: string
+          min_spend_fils: number
+          name: string
+          perks: string | null
+          points_multiplier_bp: number
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          min_spend_fils: number
+          name: string
+          perks?: string | null
+          points_multiplier_bp?: number
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          min_spend_fils?: number
+          name?: string
+          perks?: string | null
+          points_multiplier_bp?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
       notification_log: {
         Row: {
           booking_id: string | null
@@ -2482,6 +2518,91 @@ export type Database = {
         }
         Relationships: []
       }
+      points_ledger: {
+        Row: {
+          birthday_year: number | null
+          created_at: string
+          created_by: string | null
+          customer_id: string
+          entry: Database["public"]["Enums"]["points_entry"]
+          id: number
+          note: string | null
+          order_id: string | null
+          payment_id: string | null
+          points: number
+          value_fils: number | null
+        }
+        Insert: {
+          birthday_year?: number | null
+          created_at?: string
+          created_by?: string | null
+          customer_id: string
+          entry: Database["public"]["Enums"]["points_entry"]
+          id?: never
+          note?: string | null
+          order_id?: string | null
+          payment_id?: string | null
+          points: number
+          value_fils?: number | null
+        }
+        Update: {
+          birthday_year?: number | null
+          created_at?: string
+          created_by?: string | null
+          customer_id?: string
+          entry?: Database["public"]["Enums"]["points_entry"]
+          id?: never
+          note?: string | null
+          order_id?: string | null
+          payment_id?: string | null
+          points?: number
+          value_fils?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "points_ledger_customer_id_fkey"
+            columns: ["customer_id"]
+            isOneToOne: false
+            referencedRelation: "customer_summary"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "points_ledger_customer_id_fkey"
+            columns: ["customer_id"]
+            isOneToOne: false
+            referencedRelation: "customers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "points_ledger_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "admin_orders"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "points_ledger_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "order_payment_summary"
+            referencedColumns: ["order_id"]
+          },
+          {
+            foreignKeyName: "points_ledger_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "orders"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "points_ledger_payment_id_fkey"
+            columns: ["payment_id"]
+            isOneToOne: false
+            referencedRelation: "payments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       private_settings: {
         Row: {
           id: number
@@ -2759,6 +2880,42 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      rewards_settings: {
+        Row: {
+          birthday_enabled: boolean
+          birthday_points: number
+          id: number
+          min_redeem_points: number
+          point_value_fils: number
+          points_enabled: boolean
+          points_per_aed: number
+          updated_at: string
+          updated_by: string | null
+        }
+        Insert: {
+          birthday_enabled?: boolean
+          birthday_points?: number
+          id?: number
+          min_redeem_points?: number
+          point_value_fils?: number
+          points_enabled?: boolean
+          points_per_aed?: number
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Update: {
+          birthday_enabled?: boolean
+          birthday_points?: number
+          id?: number
+          min_redeem_points?: number
+          point_value_fils?: number
+          points_enabled?: boolean
+          points_per_aed?: number
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Relationships: []
       }
       role_permissions: {
         Row: {
@@ -3324,6 +3481,14 @@ export type Database = {
         Returns: number
       }
       apply_order_stock: { Args: { p_order_id: string }; Returns: undefined }
+      birthdays_due: {
+        Args: never
+        Returns: {
+          customer_id: string
+          email: string
+          name: string
+        }[]
+      }
       booking_estimate: { Args: { p: Json }; Returns: Json }
       booking_paid_fils: { Args: { p_booking_id: string }; Returns: number }
       booking_payment_order: {
@@ -3488,6 +3653,25 @@ export type Database = {
           isSetofReturn: false
         }
       }
+      customer_tier: {
+        Args: { p_customer: string }
+        Returns: {
+          created_at: string
+          id: string
+          min_spend_fils: number
+          name: string
+          perks: string | null
+          points_multiplier_bp: number
+          updated_at: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "loyalty_tiers"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
+      customer_tier_spend: { Args: { p_customer: string }; Returns: number }
       customer_unsubscribe: { Args: { p_customer: string }; Returns: undefined }
       dashboard_summary: { Args: never; Returns: Json }
       event_report_data: { Args: { p_event_ids: string[] }; Returns: Json }
@@ -3685,6 +3869,7 @@ export type Database = {
         }
         Returns: string
       }
+      order_cash_paid: { Args: { p_order_id: string }; Returns: number }
       order_status_allowed: {
         Args: {
           p_from: Database["public"]["Enums"]["order_status"]
@@ -3710,6 +3895,24 @@ export type Database = {
           type: Database["public"]["Enums"]["event_type"]
         }[]
       }
+      points_adjust: {
+        Args: { p_customer: string; p_points: number; p_reason: string }
+        Returns: number
+      }
+      points_award_order: { Args: { p_order_id: string }; Returns: number }
+      points_balance: { Args: { p_customer: string }; Returns: number }
+      points_birthday: { Args: { p_customer: string }; Returns: number }
+      points_overview: { Args: never; Returns: Json }
+      points_redeem: {
+        Args: { p_customer: string; p_order_id: string; p_points: number }
+        Returns: string
+      }
+      points_release_stale: {
+        Args: never
+        Returns: number
+      }
+      points_reverse_order: { Args: { p_order_id: string }; Returns: undefined }
+      points_summary: { Args: { p_customer: string }; Returns: Json }
       pos_complete_sale: {
         Args: { p: Json }
         Returns: {
@@ -4025,7 +4228,10 @@ export type Database = {
         | "payment_link"
         | "other"
         | "gift_card"
+        | "loyalty_points"
       payment_state: "pending" | "succeeded" | "failed" | "cancelled"
+      points_entry:
+        "earn" | "redeem" | "refund" | "reverse" | "adjust" | "birthday"
       review_status: "pending" | "approved" | "declined"
       stock_movement_type:
         | "receive"
@@ -4274,8 +4480,17 @@ export const Constants = {
         "payment_link",
         "other",
         "gift_card",
+        "loyalty_points",
       ],
       payment_state: ["pending", "succeeded", "failed", "cancelled"],
+      points_entry: [
+        "earn",
+        "redeem",
+        "refund",
+        "reverse",
+        "adjust",
+        "birthday",
+      ],
       review_status: ["pending", "approved", "declined"],
       stock_movement_type: [
         "receive",

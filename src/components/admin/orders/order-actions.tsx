@@ -269,6 +269,8 @@ const REFUND_METHODS: PaymentMethod[] = [
   "online_card",
   // Back onto the gift card the order was paid with (the database credits the card).
   "gift_card",
+  // Back as points, at the rate they were spent.
+  "loyalty_points",
   "other",
 ];
 

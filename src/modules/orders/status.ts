@@ -84,6 +84,7 @@ export const PAYMENT_METHOD_LABELS: Record<PaymentMethod, string> = {
   bank_transfer: "Bank transfer",
   payment_link: "Payment link",
   gift_card: "Gift card",
+  loyalty_points: "Points",
   other: "Other",
 };
 
