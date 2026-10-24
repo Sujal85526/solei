@@ -4,10 +4,11 @@ import { businessDay } from "@/lib/dates";
 import { compareRow } from "@/modules/reports/aggregate";
 import { tableToCsv, workbookToXlsx, XLSX_TYPE } from "@/modules/reports/excel";
 import { MIN_COMPARE, parseCompareIds } from "@/modules/reports/params";
+import { PDF_TYPE, workbookToPdf } from "@/modules/reports/pdf";
 import { eventReportFacts } from "@/modules/reports/queries";
 import { compareTable, compareWorkbook } from "@/modules/reports/tables";
 
-/** Comparison download (`?ids=a,b&format=xlsx|csv`); cost columns only with reports.financial.view. */
+/** Comparison download (`?ids=a,b&format=xlsx|pdf|csv`); cost columns only with reports.financial.view. */
 export async function GET(request: NextRequest) {
   try {
     await assertPermission("reports.view");
@@ -24,6 +25,16 @@ export async function GET(request: NextRequest) {
 
   const name = `solei-event-comparison-${businessDay()}`;
   const headers = { "Cache-Control": "private, no-store" };
+
+  if (params.get("format") === "pdf") {
+    return new Response(new Uint8Array(await workbookToPdf(compareWorkbook(facts))), {
+      headers: {
+        ...headers,
+        "Content-Type": PDF_TYPE,
+        "Content-Disposition": `attachment; filename="${name}.pdf"`,
+      },
+    });
+  }
 
   if (params.get("format") === "csv") {
     const financial = facts.every((f) => f.financial);

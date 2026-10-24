@@ -116,10 +116,15 @@ test.describe("event reports", () => {
     await expect(page.getByTestId("kpi-units")).toContainText("1");
     await expect(page.getByTestId("kpi-net-profit")).toHaveCount(0);
 
-    // Excel + CSV downloads.
+    // Excel, PDF and CSV downloads.
     const xlsx = await page.request.get(`/admin/reports/events/${expo}/export?format=xlsx`);
     expect(xlsx.status()).toBe(200);
     expect(xlsx.headers()["content-type"]).toContain("spreadsheetml");
+    const pdf = await page.request.get(`/admin/reports/events/${expo}/export?format=pdf`);
+    expect(pdf.status()).toBe(200);
+    expect(pdf.headers()["content-type"]).toBe("application/pdf");
+    expect((await pdf.body()).subarray(0, 5).toString()).toBe("%PDF-");
+    await expect(page.getByTestId("export-pdf")).toBeVisible();
     const csv = await page.request.get(`/admin/reports/events/${expo}/export?format=csv`);
     expect(await csv.text()).toContain("COGS (AED)");
 
@@ -133,6 +138,10 @@ test.describe("event reports", () => {
       `/admin/reports/events/compare/export?ids=${expo},${popup}&format=csv`,
     );
     expect(compareCsv.status()).toBe(200);
+    const comparePdf = await page.request.get(
+      `/admin/reports/events/compare/export?ids=${expo},${popup}&format=pdf`,
+    );
+    expect(comparePdf.headers()["content-type"]).toBe("application/pdf");
   });
 
   test("sales staff cannot open reports", async ({ page }) => {

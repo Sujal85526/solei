@@ -1,6 +1,6 @@
 import type { ReactNode } from "react";
 import Link from "next/link";
-import { Download, FileSpreadsheet } from "lucide-react";
+import { Download, FileSpreadsheet, FileText } from "lucide-react";
 import { buttonVariants } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
@@ -166,6 +166,14 @@ export function ExportButtons({ href }: { href: string }) {
         data-testid="export-xlsx"
       >
         <FileSpreadsheet /> Excel
+      </a>
+      <a
+        href={`${href}${sep}format=pdf`}
+        download
+        className={buttonVariants({ variant: "outline" })}
+        data-testid="export-pdf"
+      >
+        <FileText /> PDF
       </a>
       <a
         href={`${href}${sep}format=csv`}
