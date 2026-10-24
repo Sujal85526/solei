@@ -25,6 +25,13 @@ const serverSchema = z
     ALLOW_MOCK_PAYMENTS: z.enum(["0", "1"]).optional(),
     MOCK_PAYMENT_SECRET: z.string().optional(),
     ORDER_LINK_SECRET: z.string().optional(),
+    /** Signs the "return to your bag" / "stop reminders" links in cart reminder emails. */
+    CART_LINK_SECRET: z.string().optional(),
+    /** Bearer token the scheduler sends to /api/cron/* (Vercel Cron sets it automatically). */
+    CRON_SECRET: z
+      .string()
+      .optional()
+      .or(z.literal("").transform(() => undefined)),
     RESEND_API_KEY: z
       .string()
       .optional()
@@ -82,3 +89,4 @@ function derived(label: string, explicit?: string) {
 
 export const mockPaymentSecret = () => derived("mock-payments", serverEnv().MOCK_PAYMENT_SECRET);
 export const orderLinkSecret = () => derived("order-links", serverEnv().ORDER_LINK_SECRET);
+export const cartLinkSecret = () => derived("cart-links", serverEnv().CART_LINK_SECRET);

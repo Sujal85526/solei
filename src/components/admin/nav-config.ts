@@ -9,6 +9,7 @@ import {
   type LucideIcon,
   Package,
   Settings,
+  ShoppingCart,
   Star,
   ShieldCheck,
   Store,
@@ -62,6 +63,12 @@ export const adminNav: AdminNavItem[] = [
   { href: "/admin/inventory", key: "inventory", icon: Boxes, permission: "inventory.view" },
   { href: "/admin/reviews", key: "reviews", icon: Star, permission: "reviews.manage" },
   { href: "/admin/customers", key: "customers", icon: Users, permission: "customers.view" },
+  {
+    href: "/admin/carts",
+    key: "carts",
+    icon: ShoppingCart,
+    permission: "customers.view",
+  },
   { href: "/admin/promotions", key: "coupons", icon: TicketPercent, permission: "coupons.manage" },
   {
     href: "/admin/gift-cards",

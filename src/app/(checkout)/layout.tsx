@@ -2,6 +2,7 @@ import Link from "next/link";
 import { ArrowLeft, Lock } from "lucide-react";
 import { Logo } from "@/components/brand";
 import { CartDrawer } from "@/components/store/cart/cart-drawer";
+import { CartSync } from "@/components/store/cart/cart-sync";
 import { t } from "@/content/en";
 
 /**
@@ -38,6 +39,7 @@ export default function CheckoutLayout({ children }: { children: React.ReactNode
       {/* "Bag" / "Return to bag" open the same side drawer as in the store. */}
       <div className="theme-store">
         <CartDrawer />
+        <CartSync />
       </div>
     </div>
   );

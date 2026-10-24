@@ -192,6 +192,7 @@ export const en = {
       customers: "Customers",
       coupons: "Promotions",
       giftCards: "Gift cards",
+      carts: "Abandoned carts",
       reviews: "Reviews",
       calendar: "Calendar",
       bookings: "Bookings",
@@ -239,6 +240,18 @@ export const en = {
     empty: "Your bag is empty.",
     shop: "Shop the collection",
     backToBag: "Return to bag",
+  },
+  cartLinks: {
+    restoring: "Bringing back your bag…",
+    restoreTitle: "Your bag",
+    alreadyBought: "This bag has already been ordered — thank you.",
+    stopTitle: "Bag reminders",
+    stopBody:
+      "We send a gentle email when something is left in your bag. Turn these reminders off?",
+    stopButton: "Turn off bag reminders",
+    stoppedTitle: "Reminders are off.",
+    stoppedBody:
+      "We won't email you about your bag again. You can turn them back on in your account.",
   },
   order: {
     paidTitle: "Thank you.",

@@ -1,4 +1,5 @@
 import { CartDrawer } from "@/components/store/cart/cart-drawer";
+import { CartSync } from "@/components/store/cart/cart-sync";
 import { SiteFooter } from "@/components/store/site-footer";
 import { SiteHeader } from "@/components/store/site-header";
 
@@ -11,6 +12,7 @@ export default function StoreLayout({ children }: LayoutProps<"/">) {
       </main>
       <SiteFooter />
       <CartDrawer />
+      <CartSync />
     </div>
   );
 }

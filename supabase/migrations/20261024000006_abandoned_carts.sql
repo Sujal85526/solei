@@ -103,7 +103,8 @@ begin
 end;
 $$;
 
--- A paid website order closes the buyer's open bag (matched by the account email).
+-- A paid website order closes the buyer's open bag (matched by the account email) — or the bag the
+-- order page just emptied, which can happen a moment before the payment is processed.
 create or replace function public.cart_order_paid(p_order_id uuid)
 returns void
 language plpgsql
@@ -116,7 +117,9 @@ begin
   select * into v_order from orders where id = p_order_id;
   if not found or v_order.channel <> 'website' or v_order.contact_email is null then return; end if;
   update carts set status = 'converted', order_id = p_order_id, closed_at = now()
-   where status = 'open' and email = lower(v_order.contact_email);
+   where email = lower(v_order.contact_email)
+     and (status = 'open' or (status = 'emptied' and closed_at > now() - interval '1 hour'
+                              and order_id is null));
 end;
 $$;
 
