@@ -933,6 +933,180 @@ export type Database = {
         }
         Relationships: []
       }
+      gift_card_ledger: {
+        Row: {
+          amount_fils: number
+          created_at: string
+          created_by: string | null
+          entry: Database["public"]["Enums"]["gift_card_entry"]
+          gift_card_id: string
+          id: number
+          note: string | null
+          order_id: string | null
+          payment_id: string | null
+        }
+        Insert: {
+          amount_fils: number
+          created_at?: string
+          created_by?: string | null
+          entry: Database["public"]["Enums"]["gift_card_entry"]
+          gift_card_id: string
+          id?: never
+          note?: string | null
+          order_id?: string | null
+          payment_id?: string | null
+        }
+        Update: {
+          amount_fils?: number
+          created_at?: string
+          created_by?: string | null
+          entry?: Database["public"]["Enums"]["gift_card_entry"]
+          gift_card_id?: string
+          id?: never
+          note?: string | null
+          order_id?: string | null
+          payment_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "gift_card_ledger_gift_card_id_fkey"
+            columns: ["gift_card_id"]
+            isOneToOne: false
+            referencedRelation: "gift_cards"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "gift_card_ledger_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "admin_orders"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "gift_card_ledger_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "order_payment_summary"
+            referencedColumns: ["order_id"]
+          },
+          {
+            foreignKeyName: "gift_card_ledger_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "orders"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "gift_card_ledger_payment_id_fkey"
+            columns: ["payment_id"]
+            isOneToOne: false
+            referencedRelation: "payments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      gift_cards: {
+        Row: {
+          activated_at: string | null
+          buyer_customer_id: string | null
+          code: string
+          created_at: string
+          expires_at: string | null
+          id: string
+          initial_fils: number
+          issued_by: string | null
+          message: string | null
+          note: string | null
+          purchase_order_id: string | null
+          recipient_email: string | null
+          recipient_name: string | null
+          sender_name: string | null
+          sent_at: string | null
+          status: Database["public"]["Enums"]["gift_card_status"]
+          updated_at: string
+          void_reason: string | null
+          voided_at: string | null
+        }
+        Insert: {
+          activated_at?: string | null
+          buyer_customer_id?: string | null
+          code: string
+          created_at?: string
+          expires_at?: string | null
+          id?: string
+          initial_fils: number
+          issued_by?: string | null
+          message?: string | null
+          note?: string | null
+          purchase_order_id?: string | null
+          recipient_email?: string | null
+          recipient_name?: string | null
+          sender_name?: string | null
+          sent_at?: string | null
+          status?: Database["public"]["Enums"]["gift_card_status"]
+          updated_at?: string
+          void_reason?: string | null
+          voided_at?: string | null
+        }
+        Update: {
+          activated_at?: string | null
+          buyer_customer_id?: string | null
+          code?: string
+          created_at?: string
+          expires_at?: string | null
+          id?: string
+          initial_fils?: number
+          issued_by?: string | null
+          message?: string | null
+          note?: string | null
+          purchase_order_id?: string | null
+          recipient_email?: string | null
+          recipient_name?: string | null
+          sender_name?: string | null
+          sent_at?: string | null
+          status?: Database["public"]["Enums"]["gift_card_status"]
+          updated_at?: string
+          void_reason?: string | null
+          voided_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "gift_cards_buyer_customer_id_fkey"
+            columns: ["buyer_customer_id"]
+            isOneToOne: false
+            referencedRelation: "customer_summary"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "gift_cards_buyer_customer_id_fkey"
+            columns: ["buyer_customer_id"]
+            isOneToOne: false
+            referencedRelation: "customers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "gift_cards_purchase_order_id_fkey"
+            columns: ["purchase_order_id"]
+            isOneToOne: false
+            referencedRelation: "admin_orders"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "gift_cards_purchase_order_id_fkey"
+            columns: ["purchase_order_id"]
+            isOneToOne: false
+            referencedRelation: "order_payment_summary"
+            referencedColumns: ["order_id"]
+          },
+          {
+            foreignKeyName: "gift_cards_purchase_order_id_fkey"
+            columns: ["purchase_order_id"]
+            isOneToOne: false
+            referencedRelation: "orders"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       help_topics: {
         Row: {
           body: string
@@ -1661,13 +1835,14 @@ export type Database = {
           created_at: string
           customer_id: string | null
           delivery_address: Json | null
-          delivery_emirate: Database["public"]["Enums"]["emirate"] | null
           delivery_discount_fils: number
+          delivery_emirate: Database["public"]["Enums"]["emirate"] | null
           delivery_fee_fils: number
           discount_fils: number
           event_day: string | null
           event_id: string | null
           fulfilment: Database["public"]["Enums"]["fulfilment_type"]
+          gift_card_purchase: boolean
           id: string
           internal_notes: string | null
           notes: string | null
@@ -1700,13 +1875,14 @@ export type Database = {
           created_at?: string
           customer_id?: string | null
           delivery_address?: Json | null
-          delivery_emirate?: Database["public"]["Enums"]["emirate"] | null
           delivery_discount_fils?: number
+          delivery_emirate?: Database["public"]["Enums"]["emirate"] | null
           delivery_fee_fils?: number
           discount_fils?: number
           event_day?: string | null
           event_id?: string | null
           fulfilment?: Database["public"]["Enums"]["fulfilment_type"]
+          gift_card_purchase?: boolean
           id?: string
           internal_notes?: string | null
           notes?: string | null
@@ -1739,13 +1915,14 @@ export type Database = {
           created_at?: string
           customer_id?: string | null
           delivery_address?: Json | null
-          delivery_emirate?: Database["public"]["Enums"]["emirate"] | null
           delivery_discount_fils?: number
+          delivery_emirate?: Database["public"]["Enums"]["emirate"] | null
           delivery_fee_fils?: number
           discount_fils?: number
           event_day?: string | null
           event_id?: string | null
           fulfilment?: Database["public"]["Enums"]["fulfilment_type"]
+          gift_card_purchase?: boolean
           id?: string
           internal_notes?: string | null
           notes?: string | null
@@ -2425,6 +2602,10 @@ export type Database = {
           currency: string
           delivery_policy: string | null
           free_delivery_threshold_fils: number | null
+          gift_card_amounts_fils: number[]
+          gift_card_expiry_months: number | null
+          gift_cards_at_pos: boolean
+          gift_cards_enabled: boolean
           id: number
           instagram_handle: string | null
           instagram_url: string | null
@@ -2447,6 +2628,10 @@ export type Database = {
           currency?: string
           delivery_policy?: string | null
           free_delivery_threshold_fils?: number | null
+          gift_card_amounts_fils?: number[]
+          gift_card_expiry_months?: number | null
+          gift_cards_at_pos?: boolean
+          gift_cards_enabled?: boolean
           id?: number
           instagram_handle?: string | null
           instagram_url?: string | null
@@ -2469,6 +2654,10 @@ export type Database = {
           currency?: string
           delivery_policy?: string | null
           free_delivery_threshold_fils?: number | null
+          gift_card_amounts_fils?: number[]
+          gift_card_expiry_months?: number | null
+          gift_cards_at_pos?: boolean
+          gift_cards_enabled?: boolean
           id?: number
           instagram_handle?: string | null
           instagram_url?: string | null
@@ -2942,6 +3131,14 @@ export type Database = {
           order_number: string
         }[]
       }
+      coupon_covers: {
+        Args: {
+          c: Database["public"]["Tables"]["coupons"]["Row"]
+          p_category: string
+          p_product: string
+        }
+        Returns: boolean
+      }
       coupon_evaluate: {
         Args: { p_code: string; p_email: string; p_lines: Json }
         Returns: Json
@@ -2957,6 +3154,15 @@ export type Database = {
       coupon_uses: {
         Args: { p_coupon: string; p_email?: string }
         Returns: number
+      }
+      create_gift_card_order: {
+        Args: { p: Json }
+        Returns: {
+          existing: boolean
+          order_id: string
+          order_number: string
+          total_fils: number
+        }[]
       }
       create_manual_order: {
         Args: { p: Json }
@@ -3014,11 +3220,48 @@ export type Database = {
         Returns: string
       }
       get_booking_quote: { Args: { p_token: string }; Returns: Json }
+      gift_card_adjust: {
+        Args: { p_amount: number; p_card: string; p_reason: string }
+        Returns: number
+      }
+      gift_card_balance: { Args: { p_card: string }; Returns: number }
+      gift_card_issue: { Args: { p: Json }; Returns: string }
+      gift_card_lookup: { Args: { p_code: string }; Returns: Json }
+      gift_card_new_code: { Args: never; Returns: string }
+      gift_card_normalize: { Args: { p_code: string }; Returns: string }
+      gift_card_redeem: {
+        Args: { p_amount: number; p_code: string; p_order_id: string }
+        Returns: string
+      }
+      gift_card_release_stale: {
+        Args: never
+        Returns: number
+      }
+      gift_card_summary: {
+        Args: never
+        Returns: {
+          active_cards: number
+          outstanding_fils: number
+          redeemed_this_month_fils: number
+          sold_this_month_fils: number
+        }[]
+      }
+      gift_card_void: {
+        Args: { p_card: string; p_reason: string }
+        Returns: undefined
+      }
+      gift_cards_activate_for_order: {
+        Args: { p_order_id: string }
+        Returns: number
+      }
       has_permission: { Args: { p_key: string }; Returns: boolean }
       is_own_customer: { Args: { p_customer_id: string }; Returns: boolean }
       is_own_order: { Args: { p_order_id: string }; Returns: boolean }
       is_staff: { Args: never; Returns: boolean }
-      link_customer_account: { Args: never; Returns: string }
+      link_customer_account: {
+        Args: never
+        Returns: string
+      }
       loyalty_active_rule: {
         Args: { p_at?: string }
         Returns: {
@@ -3427,11 +3670,7 @@ export type Database = {
         | "ras_al_khaimah"
         | "fujairah"
       employment_status:
-        | "full_time"
-        | "part_time"
-        | "freelance"
-        | "event_only"
-        | "former"
+        "full_time" | "part_time" | "freelance" | "event_only" | "former"
       event_expense_category:
         | "staff"
         | "transport"
@@ -3442,12 +3681,10 @@ export type Database = {
       event_status: "potential" | "confirmed" | "completed" | "cancelled"
       event_type: "exhibition" | "popup" | "private_booking" | "other"
       fee_payment_status:
-        | "unpaid"
-        | "partially_paid"
-        | "paid"
-        | "waived"
-        | "not_applicable"
+        "unpaid" | "partially_paid" | "paid" | "waived" | "not_applicable"
       fulfilment_type: "delivery" | "pickup" | "handed_over"
+      gift_card_entry: "issue" | "redeem" | "refund" | "adjust" | "void"
+      gift_card_status: "pending" | "active" | "void"
       location_kind: "warehouse" | "event" | "other"
       loyalty_reward_status: "available" | "redeemed" | "expired" | "revoked"
       loyalty_reward_type:
@@ -3456,21 +3693,12 @@ export type Database = {
         | "fixed_amount"
         | "percent"
       loyalty_stamp_kind:
-        | "earned"
-        | "manual"
-        | "reversed"
-        | "redeemed"
-        | "expired"
+        "earned" | "manual" | "reversed" | "redeemed" | "expired"
       notification_audience: "customer" | "owner"
       notification_channel: "email" | "whatsapp"
       notification_status: "sent" | "failed" | "skipped"
       order_channel:
-        | "website"
-        | "pos"
-        | "whatsapp"
-        | "direct"
-        | "payment_link"
-        | "booking"
+        "website" | "pos" | "whatsapp" | "direct" | "payment_link" | "booking"
       order_status:
         | "pending_payment"
         | "new"
@@ -3491,6 +3719,7 @@ export type Database = {
         | "bank_transfer"
         | "payment_link"
         | "other"
+        | "gift_card"
       payment_state: "pending" | "succeeded" | "failed" | "cancelled"
       review_status: "pending" | "approved" | "declined"
       stock_movement_type:
@@ -3544,8 +3773,7 @@ export type Tables<
 
 export type TablesInsert<
   DefaultSchemaTableNameOrOptions extends
-    | keyof DefaultSchema["Tables"]
-    | { schema: keyof DatabaseWithoutInternals },
+    keyof DefaultSchema["Tables"] | { schema: keyof DatabaseWithoutInternals },
   TableName extends (DefaultSchemaTableNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals
   }
@@ -3569,8 +3797,7 @@ export type TablesInsert<
 
 export type TablesUpdate<
   DefaultSchemaTableNameOrOptions extends
-    | keyof DefaultSchema["Tables"]
-    | { schema: keyof DatabaseWithoutInternals },
+    keyof DefaultSchema["Tables"] | { schema: keyof DatabaseWithoutInternals },
   TableName extends (DefaultSchemaTableNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals
   }
@@ -3594,8 +3821,7 @@ export type TablesUpdate<
 
 export type Enums<
   DefaultSchemaEnumNameOrOptions extends
-    | keyof DefaultSchema["Enums"]
-    | { schema: keyof DatabaseWithoutInternals },
+    keyof DefaultSchema["Enums"] | { schema: keyof DatabaseWithoutInternals },
   EnumName extends (DefaultSchemaEnumNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals
   }
@@ -3690,6 +3916,8 @@ export const Constants = {
         "not_applicable",
       ],
       fulfilment_type: ["delivery", "pickup", "handed_over"],
+      gift_card_entry: ["issue", "redeem", "refund", "adjust", "void"],
+      gift_card_status: ["pending", "active", "void"],
       location_kind: ["warehouse", "event", "other"],
       loyalty_reward_status: ["available", "redeemed", "expired", "revoked"],
       loyalty_reward_type: [
@@ -3737,6 +3965,7 @@ export const Constants = {
         "bank_transfer",
         "payment_link",
         "other",
+        "gift_card",
       ],
       payment_state: ["pending", "succeeded", "failed", "cancelled"],
       review_status: ["pending", "approved", "declined"],

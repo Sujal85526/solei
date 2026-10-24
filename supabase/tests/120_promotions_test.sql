@@ -7,28 +7,28 @@ select v.id as spray from public.product_variants v where v.sku = 'SOL-S-SOH-100
 select id as spray_cat from public.categories where slug = 'all_over_spray' \gset
 
 insert into public.coupons (code, kind, percent_bp, category_ids)
-values ('SPRAY10', 'percent', 1000, array[:'spray_cat'::uuid]);
+values ('TSTSPRAY10', 'percent', 1000, array[:'spray_cat'::uuid]);
 insert into public.coupons (code, kind, min_order_fils, per_customer_limit)
-values ('SHIPFREE', 'free_delivery', 30000, 2);
+values ('TSTSHIPFREE', 'free_delivery', 30000, 2);
 
 -- Category scope: 10% off the spray (AED 190) only, not the perfume.
 select is(
-  public.coupon_evaluate('spray10',
+  public.coupon_evaluate('tstspray10',
     jsonb_build_array(jsonb_build_object('variant_id', :'perfume', 'qty', 1),
                       jsonb_build_object('variant_id', :'spray', 'qty', 1)), null) ->> 'discount_fils',
   '1900', 'category-scoped percent comes off the in-scope items only');
 select is(
-  public.coupon_evaluate('SPRAY10', jsonb_build_array(jsonb_build_object('variant_id', :'perfume', 'qty', 1)), null) ->> 'reason',
+  public.coupon_evaluate('TSTSPRAY10', jsonb_build_array(jsonb_build_object('variant_id', :'perfume', 'qty', 1)), null) ->> 'reason',
   'no_eligible_items', 'no in-scope item → refused');
 
 -- Free delivery: takes nothing off the goods; minimum order applies.
 select is(
-  public.coupon_evaluate('SHIPFREE', jsonb_build_array(jsonb_build_object('variant_id', :'spray', 'qty', 1)), null) ->> 'reason',
+  public.coupon_evaluate('TSTSHIPFREE', jsonb_build_array(jsonb_build_object('variant_id', :'spray', 'qty', 1)), null) ->> 'reason',
   'min_order', 'free delivery respects the minimum order');
 select is(
-  public.coupon_evaluate('SHIPFREE', jsonb_build_array(jsonb_build_object('variant_id', :'perfume', 'qty', 2)), null),
-  jsonb_build_object('ok', true, 'coupon_id', (select id from public.coupons where code = 'SHIPFREE'),
-    'code', 'SHIPFREE', 'kind', 'free_delivery', 'discount_fils', 0, 'eligible_fils', 56000,
+  public.coupon_evaluate('TSTSHIPFREE', jsonb_build_array(jsonb_build_object('variant_id', :'perfume', 'qty', 2)), null),
+  jsonb_build_object('ok', true, 'coupon_id', (select id from public.coupons where code = 'TSTSHIPFREE'),
+    'code', 'TSTSHIPFREE', 'kind', 'free_delivery', 'discount_fils', 0, 'eligible_fils', 56000,
     'subtotal_fils', 56000, 'free_delivery', true),
   'free delivery code is accepted with 0 goods discount');
 
@@ -44,13 +44,13 @@ returns uuid language sql as $$
     'vat_fils', 0, 'total_fils', p_total, 'vat_rate_bp', 0, 'prices_include_vat', true));
 $$;
 
-select pg_temp.order_with(gen_random_uuid(), 'SHIPFREE', 0, 3000, 0, 56000) as o1 \gset
+select pg_temp.order_with(gen_random_uuid(), 'TSTSHIPFREE', 0, 3000, 0, 56000) as o1 \gset
 select is((select delivery_discount_fils from public.orders where id = :'o1'), 3000, 'waived delivery fee is recorded');
 select is((select applied_promotions -> 0 ->> 'kind' from public.orders where id = :'o1'), 'free_delivery', 'applied promotion snapshot');
-select is((select coupon_code from public.orders where id = :'o1'), 'SHIPFREE', 'code stored on the order');
+select is((select coupon_code from public.orders where id = :'o1'), 'TSTSHIPFREE', 'code stored on the order');
 
 select throws_ok(
-  $$ select pg_temp.order_with(gen_random_uuid(), 'SHIPFREE', 3000, 0, 0, 59000) $$,
+  $$ select pg_temp.order_with(gen_random_uuid(), 'TSTSHIPFREE', 3000, 0, 0, 59000) $$,
   'P0001', null, 'free-delivery code with a delivery fee charged is refused');
 select throws_ok(
   $$ select pg_temp.order_with(gen_random_uuid(), null, 0, 3000, 0, 56000) $$,
@@ -58,13 +58,13 @@ select throws_ok(
 
 -- Per-customer limit 2: second use ok, third refused.
 select lives_ok(
-  $$ select pg_temp.order_with(gen_random_uuid(), 'SHIPFREE', 0, 3000, 0, 56000) $$,
+  $$ select pg_temp.order_with(gen_random_uuid(), 'TSTSHIPFREE', 0, 3000, 0, 56000) $$,
   'second use within the per-customer limit');
 select is(
-  public.coupon_evaluate('SHIPFREE', jsonb_build_array(jsonb_build_object('variant_id', :'perfume', 'qty', 2)), 'PROMO@solei.test') ->> 'reason',
+  public.coupon_evaluate('TSTSHIPFREE', jsonb_build_array(jsonb_build_object('variant_id', :'perfume', 'qty', 2)), 'PROMO@solei.test') ->> 'reason',
   'already_used', 'per-customer limit reached (email matched case-insensitively)');
 select is(
-  public.coupon_evaluate('SHIPFREE', jsonb_build_array(jsonb_build_object('variant_id', :'perfume', 'qty', 2)), 'someone@solei.test') ->> 'ok',
+  public.coupon_evaluate('TSTSHIPFREE', jsonb_build_array(jsonb_build_object('variant_id', :'perfume', 'qty', 2)), 'someone@solei.test') ->> 'ok',
   'true', 'another customer can still use it');
 
 -- Report: only paid orders count.
@@ -72,7 +72,7 @@ update public.orders set status = 'new' where id = :'o1';
 select tests.login_as(tests.create_staff('promo-owner@solei.test', 'owner'));
 select is(
   (select row(orders, discount_fils, delivery_discount_fils, sales_fils)::text
-     from public.promotion_report(public.business_today() - 1, public.business_today()) where code = 'SHIPFREE'),
+     from public.promotion_report(public.business_today() - 1, public.business_today()) where code = 'TSTSHIPFREE'),
   '(1,0,3000,56000)', 'promotions report counts paid orders with their waived delivery');
 select tests.login_anon();
 select throws_ok(

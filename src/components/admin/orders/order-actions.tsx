@@ -267,6 +267,8 @@ const REFUND_METHODS: PaymentMethod[] = [
   "card_terminal",
   "soft_pos",
   "online_card",
+  // Back onto the gift card the order was paid with (the database credits the card).
+  "gift_card",
   "other",
 ];
 

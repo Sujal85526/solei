@@ -45,9 +45,13 @@ applies the code server-side (summary shows the discount, or the waived delivery
 stores `discount_fils`, `delivery_discount_fils`, `coupon_code` and `applied_promotions`. Admin → Reports →
 Promotions shows orders / discount / delivery waived / sales per code. Tests: `coupons/schema.test.ts`,
 `orders/pricing.test.ts`, pgTAP `120_promotions_test.sql`, e2e `e2e/promotions.spec.ts` (all 3 viewports).
-Not done: the orders Excel export has no code column yet. Stale Phase 1 tests (pgTAP 070/080/110, e2e
-helpers) predate later Phase 1 changes; the e2e helpers were patched (exact "Password" label, dashboard
-heading "Hello, …").
+The e2e helpers were patched for the current login form (exact "Password" label) and dashboard heading
+("Hello, …").
+
+**Left for the hardening pass (M17):**
+- pgTAP `070_orders_admin`, `080_bookings`, `110_reports` fail on stale expectations from later Phase 1
+  changes (template count 16 vs 14, `record_payment` rules, report permissions) — not Phase 2 regressions.
+- Orders Excel/CSV export: add a promotion code / delivery-waived column (needs the export RPC rewritten).
 
 ## Current notes
 - **CI is paused** (manual-only workflow) at the user's request — merge after local checks; re-enable in M17.

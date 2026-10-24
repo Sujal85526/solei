@@ -83,6 +83,7 @@ export const PAYMENT_METHOD_LABELS: Record<PaymentMethod, string> = {
   soft_pos: "Soft POS",
   bank_transfer: "Bank transfer",
   payment_link: "Payment link",
+  gift_card: "Gift card",
   other: "Other",
 };
 
