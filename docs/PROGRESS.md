@@ -145,6 +145,9 @@ is approved, `phase-2` is merged into `main`.
 - Deliberately **off** on the shared DB: points & tiers (`rewards_settings.points_enabled` — the paid-order
   trigger runs for every order, so switching it on would award and take back points on live orders too) and
   WhatsApp updates (stand-in only). Don't flip either from v2's admin until the merge.
+- The Points & tiers on/off switch is read-only on v2 (`POINTS_SWITCH_LOCKED=1`, Preview · `phase-2` only).
+  The other Phase 2 switches (gift cards online / at the till, cart reminders, WhatsApp updates) are only read
+  by Phase 2 code, so they can't change the live site and stay editable.
 - No customisable (giveaway) product exists on the hosted DB: an active one would also show on the live shop,
   whose checkout can't send choices (`PHASE2_MERGE.md` §4). Verified locally only.
 
