@@ -32,7 +32,7 @@ after a `db:reset`).
 | # | Feature | Status |
 |---|---|---|
 | 1 | Promotions / discount engine | ✅ built (`20261024000001/2_promotions*.sql`) |
-| 2 | Gift cards | ⬜ |
+| 2 | Gift cards | ✅ built (`20261024000003–5_gift_card*.sql`) |
 | 3 | Abandoned cart | ⬜ |
 | 4 | CRM segments & campaigns | ⬜ |
 | 5 | Points & VIP tiers + birthday offer | ⬜ |
@@ -48,10 +48,24 @@ Promotions shows orders / discount / delivery waived / sales per code. Tests: `c
 The e2e helpers were patched for the current login form (exact "Password" label) and dashboard heading
 ("Hello, …").
 
+**2 — Gift cards:** `/gift-cards` (store menu + footer): owner-set amounts, for me / for someone else,
+message, live card preview; signed-in buyers pay on the hosted page; when the webhook confirms it the card goes
+live (code `XXXX-XXXX-XXXX`, expiry from Settings) and is emailed (`gift_card_delivered` to the recipient,
+`gift_card_purchased` receipt to the buyer). Spend: checkout "Gift card" box (signed-in) after the discount
+code — covers what it can, the rest goes to the card page, or "Place order" when it covers everything; the
+till has a Gift card button (checked online) with the rest by any method. Admin → Gift cards: figures, search,
+card page with balance history, resend / adjust / void, Issue gift card, Settings (sell online on/off, amounts,
+months valid, accept at the till). Refunds to "Gift card" (order page) and cancellations credit the card;
+unpaid checkouts give the held balance back after 24 h. Tests: `gift-cards/schema.test.ts`, pgTAP
+`130_gift_cards_test.sql` (28), e2e `e2e/gift-cards.spec.ts` (3 viewports).
+
 **Left for the hardening pass (M17):**
 - pgTAP `070_orders_admin`, `080_bookings`, `110_reports` fail on stale expectations from later Phase 1
   changes (template count 16 vs 14, `record_payment` rules, report permissions) — not Phase 2 regressions.
 - Orders Excel/CSV export: add a promotion code / delivery-waived column (needs the export RPC rewritten).
+- Rate-limit gift card lookups at checkout (signed-in only today; 32^12 codes) and on the till.
+- The desk preview browser (WebKit, background tab) doesn't reveal streamed admin pages until it is focused
+  (React batches Suspense reveals on `requestAnimationFrame`); real browsers and Playwright are fine.
 
 ## Current notes
 - **CI is paused** (manual-only workflow) at the user's request — merge after local checks; re-enable in M17.

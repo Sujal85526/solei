@@ -398,3 +398,20 @@ Open client questions are built as configurable defaults. Each row: what we chos
 - **P2-3 — Phase 2 DB is local only.** Docker via Colima; `pnpm db:start`; a gitignored
   `.env.development.local` points `pnpm dev` and the e2e helpers at local Supabase (e2e `localEnv()` now
   layers it over `.env.local`, so tests never hit the shared hosted DB). Nothing pushed to the hosted DB.
+
+## Phase 2 — gift cards (branch `phase-2`, 2026-10-24)
+- **P2-4 — Defaults (lead, 2026-10-24; user to confirm):** sold online only, the code emailed to the buyer or a
+  recipient they name; spendable online and at the event till; 12 months' validity. Online-only vs also at the
+  till, the amounts, the validity and selling on/off are owner settings (`settings.gift_card_*`).
+- **P2-5 — Model:** `gift_cards` + `gift_card_ledger`; balance = sum of the ledger (issue, redeem, refund,
+  adjust, void). A purchase is an order with no item lines (`orders.gift_card_purchase`, no VAT — VAT falls
+  on the spend) paid through the normal hosted payment + webhook; `after_order_paid` activates the card and
+  completes the order. Spending is a `payments.method = gift_card` payment (reference = code) + ledger debit
+  in the same transaction as the order; any `gift_card` refund payment credits the card (trigger), so
+  cancel, staff refunds and lapsed holds share one path. Gift card sales are left out of dashboard revenue
+  and the order stat chips (the spend is the revenue).
+- **P2-6 — Holds:** a website order that spends a card and is never paid releases the balance after 24 h,
+  lazily (`gift_card_release_stale()` runs before every lookup/spend — no scheduler). If that customer pays
+  the old payment page later, the order shows the gift card part outstanding.
+- **P2-7 — Security:** codes are 12 characters from 32 unambiguous symbols (bearer secrets); lookups need a
+  signed-in customer (checkout) or `pos.use` (till). Gift cards can't buy gift cards.
