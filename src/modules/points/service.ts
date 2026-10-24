@@ -1,4 +1,5 @@
 import "server-only";
+import { pointsSwitchLocked } from "@/lib/env.server";
 import { UserError } from "@/lib/action-result";
 import { assertPermission } from "@/lib/auth/session";
 import { publicEnv } from "@/lib/env";
@@ -30,7 +31,8 @@ export async function saveRewardsSettings(input: unknown) {
   const { error } = await supabase
     .from("rewards_settings")
     .update({
-      points_enabled: v.enabled,
+      // Locked deployments keep the shared on/off switch as it is (see pointsSwitchLocked).
+      ...(pointsSwitchLocked() ? {} : { points_enabled: v.enabled }),
       points_per_aed: v.pointsPerAed,
       point_value_fils: v.pointValue,
       min_redeem_points: v.minRedeemPoints,

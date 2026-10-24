@@ -29,6 +29,11 @@ const serverSchema = z
     CART_LINK_SECRET: z.string().optional(),
     /** WhatsApp sender: only "log" (stand-in) until a WhatsApp Business account exists. */
     MESSAGING_PROVIDER: z.enum(["log"]).optional(),
+    /**
+     * 1 = the Points & tiers on/off switch is read-only here. Set on previews that share the live
+     * database: the switch is shared, and the paid-order trigger awards points on live orders too.
+     */
+    POINTS_SWITCH_LOCKED: z.enum(["0", "1"]).optional(),
     /** Courier: only "mock" (stand-in) until a courier account exists. */
     COURIER_PROVIDER: z.enum(["mock"]).optional(),
     /** Bearer token the scheduler sends to /api/cron/* (Vercel Cron sets it automatically). */
@@ -96,3 +101,6 @@ export const orderLinkSecret = () => derived("order-links", serverEnv().ORDER_LI
 export const cartLinkSecret = () => derived("cart-links", serverEnv().CART_LINK_SECRET);
 /** Signs campaign unsubscribe links (same derivation as the cart links). */
 export const unsubscribeSecret = () => derived("unsubscribe", serverEnv().CART_LINK_SECRET);
+
+/** The Points & tiers master switch can't be changed on this deployment (POINTS_SWITCH_LOCKED). */
+export const pointsSwitchLocked = () => serverEnv().POINTS_SWITCH_LOCKED === "1";

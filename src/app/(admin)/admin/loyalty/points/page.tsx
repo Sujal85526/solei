@@ -6,6 +6,7 @@ import { AdminSection, StatCard } from "@/components/admin/section";
 import { SubNav } from "@/components/admin/sub-nav";
 import { Badge } from "@/components/ui/badge";
 import { requirePagePermission } from "@/lib/auth/session";
+import { pointsSwitchLocked } from "@/lib/env.server";
 import { formatAED } from "@/lib/money";
 import { can } from "@/lib/permissions";
 import { getRewardsProgramme, pointsOverview } from "@/modules/points/queries";
@@ -45,7 +46,11 @@ export default async function PointsPage() {
       </div>
       <div className="grid max-w-6xl gap-6">
         <AdminSection title="Programme">
-          <RewardsSettingsForm settings={settings} canManage={canManage} />
+          <RewardsSettingsForm
+            settings={settings}
+            canManage={canManage}
+            switchLocked={pointsSwitchLocked()}
+          />
         </AdminSection>
         <AdminSection
           title="VIP tiers"

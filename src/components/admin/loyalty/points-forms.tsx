@@ -20,9 +20,12 @@ import { tierFormValues, type RewardsSettings, type Tier } from "@/modules/point
 export function RewardsSettingsForm({
   settings,
   canManage,
+  switchLocked = false,
 }: {
   settings: RewardsSettings;
   canManage: boolean;
+  /** The on/off switch is read-only on this deployment (shared with the live site). */
+  switchLocked?: boolean;
 }) {
   const [state, action, pending] = useFormAction(saveRewardsSettingsAction, null);
   const e = useActionToast(state);
@@ -35,6 +38,7 @@ export function RewardsSettingsForm({
             type="checkbox"
             name="enabled"
             defaultChecked={settings.enabled}
+            disabled={switchLocked}
             className="accent-primary mt-0.5 size-4"
           />
           <span>
@@ -43,6 +47,12 @@ export function RewardsSettingsForm({
               Off: customers see nothing and earn nothing. Balances are kept. The Solei Passport is
               separate and keeps working either way.
             </span>
+            {switchLocked ? (
+              <span className="text-burgundy mt-1 block text-xs" data-testid="points-switch-locked">
+                Locked on this preview: the switch is shared with the live site, so it turns on when
+                this version goes live. Rates, birthday bonus and tiers can still be edited.
+              </span>
+            ) : null}
           </span>
         </label>
         <div className="grid gap-5 sm:grid-cols-3">
