@@ -429,3 +429,14 @@ Open client questions are built as configurable defaults. Each row: what we chos
   pg_cron + pg_net. Not added to `vercel.json` yet so a deploy can't fail on the plan limit.
 - **P2-10 — Recovered:** a paid website order converts the buyer's open bag (or the bag the order page emptied
   in the hour before); it counts as recovered when at least one reminder was sent.
+
+## Phase 2 — segments & campaigns (branch `phase-2`, 2026-10-24)
+- **P2-11 — Who can be emailed:** a customer with an email, `marketing_consent` with `email` among
+  `marketing_channels`, and no `unsubscribed_at`. Segments may include anyone (for looking); campaigns always
+  narrow to those. Unsubscribing turns consent off on every channel (same as staff "opt out").
+- **P2-12 — Sending:** synchronous in the server action (a boutique list is small), through the notifier with
+  the campaign's own subject/body (`notifyWithContent`, outbox key `campaign`), deduped per campaign and
+  customer. The unsubscribe footer is appended by the app and can't be edited out. Large lists or scheduled
+  sends would move to a queue (not needed yet).
+- **P2-13 — Shared DB rules:** Phase 2 migrations stay additive while the live site runs `main` on the same DB —
+  no drops/renames main uses, same RPC signatures, no permission grants main's role editor can't save.

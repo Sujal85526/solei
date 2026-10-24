@@ -34,7 +34,7 @@ after a `db:reset`).
 | 1 | Promotions / discount engine | ✅ built (`20261024000001/2_promotions*.sql`) |
 | 2 | Gift cards | ✅ built (`20261024000003–5_gift_card*.sql`) |
 | 3 | Abandoned cart | ✅ built (`20261024000006_abandoned_carts.sql`) |
-| 4 | CRM segments & campaigns | ⬜ |
+| 4 | CRM segments & campaigns | ✅ built (`20261024000007_segments_campaigns.sql`) |
 | 5 | Points & VIP tiers + birthday offer | ⬜ |
 | 6 | Giveaways customiser | ⬜ |
 | 7 | WhatsApp API · courier API · staff attendance · PDF reports (mock providers) | ⬜ |
@@ -68,6 +68,23 @@ order closes the bag ("Recovered" when a reminder had gone out). Admin → Aband
 Recovered / All, Reminders settings (on/off, hours), "Send due reminders now". Automatic sending needs a
 scheduler calling `GET /api/cron/cart-reminders` with `Authorization: Bearer $CRON_SECRET` (see DECISIONS
 P2-9). Tests: `carts/carts.test.ts`, pgTAP `140_abandoned_carts_test.sql`, e2e `e2e/abandoned-carts.spec.ts`.
+
+**4 — Segments & campaigns:** Admin → Campaigns (owner; managers get `marketing.manage` at the merge —
+`docs/PHASE2_MERGE.md`). Segments: spend (min/max), orders, last purchase (within / not within N days),
+destination bought, Passport (has / none / reward waiting), emirate, agreed to marketing — with a live count
+of matches and of those who can get campaigns, plus the top customers. Campaigns: draft (name, segment,
+subject, markdown message with `{{first_name}}`), live preview, "Send test to me", "Send to N customers"
+(confirm). Only customers with email consent and not unsubscribed get it; the recipient list is fixed when
+sending starts, each send is logged (outbox key `campaign`, recipients table), "Resume sending" after an
+interruption. Every email ends with the recipient's own unsubscribe link (`/unsubscribe`, a button page →
+consent off, `unsubscribed_at`). Sends go through the log provider until Resend. Tests:
+`campaigns/campaigns.test.ts`, pgTAP `150_segments_test.sql`, e2e `e2e/campaigns.spec.ts`.
+
+**Shared hosted DB (2026-10-24):** the user allowed using the hosted DB, which also serves the live site
+(`main`). Phase 2 migrations were made main-safe (kept `coupons.once_per_customer`, no manager grants) and
+checked by running main's checkout / POS / orders-admin / staff e2e against a DB with all Phase 2
+migrations. Hosted is at `20261019000004`; the 7 Phase 2 migrations are **not pushed** — waiting for the
+user's explicit OK (via Cougar). Merge-time follow-ups: `docs/PHASE2_MERGE.md`.
 
 **Left for the hardening pass (M17):**
 - pgTAP `070_orders_admin`, `080_bookings`, `110_reports` fail on stale expectations from later Phase 1
