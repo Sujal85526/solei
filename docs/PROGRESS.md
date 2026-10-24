@@ -80,11 +80,18 @@ interruption. Every email ends with the recipient's own unsubscribe link (`/unsu
 consent off, `unsubscribed_at`). Sends go through the log provider until Resend. Tests:
 `campaigns/campaigns.test.ts`, pgTAP `150_segments_test.sql`, e2e `e2e/campaigns.spec.ts`.
 
+**Preview deployment (2026-10-24):** migrations `20261024000001`–`…009` applied to the hosted DB (after the
+main-compatibility check; production checked afterwards). `phase-2` pushed; Vercel preview at the stable branch URL
+**https://solei-git-phase-2-sujalxcode.vercel.app** (Vercel Authentication: only signed-in Vercel team members can
+open it). Preview env: a branch-only `NEXT_PUBLIC_SITE_URL` for `phase-2` (the general Preview value points at the
+old production alias); emails on preview go to the log provider (no `RESEND_API_KEY` / `EMAIL_ALLOWLIST` there).
+Production (`main`, soleiperfumes.com) untouched.
+
 **Shared hosted DB (2026-10-24):** the user allowed using the hosted DB, which also serves the live site
 (`main`). Phase 2 migrations were made main-safe (kept `coupons.once_per_customer`, no manager grants) and
 checked by running main's checkout / POS / orders-admin / staff e2e against a DB with all Phase 2
-migrations. Hosted is at `20261019000004`; the 7 Phase 2 migrations are **not pushed** — waiting for the
-user's explicit OK (via Cougar). Merge-time follow-ups: `docs/PHASE2_MERGE.md`.
+migrations. Pushed with the user's OK on 2026-10-24 (see "Preview deployment"). Merge-time follow-ups:
+`docs/PHASE2_MERGE.md`.
 
 **Left for the hardening pass (M17):**
 - pgTAP `070_orders_admin`, `080_bookings`, `110_reports` fail on stale expectations from later Phase 1
