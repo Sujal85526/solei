@@ -4,6 +4,7 @@ import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useMemo, useState, useSyncExternalStore } from "react";
 import {
   Check,
+  ChevronRight,
   CloudOff,
   Gift,
   Minus,
@@ -337,7 +338,7 @@ export function PosScreen({
           const q = qtyOf(p.variantId);
           const left = p.stock - q;
           return (
-            <li key={p.variantId}>
+            <li key={p.variantId} className="relative">
               <button
                 type="button"
                 onClick={() => add(p.variantId)}
@@ -380,6 +381,17 @@ export function PosScreen({
                   </span>
                 </span>
               </button>
+              {/* Undo a mis-tap without opening the cart. */}
+              {q && !event?.closed ? (
+                <button
+                  type="button"
+                  onClick={() => setQty(p.variantId, q - 1)}
+                  aria-label={`One less ${p.destination ?? p.name}`}
+                  className="bg-cream text-burgundy border-burgundy/30 absolute start-2 top-2 flex size-10 items-center justify-center rounded-full border shadow-sm active:scale-95"
+                >
+                  {q === 1 ? <Trash2 className="size-4" /> : <Minus className="size-4" />}
+                </button>
+              ) : null}
             </li>
           );
         })}
@@ -403,6 +415,11 @@ export function PosScreen({
                 {formatAED(total)}
               </span>
             </span>
+            {items ? (
+              <span className="text-burgundy flex items-center gap-1 text-sm font-medium">
+                View & edit <ChevronRight className="size-4" />
+              </span>
+            ) : null}
           </button>
           <Button
             size="xl"
