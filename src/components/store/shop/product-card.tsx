@@ -62,9 +62,7 @@ export function ProductCard({
             {varies ? `${t.shop.from} ` : ""}
             {formatAED(Math.min(...prices))}
           </span>
-          {soldOut ? null : (
-            <QuickAdd variantId={product.variants[0].id} name={product.name} tone="outline" />
-          )}
+          {soldOut ? null : <QuickAdd variantId={product.variants[0].id} name={product.name} />}
         </div>
       </div>
     </article>
