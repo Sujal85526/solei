@@ -64,16 +64,17 @@ export function ProductCard({
             {formatAED(Math.min(...prices))}
           </span>
           {soldOut ? null : product.optionGroups.length || product.minOrderQty > 1 ? (
-            // Giveaways need choices (and a quantity) first: the + opens the product.
+            // Giveaways need choices (and a quantity) first: the + opens the product. Same bare
+            // plus as QuickAdd.
             <Link
               href={`/products/${product.slug}`}
               aria-label={`${t.product.customise}: ${product.name}`}
-              className="border-primary/40 text-primary hover:bg-primary hover:text-primary-foreground z-10 flex size-10 shrink-0 items-center justify-center rounded-full border transition-colors duration-300"
+              className="text-primary z-10 -me-2 flex size-10 shrink-0 items-center justify-center transition-opacity duration-300 hover:opacity-60"
             >
-              <Plus className="size-4" strokeWidth={1.25} />
+              <Plus className="size-5" strokeWidth={1.25} />
             </Link>
           ) : (
-            <QuickAdd variantId={product.variants[0].id} name={product.name} tone="outline" />
+            <QuickAdd variantId={product.variants[0].id} name={product.name} />
           )}
         </div>
       </div>
