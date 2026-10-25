@@ -105,7 +105,13 @@ export function ReviewComposer({ productId }: { productId: string }) {
 
   if (!open) {
     return (
-      <Button type="button" variant="outline" size="cta" onClick={() => setOpen(true)}>
+      <Button
+        type="button"
+        variant="outline"
+        size="cta"
+        className="h-10 px-5 text-[0.65rem]"
+        onClick={() => setOpen(true)}
+      >
         {r.write}
       </Button>
     );
