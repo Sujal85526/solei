@@ -33,8 +33,8 @@ export function homeImages() {
 }
 
 /**
- * Signature Scents shelf: three bottles cut from one photograph, so side by side they read as the
- * original shelf while each opens its own product page.
+ * Signature Scents: which three products are featured. Each shows its product cover photo; the
+ * editorial shot here is only used if a product has no photo.
  */
 export const featuredShelf = [
   { slug: "capri-perfume", image: "/images/editorial/shelf-capri.jpg" },

@@ -10,8 +10,8 @@ import type { StoreProduct } from "@/modules/storefront/types";
 export type ShelfItem = { product: StoreProduct; image: string };
 
 /**
- * "Signature Scents." — three bottles on one continuous shelf (cut from a single photograph).
- * Each third opens its product page; name, price and a quick add sit beneath it.
+ * "Signature Scents." — three featured bottles, each shown with its product cover photo.
+ * Each opens its product page; name, price and a quick add sit beneath it.
  */
 export function SignatureScents({ items }: { items: ShelfItem[] }) {
   if (!items.length) return null;
@@ -65,7 +65,7 @@ function ShelfBottle({ product, image }: ShelfItem) {
       >
         <Image
           src={image}
-          alt={`${product.name} on a blush stone shelf`}
+          alt={product.name}
           fill
           sizes="(min-width: 640px) 33vw, 100vw"
           className="object-cover transition-transform duration-700 ease-(--ease-soft) group-hover:scale-[1.04]"
