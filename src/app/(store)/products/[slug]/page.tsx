@@ -74,18 +74,22 @@ export default async function ProductPage({ params }: PageProps<"/products/[slug
   const accordions = [
     {
       title: t.product.fragranceNotes,
-      body: notes.length ? (
-        <dl className="flex flex-col gap-2">
-          {notes.map(([label, list]) => (
-            <div key={label} className="grid grid-cols-[5rem_1fr] gap-3">
-              <dt className="eyebrow text-primary/60 pt-0.5 text-[0.58rem]">{label}</dt>
-              <dd>{list.join(", ")}</dd>
-            </div>
-          ))}
-        </dl>
-      ) : (
-        <p>{product.destination?.mood ?? product.description}</p>
-      ),
+      // One group (the client's notes are a single list): no Top/Heart/Base label.
+      body:
+        notes.length === 1 ? (
+          <p>{notes[0][1].join(", ")}</p>
+        ) : notes.length ? (
+          <dl className="flex flex-col gap-2">
+            {notes.map(([label, list]) => (
+              <div key={label} className="grid grid-cols-[5rem_1fr] gap-3">
+                <dt className="eyebrow text-primary/60 pt-0.5 text-[0.58rem]">{label}</dt>
+                <dd>{list.join(", ")}</dd>
+              </div>
+            ))}
+          </dl>
+        ) : (
+          <p>{product.destination?.mood ?? product.description}</p>
+        ),
     },
     {
       title: t.product.shippingReturns,
