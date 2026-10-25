@@ -222,7 +222,7 @@ export function PosScreen({
   const event = events.find((e) => e.id === eventId);
 
   return (
-    <div className="flex flex-col gap-4 pb-40 lg:pb-28">
+    <div className={cn("flex flex-col gap-4", lines.length ? "pb-60 lg:pb-44" : "pb-40 lg:pb-28")}>
       {/* Top bar: event, sync, today */}
       <div className="flex flex-wrap items-center gap-2">
         <NativeSelect
@@ -399,6 +399,40 @@ export function PosScreen({
 
       {/* Sticky cart bar */}
       <div className="bg-card/95 fixed inset-x-0 bottom-16 z-20 border-t p-3 backdrop-blur lg:start-64 lg:bottom-0">
+        {/* The order, always in view: fix a mis-tap with − / + without opening anything. */}
+        {lines.length ? (
+          <ul aria-label="Order" className="mx-auto mb-3 flex max-w-5xl gap-2 overflow-x-auto pb-1">
+            {lines.map((l) => (
+              <li
+                key={l.variantId}
+                className="bg-background flex shrink-0 items-center gap-1 rounded-full border py-1 ps-4 pe-1"
+              >
+                <span className="me-1 text-sm font-medium">
+                  {l.product.destination ?? l.product.name}
+                </span>
+                <Button
+                  size="icon"
+                  variant="ghost"
+                  className="rounded-full"
+                  aria-label={`One less ${l.product.destination ?? l.product.name}`}
+                  onClick={() => setQty(l.variantId, l.qty - 1)}
+                >
+                  {l.qty === 1 ? <Trash2 /> : <Minus />}
+                </Button>
+                <span className="numeric w-6 text-center font-semibold">{l.qty}</span>
+                <Button
+                  size="icon"
+                  variant="ghost"
+                  className="rounded-full"
+                  aria-label={`One more ${l.product.destination ?? l.product.name}`}
+                  onClick={() => setQty(l.variantId, l.qty + 1)}
+                >
+                  <Plus />
+                </Button>
+              </li>
+            ))}
+          </ul>
+        ) : null}
         <div className="mx-auto flex max-w-5xl items-center gap-3">
           <button
             type="button"
@@ -416,7 +450,7 @@ export function PosScreen({
               </span>
             </span>
             {items ? (
-              <span className="text-burgundy flex items-center gap-1 text-sm font-medium">
+              <span className="text-burgundy hidden items-center gap-1 text-sm font-medium whitespace-nowrap sm:flex">
                 View & edit <ChevronRight className="size-4" />
               </span>
             ) : null}
