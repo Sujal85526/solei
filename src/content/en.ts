@@ -88,7 +88,6 @@ export const en = {
     reviews: {
       eyebrow: "Reviews",
       title: "In their words",
-      none: "No reviews yet.",
       count: (n: number) => `${n} review${n === 1 ? "" : "s"}`,
       write: "Write a review",
       signIn: "Sign in to write a review",
