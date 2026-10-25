@@ -151,7 +151,11 @@ export default async function ProductPage({ params }: PageProps<"/products/[slug
           <div className="lg:max-w-md">
             <h1 id="product-title" className="display hero-rise text-3xl leading-tight sm:text-4xl">
               {title[0]}
-              {title[1] ? <span className="mt-1 block italic">{title[1]}</span> : null}
+              {title[1] ? (
+                <span className="text-primary/70 mt-2 block font-sans text-xs tracking-[0.2em] uppercase not-italic">
+                  {title[1]}
+                </span>
+              ) : null}
             </h1>
             <p
               className="numeric text-primary mt-4 text-sm tracking-[0.22em]"
