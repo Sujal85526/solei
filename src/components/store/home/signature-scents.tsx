@@ -1,16 +1,16 @@
-import Image from "next/image";
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
 import { Reveal, Stagger } from "@/components/motion/reveal";
 import { SplitHeading } from "@/components/motion/split-heading";
 import { QuickAdd } from "@/components/store/cart/quick-add";
+import { CardGallery } from "@/components/store/shop/card-gallery";
 import { formatAED } from "@/lib/money";
 import type { StoreProduct } from "@/modules/storefront/types";
 
 export type ShelfItem = { product: StoreProduct; image: string };
 
 /**
- * "Signature Scents." — three featured bottles, each shown with its product cover photo.
+ * "Signature Scents." — three featured bottles; swipe a photo to see the product's other photos.
  * Each opens its product page; name, price and a quick add sit beneath it.
  */
 export function SignatureScents({ items }: { items: ShelfItem[] }) {
@@ -63,12 +63,10 @@ function ShelfBottle({ product, image }: ShelfItem) {
         aria-label={`${product.name} — view`}
         className="relative block aspect-[1280/935] overflow-hidden"
       >
-        <Image
-          src={image}
-          alt={product.name}
-          fill
+        <CardGallery
+          images={product.images.length ? product.images : [{ url: image, alt: product.name }]}
           sizes="(min-width: 640px) 33vw, 100vw"
-          className="object-cover transition-transform duration-700 ease-(--ease-soft) group-hover:scale-[1.04]"
+          imageClassName="transition-transform duration-700 ease-(--ease-soft) group-hover:scale-[1.04]"
         />
         <span className="text-burgundy bg-pearl/85 absolute start-1/2 bottom-5 -translate-x-1/2 translate-y-2 px-4 py-2 text-[0.6rem] tracking-[0.3em] uppercase opacity-0 backdrop-blur transition-all duration-500 group-hover:translate-y-0 group-hover:opacity-100 rtl:translate-x-1/2">
           View
