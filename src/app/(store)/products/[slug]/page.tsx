@@ -148,7 +148,7 @@ export default async function ProductPage({ params }: PageProps<"/products/[slug
             <h1 id="product-title" className="display hero-rise text-3xl leading-tight sm:text-4xl">
               {title[0]}
               {title[1] ? (
-                <span className="text-primary/70 mt-2 block font-sans text-xs tracking-[0.2em] uppercase not-italic">
+                <span className="text-primary mt-2 block font-sans text-xs tracking-[0.2em] uppercase not-italic">
                   {title[1]}
                 </span>
               ) : null}
