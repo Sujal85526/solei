@@ -13,7 +13,8 @@ export default async function HomePage() {
   const images = homeImages();
   const shelf = featuredShelf.flatMap(({ slug, image }) => {
     const product = products.find((p) => p.slug === slug);
-    return product ? [{ product, image }] : [];
+    // The product's cover photo (Admin → Products) wins; the editorial shot is only a fallback.
+    return product ? [{ product, image: product.images[0]?.url ?? image }] : [];
   });
   return (
     <>
