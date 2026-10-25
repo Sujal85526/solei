@@ -12,7 +12,6 @@ import {
   RefreshCw,
   ShoppingBag,
   Split,
-  Trash2,
   X,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -389,7 +388,7 @@ export function PosScreen({
                   aria-label={`One less ${p.destination ?? p.name}`}
                   className="bg-cream text-burgundy border-burgundy/30 absolute start-2 top-2 flex size-10 items-center justify-center rounded-full border shadow-sm active:scale-95"
                 >
-                  {q === 1 ? <Trash2 className="size-4" /> : <Minus className="size-4" />}
+                  <Minus className="size-4" />
                 </button>
               ) : null}
             </li>
@@ -417,7 +416,7 @@ export function PosScreen({
                   aria-label={`One less ${l.product.destination ?? l.product.name}`}
                   onClick={() => setQty(l.variantId, l.qty - 1)}
                 >
-                  {l.qty === 1 ? <Trash2 /> : <Minus />}
+                  <Minus />
                 </Button>
                 <span className="numeric w-6 text-center font-semibold">{l.qty}</span>
                 <Button
@@ -431,6 +430,11 @@ export function PosScreen({
                 </Button>
               </li>
             ))}
+            <li className="flex shrink-0 items-center">
+              <Button variant="ghost" className="h-11 rounded-full" onClick={() => setCart([])}>
+                <X /> Clear all
+              </Button>
+            </li>
           </ul>
         ) : null}
         <div className="mx-auto flex max-w-5xl items-center gap-3">
@@ -489,7 +493,7 @@ export function PosScreen({
                   aria-label="One less"
                   onClick={() => setQty(l.variantId, l.qty - 1)}
                 >
-                  {l.qty === 1 ? <Trash2 /> : <Minus />}
+                  <Minus />
                 </Button>
                 <span className="numeric w-6 text-center text-lg font-semibold">{l.qty}</span>
                 <Button
