@@ -1,13 +1,13 @@
-import Image from "next/image";
 import Link from "next/link";
 import { QuickAdd } from "@/components/store/cart/quick-add";
+import { CardGallery } from "@/components/store/shop/card-gallery";
 import { t } from "@/content/en";
 import { formatAED } from "@/lib/money";
 import { cn } from "@/lib/utils";
 import type { StoreProduct } from "@/modules/storefront/types";
 
 /**
- * Collection card: square photograph, the destination in serif capitals, a hairline, then the
+ * Collection card: square photographs (swipe for more), the destination in serif capitals, a hairline, then the
  * price and a one-tap add. Colours follow the surrounding theme.
  */
 export function ProductCard({
@@ -22,7 +22,6 @@ export function ProductCard({
   sizes?: string;
   priority?: boolean;
 }) {
-  const image = product.images[0];
   const href = `/products/${product.slug}`;
   const soldOut = available === 0;
   const prices = product.variants.map((v) => v.priceFils);
@@ -36,14 +35,12 @@ export function ProductCard({
         aria-label={product.name}
         className="bg-noir/10 focus-visible:ring-primary relative block aspect-square overflow-hidden focus-visible:ring-2 focus-visible:outline-none"
       >
-        <Image
-          src={image.url}
-          alt={image.alt}
-          fill
+        <CardGallery
+          images={product.images}
           sizes={sizes}
-          preload={priority}
-          className={cn(
-            "object-cover transition-transform duration-700 ease-(--ease-soft) group-hover:scale-[1.04]",
+          priority={priority}
+          imageClassName={cn(
+            "transition-transform duration-700 ease-(--ease-soft) group-hover:scale-[1.04]",
             soldOut && "opacity-70 grayscale-[35%]",
           )}
         />
