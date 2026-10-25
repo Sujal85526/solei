@@ -1,4 +1,4 @@
-import { expect, test } from "@playwright/test";
+import { expect, test, type Browser } from "@playwright/test";
 import { adminClient, signInAsOwner } from "./helpers/auth";
 
 /** A giveaway product of its own for this run: AED 25, at least 20, with stock. */
@@ -48,6 +48,20 @@ async function giveawayProduct(tag: string) {
   return { productId: product!.id, variantId: variant!.id, slug };
 }
 
+/**
+ * Rows inserted straight into the database skip the storefront's cached catalogue (the cart reads
+ * it). Saving the product in Admin → Products refreshes it, as it does for the owner.
+ */
+async function refreshCatalogue(browser: Browser, productId: string) {
+  const owner = await browser.newPage();
+  await signInAsOwner(owner);
+  await owner.goto(`/admin/products/${productId}`);
+  await owner.getByRole("textbox", { name: "Minimum per order" }).fill("20");
+  await owner.getByRole("textbox", { name: "Minimum per order" }).press("Enter");
+  await expect(owner.getByText("Minimum saved.")).toBeVisible();
+  await owner.close();
+}
+
 test.describe("giveaways customiser", () => {
   test("owner adds a choice with a price change in Admin → Products", async ({ page }, info) => {
     const { productId } = await giveawayProduct(
@@ -76,7 +90,10 @@ test.describe("giveaways customiser", () => {
 
   test("a customer chooses options and buys 20; the order keeps the choices", async ({
     page,
+    browser,
   }, info) => {
+    // Sets up through the admin, then signs a customer in and checks out.
+    test.setTimeout(90_000);
     const admin = adminClient();
     const { productId, slug } = await giveawayProduct(
       `b${info.project.name.slice(0, 1)}${Date.now() % 1e7}`,
@@ -98,6 +115,7 @@ test.describe("giveaways customiser", () => {
       max_length: 30,
       sort: 1,
     });
+    await refreshCatalogue(browser, productId);
 
     const email = `giveaway.e2e+${Date.now()}@solei.test`;
     const password = "Solei-e2e-2026";
