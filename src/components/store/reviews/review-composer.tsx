@@ -7,6 +7,13 @@ import { AccountForms } from "@/components/store/account/account-forms";
 import { refreshAccount } from "@/components/store/account/use-account";
 import { SideDrawer } from "@/components/store/side-drawer";
 import { Button } from "@/components/ui/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { t } from "@/content/en";
 import { createClient } from "@/lib/supabase/client";
 import { cn } from "@/lib/utils";
@@ -23,14 +30,15 @@ const r = t.product.reviews;
 type Photo = { path: string; preview: string };
 
 /**
- * "Write a review" on the product page. What shows depends on the visitor: sign in first; then
- * only customers with a delivered order of this product get the form (stars, text, up to 3
- * photos uploaded straight to their own storage folder). Reviews wait for the owner's approval.
+ * "Write a review" on the product page: sign in first; then any customer gets the form (stars,
+ * text, up to 3 photos uploaded straight to their own storage folder). A popup confirms it was
+ * sent; reviews wait for the owner's approval.
  */
 export function ReviewComposer({ productId }: { productId: string }) {
   const [eligibility, setEligibility] = useState<ReviewEligibility | null>(null);
   const [open, setOpen] = useState(false);
   const [signInOpen, setSignInOpen] = useState(false);
+  const [sent, setSent] = useState(false);
 
   const load = () => reviewEligibilityAction(productId).then(setEligibility);
   useEffect(() => {
@@ -76,7 +84,24 @@ export function ReviewComposer({ productId }: { productId: string }) {
     );
   }
   if (eligibility.state === "not_purchased") return <p className={note}>{r.notPurchased}</p>;
-  if (eligibility.state === "reviewed") return <p className={note}>{r[eligibility.status]}</p>;
+  if (eligibility.state === "reviewed") {
+    return (
+      <>
+        <p className={note}>{r[eligibility.status]}</p>
+        <Dialog open={sent} onOpenChange={setSent}>
+          <DialogContent className="theme-light max-w-sm">
+            <DialogTitle className="font-display text-primary text-2xl">{r.sentTitle}</DialogTitle>
+            <DialogDescription>{r.sentBody}</DialogDescription>
+            <DialogFooter>
+              <Button type="button" onClick={() => setSent(false)}>
+                {r.sentOk}
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+      </>
+    );
+  }
 
   if (!open) {
     return (
@@ -89,7 +114,10 @@ export function ReviewComposer({ productId }: { productId: string }) {
     <ReviewForm
       productId={productId}
       onCancel={() => setOpen(false)}
-      onDone={() => setEligibility({ state: "reviewed", status: "pending" })}
+      onDone={() => {
+        setEligibility({ state: "reviewed", status: "pending" });
+        setSent(true);
+      }}
     />
   );
 }

@@ -95,6 +95,10 @@ export const en = {
       signInTitle: "Sign in",
       notPurchased: "Reviews come from customers who've received this fragrance.",
       pending: "Thank you — your review will appear once it's approved.",
+      sentTitle: "Review sent",
+      sentBody:
+        "Thank you for sharing your thoughts. Your review will appear here once it's approved.",
+      sentOk: "Done",
       approved: "Thank you for your review.",
       declined: "Thank you — you've already shared your thoughts on this fragrance.",
       rating: "Your rating",

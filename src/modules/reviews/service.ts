@@ -7,8 +7,9 @@ import { reviewPurchase } from "./queries";
 import { authorName, reviewInputSchema, type ReviewStatus } from "./schema";
 
 /**
- * A customer's review, saved as pending. Only for a product in one of their delivered / completed
- * orders; one per product. Photos must already be uploaded into the customer's own folder.
+ * A customer's review, saved as pending until the owner approves it. Any signed-in customer, one
+ * per product; a matching delivered order is linked for the owner's reference when there is one.
+ * Photos must already be uploaded into the customer's own folder.
  */
 export async function submitReview(input: unknown) {
   const account = await currentAccount();
@@ -19,15 +20,10 @@ export async function submitReview(input: unknown) {
     throw new UserError("Please upload your photos again.");
   }
   const orderId = await reviewPurchase(user, v.productId);
-  if (!orderId) {
-    throw new UserError("Only customers who have received this product can review it.");
-  }
   const admin = createAdminClient();
-  const { data: order } = await admin
-    .from("orders")
-    .select("customer_id")
-    .eq("id", orderId)
-    .single();
+  const { data: order } = orderId
+    ? await admin.from("orders").select("customer_id").eq("id", orderId).single()
+    : { data: null };
   const { error } = await admin.from("product_reviews").insert({
     product_id: v.productId,
     user_id: user.id,

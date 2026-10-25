@@ -73,9 +73,7 @@ export async function getReviewEligibility(productId: string): Promise<ReviewEli
     .eq("user_id", account.user.id)
     .maybeSingle();
   if (mine) return { state: "reviewed", status: mine.status };
-  return (await reviewPurchase(account.user, productId))
-    ? { state: "can_review" }
-    : { state: "not_purchased" };
+  return { state: "can_review" };
 }
 
 export type AdminReview = {
