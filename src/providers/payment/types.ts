@@ -60,6 +60,8 @@ export class WebhookSignatureError extends Error {
  */
 export interface PaymentProvider {
   readonly name: string;
+  /** The hosted page refuses orders without the customer's email (N-Genius). */
+  readonly needsEmail?: boolean;
   createCheckout(input: CreateCheckoutInput): Promise<CheckoutSession>;
   /** Verify the signature and normalise the event. Throws WebhookSignatureError. */
   parseWebhook(rawBody: string, headers: Headers): Promise<PaymentEvent>;

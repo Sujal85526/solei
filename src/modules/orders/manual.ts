@@ -5,6 +5,7 @@ import { assertPermission } from "@/lib/auth/session";
 import { formatAED } from "@/lib/money";
 import { can } from "@/lib/permissions";
 import { createAdminClient, createClient } from "@/lib/supabase/server";
+import { billingFromOrder } from "@/modules/checkout/billing";
 import { orderUrl } from "@/modules/checkout/service";
 import { notify } from "@/modules/notifications/service";
 import { paymentProvider } from "@/providers/payment";
@@ -101,7 +102,9 @@ export async function createPaymentLink(
   const admin = createAdminClient();
   const { data: order } = await admin
     .from("orders")
-    .select("id, number, status, contact_name, contact_phone, contact_email")
+    .select(
+      "id, number, status, contact_name, contact_phone, contact_email, delivery_address, delivery_emirate",
+    )
     .eq("id", orderId)
     .single();
   if (!order) throw new UserError("Order not found.");
@@ -116,12 +119,15 @@ export async function createPaymentLink(
   const amount = amountFils && amountFils > 0 ? Math.min(amountFils, outstanding) : outstanding;
 
   const provider = paymentProvider();
+  if (provider.needsEmail && !order.contact_email)
+    throw new UserError("Add the customer's email to the order first — the payment page needs it.");
   const session = await provider.createCheckout({
     orderId: order.id,
     orderNumber: order.number,
     lines: [{ name: `Solei order ${order.number}`, unitAmountFils: amount, quantity: 1 }],
     amountFils: amount,
     customerEmail: order.contact_email,
+    billing: billingFromOrder(order),
     successUrl: orderUrl(order.id, order.number, "&paid=1"),
     cancelUrl: orderUrl(order.id, order.number),
   });

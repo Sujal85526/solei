@@ -65,6 +65,7 @@ const SUCCESS = new Set(["PURCHASED", "CAPTURED"]);
  */
 export class NgeniusProvider implements PaymentProvider {
   readonly name = "ngenius";
+  readonly needsEmail = true;
   private readonly base: string;
   private readonly http: Fetch;
   private readonly now: () => number;
