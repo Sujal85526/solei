@@ -8,7 +8,8 @@ import { QuoteActions } from "@/components/store/events/quote-actions";
 import { eventsCopy as c } from "@/content/events";
 import { formatBusinessDate } from "@/lib/dates";
 import { formatAED } from "@/lib/money";
-import { getPublicQuote } from "@/modules/bookings/service";
+import { getPublicQuote, quoteOrderIds } from "@/modules/bookings/service";
+import { confirmOnReturn } from "@/modules/checkout/payment-events";
 
 export const metadata: Metadata = { title: c.quote.metaTitle, robots: { index: false } };
 
@@ -28,6 +29,8 @@ const longDate = (d: string) =>
 async function QuoteView({ params, searchParams }: PageProps<"/events/quote/[token]">) {
   await connection();
   const [{ token }, sp] = await Promise.all([params, searchParams]);
+  // Back from the payment page: ask the provider directly too (N-Genius never retries webhooks).
+  if (sp.paid === "1") await confirmOnReturn(await quoteOrderIds(token));
   const q = await getPublicQuote(token);
   if (!q) notFound();
 

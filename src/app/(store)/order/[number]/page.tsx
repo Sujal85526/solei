@@ -14,6 +14,7 @@ import { formatPhone } from "@/lib/phone";
 import { createAdminClient } from "@/lib/supabase/server";
 import { verifyOrderToken } from "@/modules/checkout/order-link";
 import { retryPaymentAction } from "@/modules/checkout/order-actions";
+import { confirmOnReturn } from "@/modules/checkout/payment-events";
 
 export const metadata: Metadata = { title: "Your order", robots: { index: false } };
 
@@ -42,6 +43,8 @@ async function OrderView({ params, searchParams }: PageProps<"/order/[number]">)
     .eq("number", number.toUpperCase())
     .maybeSingle();
   if (!order || !verifyOrderToken(order.id, token, orderLinkSecret())) notFound();
+  // Back from the payment page: ask the provider directly too (N-Genius never retries webhooks).
+  if (sp.paid === "1") await confirmOnReturn([order.id]);
   const [{ data: summary }, { data: lastPayment }] = await Promise.all([
     admin
       .from("order_payment_summary")
