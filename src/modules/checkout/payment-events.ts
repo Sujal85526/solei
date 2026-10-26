@@ -34,12 +34,21 @@ export async function applyPaymentEvent(
 
   try {
     if (event.kind === "succeeded") {
+      // Providers report a card payment; keep "payment_link" when staff sent a link, so reports
+      // can tell the two apart.
+      const { data: attempt } = await admin
+        .from("payments")
+        .select("method")
+        .eq("provider", provider)
+        .eq("provider_ref", event.providerRef)
+        .maybeSingle();
+      const method = attempt?.method === "payment_link" ? "payment_link" : event.method;
       const { data, error } = await admin
         .rpc("confirm_payment", {
           p_provider: provider,
           p_provider_ref: event.providerRef,
           p_amount_fils: event.amountFils,
-          p_method: event.method,
+          p_method: method,
           p_payload: event.raw as never,
         })
         .single();

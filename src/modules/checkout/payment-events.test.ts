@@ -6,6 +6,8 @@ vi.mock("server-only", () => ({}));
 const db = {
   events: new Map<string, { id: string; processed: boolean }>(),
   pending: [] as { provider_ref: string }[],
+  /** Method of the payment row being confirmed (method lookup). */
+  attemptMethod: null as string | null,
   rpcError: null as string | null,
   rpc: vi.fn(),
 };
@@ -16,14 +18,21 @@ const checkPayment = vi.fn();
 
 function table(name: string) {
   if (name === "payments") {
+    let cols = "";
     const q = {
-      select: () => q,
+      select: (c: string) => {
+        cols = c;
+        return q;
+      },
       in: () => q,
       eq: () => q,
       not: () => q,
       order: () => q,
       limit: () => q,
-      maybeSingle: async () => ({ data: db.pending[0] ?? null }),
+      maybeSingle: async () =>
+        cols === "method"
+          ? { data: db.attemptMethod ? { method: db.attemptMethod } : null }
+          : { data: db.pending[0] ?? null },
     };
     return q;
   }
@@ -91,6 +100,7 @@ beforeEach(() => {
   db.events.clear();
   db.pending = [];
   db.rpcError = null;
+  db.attemptMethod = null;
   vi.clearAllMocks();
 });
 
@@ -103,6 +113,16 @@ describe("applyPaymentEvent", () => {
     expect(onOrderPaid).toHaveBeenCalledWith({ id: "order-1", number: "SOL-1" });
     expect(onBookingOrderPaid).toHaveBeenCalledTimes(1);
     expect([...db.events.values()][0].processed).toBe(true);
+  });
+
+  it("records the card method, but keeps payment_link for staff payment links", async () => {
+    db.attemptMethod = "online_card";
+    await applyPaymentEvent("ngenius", paid);
+    expect(db.rpc.mock.calls[0][1]).toMatchObject({ p_method: "online_card" });
+    db.events.clear();
+    db.attemptMethod = "payment_link";
+    await applyPaymentEvent("ngenius", paid);
+    expect(db.rpc.mock.calls[1][1]).toMatchObject({ p_method: "payment_link" });
   });
 
   it("sends nothing when the RPC says the order was already paid", async () => {
