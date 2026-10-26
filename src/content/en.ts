@@ -231,16 +231,15 @@ export const en = {
     total: "Total",
     pay: "Continue to payment",
     paying: "Taking you to secure payment…",
-    payNote:
-      "You'll pay on our secure payment page — card or Apple Pay. Card details never touch our servers.",
     /** Purchase terms shown with the total (card-acquirer requirement). Wording comes from Help. */
     policy: {
-      returns: "Returns & refunds:",
       /** Only when the Help returns topic can't be read. */
       returnsFallback:
         "Unopened items in their original packaging can be returned or exchanged within 7 days of delivery.",
       refunds: "Approved refunds go back to your original payment method.",
-      agree: "By continuing you agree to our",
+      agree: "I agree to the",
+      summary: "Returns in short",
+      mustAgree: "Please tick the box to agree to the Terms of service and Returns policy.",
       terms: "Terms of service",
       and: "and",
       returnsLink: "Returns policy",

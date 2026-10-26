@@ -229,6 +229,7 @@ function DeliveryForm({
   const router = useRouter();
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [formError, setFormError] = useState<string | null>(null);
+  const [agreed, setAgreed] = useState(false);
   const [submitting, startSubmit] = useTransition();
   const [signingOut, startSignOut] = useTransition();
   // Idempotency key for this checkout, created on first submit (re-submits reuse it).
@@ -237,6 +238,7 @@ function DeliveryForm({
 
   function onSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
+    if (!agreed) return setFormError(c.policy.mustAgree);
     const fd = Object.fromEntries(new FormData(e.currentTarget));
     setErrors({});
     setFormError(null);
@@ -360,31 +362,46 @@ function DeliveryForm({
             </dd>
           </div>
         </dl>
-        {/* Purchase terms with the total, right where the customer commits (acquirer requirement). */}
-        <div className="border-border text-muted-foreground flex flex-col gap-2 border-t pt-5 text-xs leading-relaxed">
-          <p>
-            <span className="text-foreground">{c.policy.returns}</span> {returnsSummary}{" "}
-            {c.policy.refunds}
-          </p>
-          <p>
-            {c.policy.agree}{" "}
-            <Link
-              href="/help?tab=terms"
-              target="_blank"
-              className="hover:text-primary underline underline-offset-4"
-            >
-              {c.policy.terms}
-            </Link>{" "}
-            {c.policy.and}{" "}
-            <Link
-              href="/help?tab=returns"
-              target="_blank"
-              className="hover:text-primary underline underline-offset-4"
-            >
-              {c.policy.returnsLink}
-            </Link>
-            .
-          </p>
+        {/* Purchase terms by the total, where the customer commits (card-acquirer requirement):
+            a tick to agree, with the returns summary one tap away on this same screen. */}
+        <div className="border-border flex flex-col gap-2 border-t pt-5">
+          <label className="flex items-start gap-3 text-sm">
+            <input
+              type="checkbox"
+              checked={agreed}
+              onChange={(e) => {
+                setAgreed(e.target.checked);
+                if (e.target.checked) setFormError(null);
+              }}
+              className="accent-primary mt-0.5 size-4 shrink-0"
+            />
+            <span className="text-foreground/85">
+              {c.policy.agree}{" "}
+              <Link
+                href="/help?tab=terms"
+                target="_blank"
+                className="hover:text-primary underline underline-offset-4"
+              >
+                {c.policy.terms}
+              </Link>{" "}
+              {c.policy.and}{" "}
+              <Link
+                href="/help?tab=returns"
+                target="_blank"
+                className="hover:text-primary underline underline-offset-4"
+              >
+                {c.policy.returnsLink}
+              </Link>
+            </span>
+          </label>
+          <details className="text-muted-foreground ps-7 text-xs leading-relaxed">
+            <summary className="hover:text-primary w-fit cursor-pointer">
+              {c.policy.summary}
+            </summary>
+            <p className="mt-2">
+              {returnsSummary} {c.policy.refunds}
+            </p>
+          </details>
         </div>
         {formError ? (
           <p role="alert" className="bg-destructive/8 text-destructive px-4 py-3 text-sm">
@@ -404,7 +421,6 @@ function DeliveryForm({
               ? `${c.pay} · ${formatAED(pricing.totalFils)}`
               : c.pay}
         </Button>
-        <p className="text-muted-foreground text-xs leading-relaxed">{c.payNote}</p>
         <button
           type="button"
           onClick={cartDrawer.open}
