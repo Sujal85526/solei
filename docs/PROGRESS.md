@@ -107,7 +107,7 @@ domain verified (eu-west-1), sending key "Solei website (Vercel)" (Keychain `sol
 = soleiperfumes.com (+ redirect entries). ⏳ First real email not yet tested end-to-end. Supabase free-project
 limit counts orgs where you're Owner/Admin — client upgrading Solei to Pro at launch frees your slot.
 
-**Still needed from the client (not blocking):** Ziina API key (`PAYMENT_PROVIDER=ziina`, `ZIINA_API_KEY`, then `pnpm ziina:webhook https://<site>`), dark product
+**Still needed from the client (not blocking):** N-Genius sandbox API key + outlet reference (see the go-live checklist below), dark product
 photography (later), optional delivery-time / refund-timeline / passport reward rules, Dukhoon products?
 
 **Before launch (ours):** separate production Supabase project, re-enable 2FA for owner/manager, remove
@@ -115,10 +115,8 @@ photography (later), optional delivery-time / refund-timeline / passport reward 
 next steps (account_user_id column on orders, stored stock balances) are in DECISIONS / this file.
 
 ## Carry-overs
-- **Ziina payments (client's gateway):** code is ready (`src/providers/payment/ziina.ts`). To go live, set on
-  Vercel `PAYMENT_PROVIDER=ziina`, `ZIINA_API_KEY=…` (token with `write_payment_intents`; `ZIINA_TEST_MODE=1`
-  first for test payments), then run once `ZIINA_API_KEY=… pnpm ziina:webhook https://<site>`. Until then the
-  site keeps the mock test checkout.
+- **Payments: N-Genius replaces Ziina** (DECISIONS T101). Code ready on branch `ngenius`; go live with the
+  checklist below. Ziina code is kept but no longer the default. Until then the site keeps the mock checkout.
 - ~~**Account test code:**~~ off on the live site since 2026-10-17 (Resend on, variable deleted on Vercel).
 - **Contact details (client 2026-10-16):** WhatsApp 050 470 8053, support + owner-alert email
   soleiperfumes@gmail.com, Instagram @solei.ad — in Admin → Settings → Contact details and in the
@@ -161,3 +159,19 @@ next steps (account_user_id column on orders, stored stock balances) are in DECI
   passport magic-link form.
 - **M17 (hardening):** Lighthouse mobile on `/` measured locally at perf 90–91, a11y 100, best-practices 96
   (404 prefetches of not-yet-built routes), SEO 100. Re-check with real client photography.
+
+## Go-live checklist — N-Genius payments
+1. Get the **sandbox** service-account API key and the outlet reference from the client's N-Genius portal.
+2. Set on Vercel: `NGENIUS_API_KEY`, `NGENIUS_OUTLET_REF`, `NGENIUS_SANDBOX=1`, `NGENIUS_WEBHOOK_SECRET`
+   (a long random string), and `PAYMENT_PROVIDER=ngenius` (or leave it empty).
+3. In the portal, register the webhook URL `https://soleiperfumes.com/api/webhooks/payments/ngenius` with
+   the custom header `x-solei-webhook-secret: <NGENIUS_WEBHOOK_SECRET>`, and ask Network International
+   to whitelist it (sandbox webhooks are whitelisted manually).
+4. Test with the NI sandbox test cards: one Visa and one Mastercard payment (plus a declined card), and
+   check that the order turns paid, the emails go once and the stock moves once.
+5. Send Network International the completed merchant checklist.
+6. Get the **live** kit: swap `NGENIUS_API_KEY` and `NGENIUS_OUTLET_REF` for the live ones, set
+   `NGENIUS_SANDBOX=0` (live gateway), and register the same webhook + header on the live outlet.
+7. Run one real AED 1 pilot with a Visa card and one with a Mastercard; send the order IDs to
+   ecomsupport@network.global.
+8. Upload the Solei logo under Branding in the portal (shown on the payment page).

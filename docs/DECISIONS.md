@@ -15,7 +15,7 @@ Open client questions are built as configurable defaults. Each row: what we chos
 | D9 | Booth availability limits | Overlap **warning**, no hard block | ❓ confirm | — |
 | D10 | Package prices | Placeholder prices | ❓ client to supply | booking packages admin |
 | D11 | Brand font "Nove" | Keep the web substitutes (Cormorant Garamond + Jost) | ✅ client 2026-10-15: use current | `src/app/fonts.ts` |
-| D12 | Payment gateway | Ziina (client 2026-10-15) behind `PaymentProvider`; Stripe/mock remain for tests | ⏳ Ziina API key | `src/providers/payment` |
+| D12 | Payment gateway | **Network International N-Genius** (client 2026-10-26, replaces Ziina — T101) behind `PaymentProvider`; Ziina/Stripe/mock kept | ⏳ NI sandbox key + outlet ref | `src/providers/payment` |
 
 ## Technical decisions
 - **T1 — Next.js 16 (App Router) with `cacheComponents`** as scaffolded by `create-next-app`; local docs in
@@ -383,3 +383,23 @@ Open client questions are built as configurable defaults. Each row: what we chos
   client's answers (returns 7 days; passport after two products in one order; essential cookies only).
   Migration `20261015000002_client_answers.sql`; owner edits continue in Admin → Settings → Help & policies.
 - **T100 — Email via Resend** once the domain DNS is available; photography comes last.
+
+## Payments: N-Genius (2026-10-26)
+- **T101 — Network International N-Genius replaces Ziina** (client is dropping Ziina). `NgeniusProvider`
+  (`src/providers/payment/ngenius.ts`) uses the hosted payment page only (no card data, no PCI scope):
+  access token from the portal's service-account key (cached ~5 min), a `PURCHASE` order in fils with the
+  customer's email + billing address (account name, delivery address, city or emirate, `AE`), redirect and
+  cancel URLs. Selected when `NGENIUS_API_KEY` is set (`NGENIUS_SANDBOX=1` = sandbox gateway); a lone
+  `ZIINA_API_KEY` still selects Ziina so an old deployment keeps working. No migration (`online_card`).
+- **NI webhooks are unsigned and never retried**, so (1) the webhook must carry our shared secret in the
+  custom header `x-solei-webhook-secret` (`NGENIUS_WEBHOOK_SECRET`, set in the portal), and the payload is
+  never trusted: the order is re-fetched from the NI API, and only `PURCHASED`/`CAPTURED` in AED for the
+  ordered amount marks it paid; (2) when the customer returns (`?paid=1` on the order or quote page), the
+  server asks NI too. Both go through `applyPaymentEvent` (`src/modules/checkout/payment-events.ts`):
+  `payment_events` dedupe on `<reference>:<state>`, then the idempotent `confirm_payment` / `fail_payment`,
+  so double processing never sends two emails or moves stock twice. Still "paid only from a verified
+  source": the source is NI's own API answer.
+- **Purchase terms on the checkout screen** (NI merchant terms §11.5): beside the pay button, with the
+  total on the button, a short returns summary taken from the owner-edited Help returns topic (an
+  "## At checkout" section if the owner adds one, else the first sentence of the policy), the refund method,
+  and links to the full Terms and Returns policy.
