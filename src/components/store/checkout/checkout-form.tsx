@@ -42,9 +42,12 @@ export type CheckoutAccount = {
 export function CheckoutFlow({
   zones,
   account,
+  returnsSummary,
 }: {
   zones: ZoneOption[];
   account: CheckoutAccount | null;
+  /** Short returns policy shown with the total by the pay button. */
+  returnsSummary: string;
 }) {
   const state = useCart();
   const [details, setDetails] = useState<CartDetails | null>(null);
@@ -146,6 +149,7 @@ export function CheckoutFlow({
               onDetails={setDetails}
               redirecting={redirecting}
               onRedirect={() => setRedirecting(true)}
+              returnsSummary={returnsSummary}
             />
           ) : (
             <div className="mt-8 max-w-sm">
@@ -210,6 +214,7 @@ function DeliveryForm({
   onDetails,
   redirecting,
   onRedirect,
+  returnsSummary,
 }: {
   account: CheckoutAccount;
   zones: ZoneOption[];
@@ -219,6 +224,7 @@ function DeliveryForm({
   onDetails: (d: CartDetails) => void;
   redirecting: boolean;
   onRedirect: () => void;
+  returnsSummary: string;
 }) {
   const router = useRouter();
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -325,6 +331,32 @@ function DeliveryForm({
       </section>
 
       <div className="flex flex-col gap-4">
+        {/* Purchase terms with the total, right where the customer commits (acquirer requirement). */}
+        <div className="border-border text-muted-foreground flex flex-col gap-2 border-t pt-5 text-xs leading-relaxed">
+          <p>
+            <span className="text-foreground">{c.policy.returns}</span> {returnsSummary}{" "}
+            {c.policy.refunds}
+          </p>
+          <p>
+            {c.policy.agree}{" "}
+            <Link
+              href="/help?tab=terms"
+              target="_blank"
+              className="hover:text-primary underline underline-offset-4"
+            >
+              {c.policy.terms}
+            </Link>{" "}
+            {c.policy.and}{" "}
+            <Link
+              href="/help?tab=returns"
+              target="_blank"
+              className="hover:text-primary underline underline-offset-4"
+            >
+              {c.policy.returnsLink}
+            </Link>
+            .
+          </p>
+        </div>
         {formError ? (
           <p role="alert" className="bg-destructive/8 text-destructive px-4 py-3 text-sm">
             {formError}
@@ -337,7 +369,11 @@ function DeliveryForm({
           className="h-12 w-full"
         >
           <Lock className="size-3.5" />
-          {submitting || redirecting ? c.paying : c.pay}
+          {submitting || redirecting
+            ? c.paying
+            : pricing
+              ? `${c.pay} · ${formatAED(pricing.totalFils)}`
+              : c.pay}
         </Button>
         <p className="text-muted-foreground text-xs leading-relaxed">{c.payNote}</p>
         <button
