@@ -331,6 +331,35 @@ function DeliveryForm({
       </section>
 
       <div className="flex flex-col gap-4">
+        {/* On phones the order summary is folded away at the top — show the sums by the button. */}
+        <dl className="numeric border-border flex flex-col gap-2 border-t pt-5 text-sm lg:hidden">
+          <div className="flex justify-between">
+            <dt className="text-muted-foreground">{c.subtotal}</dt>
+            <dd>{pricing ? formatAED(pricing.subtotalFils) : "—"}</dd>
+          </div>
+          {couponCode && pricing?.discountFils ? (
+            <div className="flex justify-between">
+              <dt className="text-muted-foreground">{c.discount}</dt>
+              <dd className="text-primary">−{formatAED(pricing.discountFils)}</dd>
+            </div>
+          ) : null}
+          <div className="flex justify-between">
+            <dt className="text-muted-foreground">{c.shipping}</dt>
+            <dd>
+              {pricing?.deliveryFeeFils == null
+                ? c.chooseEmirate
+                : pricing.deliveryFeeFils === 0
+                  ? c.free
+                  : formatAED(pricing.deliveryFeeFils)}
+            </dd>
+          </div>
+          <div className="flex items-baseline justify-between pt-1">
+            <dt className="font-display text-lg">{c.total}</dt>
+            <dd className="font-display text-primary text-xl">
+              {pricing ? formatAED(pricing.totalFils) : "—"}
+            </dd>
+          </div>
+        </dl>
         {/* Purchase terms with the total, right where the customer commits (acquirer requirement). */}
         <div className="border-border text-muted-foreground flex flex-col gap-2 border-t pt-5 text-xs leading-relaxed">
           <p>
