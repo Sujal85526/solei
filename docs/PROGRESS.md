@@ -116,7 +116,7 @@ next steps (account_user_id column on orders, stored stock balances) are in DECI
 
 ## Carry-overs
 - **Payments: N-Genius replaces Ziina** (DECISIONS T101). Code ready on branch `ngenius`; go live with the
-  checklist below. Ziina code is kept but no longer the default. Until then the site keeps the mock checkout.
+  checklist below. The Ziina code was removed. Until then the site keeps the mock checkout.
 - ~~**Account test code:**~~ off on the live site since 2026-10-17 (Resend on, variable deleted on Vercel).
 - **Contact details (client 2026-10-16):** WhatsApp 050 470 8053, support + owner-alert email
   soleiperfumes@gmail.com, Instagram @solei.ad — in Admin → Settings → Contact details and in the

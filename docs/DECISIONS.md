@@ -15,7 +15,7 @@ Open client questions are built as configurable defaults. Each row: what we chos
 | D9 | Booth availability limits | Overlap **warning**, no hard block | ❓ confirm | — |
 | D10 | Package prices | Placeholder prices | ❓ client to supply | booking packages admin |
 | D11 | Brand font "Nove" | Keep the web substitutes (Cormorant Garamond + Jost) | ✅ client 2026-10-15: use current | `src/app/fonts.ts` |
-| D12 | Payment gateway | **Network International N-Genius** (client 2026-10-26, replaces Ziina — T101) behind `PaymentProvider`; Ziina/Stripe/mock kept | ⏳ NI sandbox key + outlet ref | `src/providers/payment` |
+| D12 | Payment gateway | **Network International N-Genius** (client 2026-10-26, replaces Ziina — T101) behind `PaymentProvider`; Stripe/mock remain for tests; Ziina code removed | ⏳ NI sandbox key + outlet ref | `src/providers/payment` |
 
 ## Technical decisions
 - **T1 — Next.js 16 (App Router) with `cacheComponents`** as scaffolded by `create-next-app`; local docs in
@@ -389,8 +389,8 @@ Open client questions are built as configurable defaults. Each row: what we chos
   (`src/providers/payment/ngenius.ts`) uses the hosted payment page only (no card data, no PCI scope):
   access token from the portal's service-account key (cached ~5 min), a `PURCHASE` order in fils with the
   customer's email + billing address (account name, delivery address, city or emirate, `AE`), redirect and
-  cancel URLs. Selected when `NGENIUS_API_KEY` is set (`NGENIUS_SANDBOX=1` = sandbox gateway); a lone
-  `ZIINA_API_KEY` still selects Ziina so an old deployment keeps working. No migration (`online_card`).
+  cancel URLs. Selected when `NGENIUS_API_KEY` is set (`NGENIUS_SANDBOX=1` = sandbox gateway). The Ziina
+  provider and its webhook script were removed (never live). No migration (`online_card`).
 - **NI webhooks are unsigned and never retried**, so (1) the webhook must carry our shared secret in the
   custom header `x-solei-webhook-secret` (`NGENIUS_WEBHOOK_SECRET`, set in the portal), and the payload is
   never trusted: the order is re-fetched from the NI API, and only `PURCHASED`/`CAPTURED` in AED for the

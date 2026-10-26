@@ -3,7 +3,6 @@ import { serverEnv } from "@/lib/env.server";
 import { MockProvider } from "./mock";
 import { NgeniusProvider } from "./ngenius";
 import { StripeProvider } from "./stripe";
-import { ZiinaProvider } from "./ziina";
 import type { PaymentProvider } from "./types";
 
 export type { PaymentProvider } from "./types";
@@ -11,7 +10,7 @@ export type { PaymentProvider } from "./types";
 let instance: PaymentProvider | undefined;
 
 /**
- * The configured payment provider (PAYMENT_PROVIDER=ngenius|ziina|stripe|mock; N-Genius when its key
+ * The configured payment provider (PAYMENT_PROVIDER=ngenius|stripe|mock; N-Genius when its key
  * is set, mock when nothing is configured).
  */
 export function paymentProvider(): PaymentProvider {
@@ -20,11 +19,9 @@ export function paymentProvider(): PaymentProvider {
   instance =
     env.PAYMENT_PROVIDER === "ngenius"
       ? new NgeniusProvider()
-      : env.PAYMENT_PROVIDER === "ziina"
-        ? new ZiinaProvider()
-        : env.PAYMENT_PROVIDER === "stripe"
-          ? new StripeProvider()
-          : new MockProvider();
+      : env.PAYMENT_PROVIDER === "stripe"
+        ? new StripeProvider()
+        : new MockProvider();
   return instance;
 }
 
