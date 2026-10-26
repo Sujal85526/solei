@@ -296,8 +296,9 @@ Open client questions are built as configurable defaults. Each row: what we chos
   a booth sale is never blocked; close-out reconciles), `event_day` is the Asia/Dubai date of when the sale
   happened on the device (offline sales land on the right day), order status `completed`, then `settle_if_paid`.
 - **T80 — Offline**: every sale is written to IndexedDB before sending; the queue replays on reconnect / every
-  30 s; rejected sales stay visible until dismissed. A service worker (registered only from the POS page) caches
-  the POS page + static assets so it reopens offline; the app is installable (manifest, apple-touch icon).
+  30 s; rejected sales stay visible until dismissed. (The POS service worker and install manifest were removed
+  on 2026-10-26 — Chrome offered shoppers "Install Solei POS"; `public/sw.js` is now a stub that unregisters
+  itself on devices that had it. An open POS tab still queues sales offline.)
 - **T81 — Tap count**: tile, tile, Charge, Cash = 4 taps for a 2-perfume cash sale; customer phone is optional
   on the payment sheet (creates/links the customer for passport stamps).
 ## Solei Passport (milestone 15)

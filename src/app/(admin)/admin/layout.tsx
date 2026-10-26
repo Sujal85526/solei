@@ -8,9 +8,6 @@ import { requireStaff } from "@/lib/auth/session";
 export const metadata: Metadata = {
   title: { default: "Admin", template: "%s · Solei Admin" },
   robots: { index: false, follow: false },
-  // The installable event POS (iPad "Add to Home Screen"). Linked from admin pages only, so
-  // shoppers on the storefront are never offered to install it.
-  manifest: "/pos.webmanifest",
 };
 
 /** Every admin route depends on the session; navigations block on the server by design. */
