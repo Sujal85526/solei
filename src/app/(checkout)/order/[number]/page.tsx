@@ -66,7 +66,7 @@ async function OrderView({ params, searchParams }: PageProps<"/order/[number]">)
   ] as string[];
 
   return (
-    <Container size="narrow" className="py-16 sm:py-24">
+    <Container size="narrow" className="py-14 sm:py-20">
       {paid ? (
         <ClearCartOnPaid />
       ) : justReturned && !failed ? (
@@ -80,21 +80,23 @@ async function OrderView({ params, searchParams }: PageProps<"/order/[number]">)
           <h1 className="text-4xl">{t.order.cancelled}</h1>
         ) : paid ? (
           <>
-            <span className="bg-pink text-pink flex size-14 items-center justify-center rounded-full">
+            <span className="bg-pink text-burgundy ring-pink-wash flex size-16 items-center justify-center rounded-full ring-8">
               <Check className="size-7" strokeWidth={1.5} />
             </span>
             <h1 className="text-5xl">{t.order.paidTitle}</h1>
-            <p className="font-display text-pink max-w-md text-xl italic">{t.order.paidLede}</p>
+            <p className="font-display text-ink-muted max-w-md text-xl italic">
+              {t.order.paidLede}
+            </p>
           </>
         ) : justReturned && !failed ? (
           <>
-            <Clock className="text-pink size-10 animate-pulse" strokeWidth={1.2} />
+            <Clock className="text-gold size-10 animate-pulse" strokeWidth={1.2} />
             <h1 className="text-4xl">{t.order.confirming}</h1>
           </>
         ) : (
           <>
             <h1 className="text-4xl">{t.order.pendingTitle}</h1>
-            <p className="text-pearl-muted max-w-md">
+            <p className="text-muted-foreground max-w-md">
               {failed ? t.order.failedLede : t.order.pendingLede}
             </p>
             <form action={retryPaymentAction.bind(null, order.number, token)}>
@@ -108,69 +110,76 @@ async function OrderView({ params, searchParams }: PageProps<"/order/[number]">)
       </div>
 
       {paid && destinations.length ? (
-        <div className="mt-12 flex flex-wrap justify-center gap-4">
-          {destinations.map((d, i) => (
-            <PassportStamp
-              key={d}
-              label={d}
-              sublabel="Stamp earned"
-              tilt={i % 2 ? 6 : -6}
-              className="size-24"
-            />
-          ))}
-        </div>
+        <section className="bg-pink-wash mt-12 flex flex-col items-center gap-6 rounded-sm px-6 py-8">
+          <p className="eyebrow text-gold-ink">Solei Passport</p>
+          <div className="flex flex-wrap justify-center gap-5">
+            {destinations.map((d, i) => (
+              <PassportStamp
+                key={d}
+                label={d}
+                sublabel="Stamp earned"
+                variant="filled"
+                tilt={i % 2 ? 6 : -6}
+                className="size-24"
+              />
+            ))}
+          </div>
+        </section>
       ) : null}
 
       <OrnamentDivider className="my-12" />
-      <ul className="flex flex-col gap-3 text-sm">
-        {order.order_lines.map((l, i) => (
-          <li key={i} className="flex justify-between gap-4">
-            <span>
-              {l.product_name}
-              {l.variant_label ? ` · ${l.variant_label}` : ""}{" "}
-              <span className="text-pearl-muted">× {l.qty}</span>
-            </span>
-            <span className="numeric">{formatAED(l.line_total_fils + l.discount_fils)}</span>
-          </li>
-        ))}
-      </ul>
-      <dl className="numeric border-pink/15 mt-6 flex flex-col gap-2 border-t pt-4 text-sm">
-        {order.discount_fils ? (
+      <div className="bg-card border-border rounded-sm border px-6 py-6 sm:px-8">
+        <p className="eyebrow text-muted-foreground mb-4">Order summary</p>
+        <ul className="flex flex-col gap-3 text-sm">
+          {order.order_lines.map((l, i) => (
+            <li key={i} className="flex justify-between gap-4">
+              <span>
+                {l.product_name}
+                {l.variant_label ? ` · ${l.variant_label}` : ""}{" "}
+                <span className="text-muted-foreground">× {l.qty}</span>
+              </span>
+              <span className="numeric">{formatAED(l.line_total_fils + l.discount_fils)}</span>
+            </li>
+          ))}
+        </ul>
+        <dl className="numeric border-border mt-5 flex flex-col gap-2 border-t pt-4 text-sm">
+          {order.discount_fils ? (
+            <div className="flex justify-between">
+              <dt>Discount{order.coupon_code ? ` (${order.coupon_code})` : ""}</dt>
+              <dd>−{formatAED(order.discount_fils)}</dd>
+            </div>
+          ) : null}
           <div className="flex justify-between">
-            <dt>Discount{order.coupon_code ? ` (${order.coupon_code})` : ""}</dt>
-            <dd>−{formatAED(order.discount_fils)}</dd>
+            <dt>Delivery</dt>
+            <dd>{order.delivery_fee_fils ? formatAED(order.delivery_fee_fils) : "Free"}</dd>
           </div>
-        ) : null}
-        <div className="flex justify-between">
-          <dt>Delivery</dt>
-          <dd>{order.delivery_fee_fils ? formatAED(order.delivery_fee_fils) : "Free"}</dd>
-        </div>
-        {order.vat_fils ? (
-          <div className="text-pearl-muted flex justify-between">
-            <dt>{order.prices_include_vat ? "Includes VAT" : "VAT"}</dt>
-            <dd>{formatAED(order.vat_fils)}</dd>
+          {order.vat_fils ? (
+            <div className="text-muted-foreground flex justify-between">
+              <dt>{order.prices_include_vat ? "Includes VAT" : "VAT"}</dt>
+              <dd>{formatAED(order.vat_fils)}</dd>
+            </div>
+          ) : null}
+          <div className="font-display text-burgundy flex justify-between pt-1 text-xl">
+            <dt>Total</dt>
+            <dd>{formatAED(order.total_fils)}</dd>
           </div>
-        ) : null}
-        <div className="font-display text-pink flex justify-between text-xl">
-          <dt>Total</dt>
-          <dd>{formatAED(order.total_fils)}</dd>
-        </div>
-      </dl>
-      <div className="mt-10 grid gap-6 text-sm sm:grid-cols-2">
+        </dl>
+      </div>
+      <div className="bg-muted mt-4 grid gap-6 rounded-sm px-6 py-6 text-sm sm:grid-cols-2 sm:px-8">
         <div>
-          <p className="eyebrow text-pink/70 mb-2">Delivering to</p>
+          <p className="eyebrow text-gold-ink mb-2">Delivering to</p>
           <p>{order.contact_name}</p>
-          <p className="text-pearl-muted">
+          <p className="text-muted-foreground">
             {[address.line1, address.line2, address.area, address.city].filter(Boolean).join(", ")}
           </p>
           {order.contact_phone ? (
-            <p className="text-pearl-muted">{formatPhone(order.contact_phone)}</p>
+            <p className="text-muted-foreground">{formatPhone(order.contact_phone)}</p>
           ) : null}
         </div>
-        <div className="sm:text-end">
+        <div className="sm:self-end sm:text-end">
           <Link
             href={`/track?number=${order.number}`}
-            className="eyebrow text-pink underline underline-offset-4"
+            className="eyebrow text-burgundy underline underline-offset-4"
           >
             {t.order.track}
           </Link>
