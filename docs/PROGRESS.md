@@ -115,10 +115,12 @@ photography (later), optional delivery-time / refund-timeline / passport reward 
 next steps (account_user_id column on orders, stored stock balances) are in DECISIONS / this file.
 
 ## Carry-overs
-- **Payments: N-Genius replaces Ziina** (DECISIONS T101; Ziina code removed). Live on soleiperfumes.com in
-  **sandbox** mode since 2026-10-26 (test cards only); sandbox testing done (checklist steps 1–5). Waiting on
-  Network International (ticket 2783849, Pierre Santana) for live portal access — then steps 6–8. Payments
-  confirm on return (Server Action from `AwaitPayment`) even before NI enables the webhook.
+- **Payments: N-Genius replaces Ziina** (DECISIONS T101; Ziina code removed). **LIVE on soleiperfumes.com
+  since 2026-10-27** — `NGENIUS_SANDBOX=0`, live service account `solei-website`, live outlet ref
+  `134a9468-1e10-4d64-84cc-597f4be6437f`, webhook `solei-orders-live` registered (checklist steps 1–6 done).
+  **Real cards now charge real money.** Still needed: AED 1 Visa + Mastercard pilot via staff payment link,
+  send order IDs to ecomsupport@network.global, cancel pilot orders with restock, upload the Solei logo under
+  Branding in the portal (checklist steps 7–8).
 - **Known minor items:** the customer linked to `client@solei.test` has email `test@gmail.com` (a stranger's
   inbox — change it); checkout doesn't remember the mobile number; test customers "NI Test Customer" and
   "Sujal Link Test" in admin — delete before launch.
