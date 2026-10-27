@@ -37,6 +37,14 @@ export type VariantRow = {
 const toAed = (fils: number | null | undefined) =>
   fils == null ? "" : (fils / 100).toFixed(2).replace(/\.00$/, "");
 
+/** "SOL-P-CAP-50" → "SOL-P-CAP", so a new variant's SKU can follow the same pattern. Only when
+ *  the SKU actually ends in a size-like number — otherwise there's nothing safe to copy. */
+function skuPrefixFrom(sku: string | undefined): string | null {
+  if (!sku) return null;
+  const m = sku.match(/^(.+?)-?\d+$/);
+  return m ? m[1] : null;
+}
+
 export function VariantsEditor({
   productId,
   variants,
@@ -111,6 +119,7 @@ export function VariantsEditor({
           key={editing === "new" ? "new" : editing.id}
           productId={productId}
           variant={editing === "new" ? undefined : editing}
+          skuPrefix={editing === "new" ? skuPrefixFrom(variants[0]?.sku) : null}
           canSeeCost={canSeeCost}
           onClose={() => setEditing(null)}
         />
@@ -122,11 +131,14 @@ export function VariantsEditor({
 function VariantDialog({
   productId,
   variant,
+  skuPrefix,
   canSeeCost,
   onClose,
 }: {
   productId: string;
   variant?: VariantRow;
+  /** This product's existing SKU pattern (e.g. "SOL-P-CAP"), to auto-fill a new variant's SKU. */
+  skuPrefix?: string | null;
   canSeeCost: boolean;
   onClose: () => void;
 }) {
@@ -135,6 +147,10 @@ function VariantDialog({
     state,
     useCallback(() => onClose(), [onClose]),
   );
+  // New variant + a known pattern: fill the SKU from the size as soon as one's typed, so staff
+  // never have to invent (or copy another variant's) SKU by hand. Stops once they edit it themselves.
+  const [sku, setSku] = useState(variant?.sku ?? "");
+  const [skuTouched, setSkuTouched] = useState(false);
   return (
     <Dialog open onOpenChange={(open) => !open && onClose()}>
       <DialogContent className="sm:max-w-lg">
@@ -151,6 +167,11 @@ function VariantDialog({
               type="number"
               min={1}
               defaultValue={variant?.size_ml ?? ""}
+              onChange={
+                skuPrefix && !skuTouched
+                  ? (ev) => setSku(ev.target.value ? `${skuPrefix}-${ev.target.value}` : "")
+                  : undefined
+              }
               className="h-11"
             />
           </Field>
@@ -162,12 +183,22 @@ function VariantDialog({
           >
             <Input id="label" name="label" defaultValue={variant?.label} className="h-11" />
           </Field>
-          <Field label="SKU" htmlFor="sku" error={e.sku} required>
+          <Field
+            label="SKU"
+            htmlFor="sku"
+            error={e.sku}
+            required
+            hint={skuPrefix ? `Filled in from the size — change it if you need to.` : undefined}
+          >
             <Input
               id="sku"
               name="sku"
-              defaultValue={variant?.sku}
-              placeholder="SOL-P-CAP-50"
+              value={sku}
+              onChange={(ev) => {
+                setSku(ev.target.value);
+                setSkuTouched(true);
+              }}
+              placeholder={skuPrefix ? `${skuPrefix}-50` : "e.g. SOL-P-CAP-50"}
               className="h-11 font-mono uppercase"
             />
           </Field>
