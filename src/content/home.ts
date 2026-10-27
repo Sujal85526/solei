@@ -16,16 +16,19 @@ function editorial(file: string, fallback: string) {
 export type HeroContent = {
   image: string;
   alt: string;
-  eyebrow: string;
-  title: [string, string];
-  cta: { label: string; href: string };
-  /** object-position for the photo (keep the bottle clear of the copy). */
+  /** object-position for the photo (keep the subject clear of the copy, or of the frame on phones). */
   focus: string;
+  /** False when the photo already carries its own title/CTA (an event poster) — no overlay text. */
+  showOverlayText?: boolean;
+  eyebrow?: string;
+  title?: [string, string];
+  cta?: { label: string; href: string };
 };
 
 export function homeImages() {
   return {
     heroBottle: editorial("hero-cannes.jpg", "/images/brand/hero-sprays-arch.jpg"),
+    theEdit: editorial("the-edit-event.jpg", "/images/brand/hero-sprays-arch.jpg"),
     soho: editorial("soho-portrait.jpg", "/images/products/sprays-stone.jpg"),
     window: editorial("sunset-window.jpg", "/images/destinations/monaco.jpg"),
     bag: editorial("solei-bag.jpg", "/images/brand/hero-sprays-arch.jpg"),
@@ -42,13 +45,25 @@ export const featuredShelf = [
   { slug: "verona-perfume", image: "/images/editorial/shelf-verona.jpg" },
 ] as const;
 
-export function heroContent(): HeroContent {
-  return {
-    image: homeImages().heroBottle,
-    alt: "Solei Cannes perfume on a travertine ledge in late-afternoon light",
-    eyebrow: "Made to remain.",
-    title: ["A destination", "in every scent."],
-    cta: { label: "Shop now", href: "/shop" },
-    focus: "24% 70%",
-  };
+/**
+ * Hero slideshow: the Cannes bottle, then (while it's on) the pop-up poster for The Edit —
+ * remove that second slide after 1 November.
+ */
+export function heroSlides(): HeroContent[] {
+  return [
+    {
+      image: homeImages().heroBottle,
+      alt: "Solei Cannes perfume on a travertine ledge in late-afternoon light",
+      eyebrow: "Made to remain.",
+      title: ["A destination", "in every scent."],
+      cta: { label: "Shop now", href: "/shop" },
+      focus: "24% 70%",
+      showOverlayText: true,
+    },
+    {
+      image: homeImages().theEdit,
+      alt: "Solei at The Edit, Emirates Palace Terrace, 30 October to 1 November, 5pm to 11pm",
+      focus: "50% 38%",
+    },
+  ];
 }

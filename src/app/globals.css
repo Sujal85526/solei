@@ -624,6 +624,32 @@
   }
 }
 
+/* Hero slideshow crossfade — stacked slides, each offset by its share of the loop via --slide-delay. */
+@media (prefers-reduced-motion: no-preference) {
+  .hero-slide {
+    animation: solei-hero-crossfade 14s var(--ease-soft) infinite;
+    animation-delay: var(--slide-delay, 0s);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .hero-slide:not(:first-child) {
+    opacity: 0;
+  }
+}
+@keyframes solei-hero-crossfade {
+  0%,
+  42% {
+    opacity: 1;
+  }
+  50%,
+  92% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+
 /* Store header: solid bar by default; floats transparently over a page hero until scrolled. */
 /* Frosted glass on every page; over a page hero it starts clear and frosts once you scroll. */
 .site-header {

@@ -5,7 +5,7 @@ import { Experience } from "@/components/store/home/experience";
 import { Hero } from "@/components/store/home/hero";
 import { SignatureScents } from "@/components/store/home/signature-scents";
 import { StorySplit } from "@/components/store/home/story-split";
-import { featuredShelf, heroContent, homeImages } from "@/content/home";
+import { featuredShelf, heroSlides, homeImages } from "@/content/home";
 import { listProducts } from "@/modules/storefront/queries";
 
 export default async function HomePage() {
@@ -19,7 +19,7 @@ export default async function HomePage() {
   return (
     <>
       <IntroLoader />
-      <Hero hero={heroContent()} />
+      <Hero slides={heroSlides()} />
       {/* The hero stays put; everything after it scrolls up over it. */}
       <div className="bg-background relative z-10 shadow-[0_-40px_80px_-20px_rgb(0_0_0/0.65)]">
         <StorySplit image={images.soho} />
