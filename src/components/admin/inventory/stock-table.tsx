@@ -28,11 +28,14 @@ export function StockTable({ rows, locations }: { rows: StockRow[]; locations: L
           </thead>
           <tbody className="divide-y">
             {rows.map((r) => (
-              <tr key={r.variantId} className={cn(!r.active && "opacity-60")}>
+              <tr
+                key={r.variantId}
+                className={cn("hover:bg-muted/30 relative", !r.active && "opacity-60")}
+              >
                 <th scope="row" className="px-4 py-3 text-start font-normal">
                   <Link
                     href={`/admin/inventory/${r.variantId}`}
-                    className="font-medium hover:underline"
+                    className="font-medium after:absolute after:inset-0 hover:underline"
                   >
                     {r.productName}
                   </Link>
