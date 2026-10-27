@@ -209,7 +209,6 @@ export const en = {
     title: "Checkout",
     secure: "Secure checkout",
     continueShopping: "Continue shopping",
-    steps: { bag: "Bag", account: "Account", delivery: "Delivery", payment: "Payment" },
     contact: "Contact",
     signedInAs: "Signed in as",
     notYou: "Not you? Sign out",
@@ -231,14 +230,9 @@ export const en = {
     total: "Total",
     pay: "Continue to payment",
     paying: "Taking you to secure payment…",
-    /** Purchase terms shown with the total (card-acquirer requirement). Wording comes from Help. */
+    /** Purchase terms shown with the total (card-acquirer requirement), linking out to Help. */
     policy: {
-      /** Only when the Help returns topic can't be read. */
-      returnsFallback:
-        "Unopened items in their original packaging can be returned or exchanged within 7 days of delivery.",
-      refunds: "Approved refunds go back to your original payment method.",
       agree: "I agree to the",
-      summary: "Returns in short",
       mustAgree: "Please tick the box to agree to the Terms of service and Returns policy.",
       terms: "Terms of service",
       and: "and",

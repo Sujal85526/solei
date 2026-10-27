@@ -42,12 +42,9 @@ export type CheckoutAccount = {
 export function CheckoutFlow({
   zones,
   account,
-  returnsSummary,
 }: {
   zones: ZoneOption[];
   account: CheckoutAccount | null;
-  /** Short returns policy shown with the total by the pay button. */
-  returnsSummary: string;
 }) {
   const state = useCart();
   const [details, setDetails] = useState<CartDetails | null>(null);
@@ -138,7 +135,6 @@ export function CheckoutFlow({
 
       <div className="flex-1 lg:order-1">
         <div className="mx-auto w-full max-w-xl px-5 py-10 sm:px-10 lg:me-0 lg:py-14 lg:ps-10 lg:pe-14">
-          <Steps current={account ? "delivery" : "account"} />
           {account ? (
             <DeliveryForm
               account={account}
@@ -149,7 +145,6 @@ export function CheckoutFlow({
               onDetails={setDetails}
               redirecting={redirecting}
               onRedirect={() => setRedirecting(true)}
-              returnsSummary={returnsSummary}
             />
           ) : (
             <div className="mt-8 max-w-sm">
@@ -162,49 +157,6 @@ export function CheckoutFlow({
   );
 }
 
-function Steps({ current }: { current: "account" | "delivery" }) {
-  const steps = [
-    { key: "bag", label: c.steps.bag },
-    { key: "account", label: c.steps.account },
-    { key: "delivery", label: c.steps.delivery },
-    { key: "payment", label: c.steps.payment },
-  ] as const;
-  const at = steps.findIndex((s) => s.key === current);
-  return (
-    <nav aria-label="Checkout steps">
-      <ol className="flex flex-wrap items-center gap-x-2 gap-y-1 text-[0.65rem] tracking-[0.2em] uppercase">
-        {steps.map((s, i) => (
-          <li key={s.key} className="flex items-center gap-2">
-            {s.key === "bag" ? (
-              <button
-                type="button"
-                onClick={cartDrawer.open}
-                className="text-muted-foreground hover:text-primary uppercase"
-              >
-                {s.label}
-              </button>
-            ) : (
-              <span
-                aria-current={i === at ? "step" : undefined}
-                className={cn(
-                  i === at ? "text-primary" : i < at ? "text-muted-foreground" : "text-[#b9a5ab]",
-                )}
-              >
-                {s.label}
-              </span>
-            )}
-            {i < steps.length - 1 ? (
-              <span aria-hidden className="text-[#c9b6bb]">
-                /
-              </span>
-            ) : null}
-          </li>
-        ))}
-      </ol>
-    </nav>
-  );
-}
-
 function DeliveryForm({
   account,
   zones,
@@ -214,7 +166,6 @@ function DeliveryForm({
   onDetails,
   redirecting,
   onRedirect,
-  returnsSummary,
 }: {
   account: CheckoutAccount;
   zones: ZoneOption[];
@@ -224,7 +175,6 @@ function DeliveryForm({
   onDetails: (d: CartDetails) => void;
   redirecting: boolean;
   onRedirect: () => void;
-  returnsSummary: string;
 }) {
   const router = useRouter();
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -363,7 +313,7 @@ function DeliveryForm({
           </div>
         </dl>
         {/* Purchase terms by the total, where the customer commits (card-acquirer requirement):
-            a tick to agree, with the returns summary one tap away on this same screen. */}
+            a tick to agree, linking out to the Terms and Returns policy. */}
         <div className="border-border flex flex-col gap-2 border-t pt-5">
           <label className="flex items-start gap-3 text-sm">
             <input
@@ -394,14 +344,6 @@ function DeliveryForm({
               </Link>
             </span>
           </label>
-          <details className="text-muted-foreground ps-7 text-xs leading-relaxed">
-            <summary className="hover:text-primary w-fit cursor-pointer">
-              {c.policy.summary}
-            </summary>
-            <p className="mt-2">
-              {returnsSummary} {c.policy.refunds}
-            </p>
-          </details>
         </div>
         {formError ? (
           <p role="alert" className="bg-destructive/8 text-destructive px-4 py-3 text-sm">
