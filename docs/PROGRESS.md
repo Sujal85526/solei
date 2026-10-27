@@ -168,7 +168,7 @@ next steps (account_user_id column on orders, stored stock balances) are in DECI
   (404 prefetches of not-yet-built routes), SEO 100. Re-check with real client photography.
 
 ## Go-live checklist — N-Genius payments
-Steps 1–5 done (2026-10-26/27). Next: step 6 once NI grants live portal access (portal.ngenius-payments.com).
+Steps 1–6 done (2026-10-26/27, NI granted live portal access 2026-10-27). Next: step 7, the AED 1 pilot.
 1. Get the **sandbox** service-account API key and the outlet reference from the client's N-Genius portal.
 2. Set on Vercel: `NGENIUS_API_KEY`, `NGENIUS_OUTLET_REF`, `NGENIUS_SANDBOX=1`, `NGENIUS_WEBHOOK_SECRET`
    (a long random string), and `PAYMENT_PROVIDER=ngenius` (or leave it empty).
