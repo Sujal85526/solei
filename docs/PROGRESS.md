@@ -107,7 +107,7 @@ domain verified (eu-west-1), sending key "Solei website (Vercel)" (Keychain `sol
 = soleiperfumes.com (+ redirect entries). ⏳ First real email not yet tested end-to-end. Supabase free-project
 limit counts orgs where you're Owner/Admin — client upgrading Solei to Pro at launch frees your slot.
 
-**Still needed from the client (not blocking):** N-Genius sandbox API key + outlet reference (see the go-live checklist below), dark product
+**Still needed from the client (not blocking):** dark product
 photography (later), optional delivery-time / refund-timeline / passport reward rules, Dukhoon products?
 
 **Before launch (ours):** separate production Supabase project, re-enable 2FA for owner/manager, remove
@@ -115,8 +115,13 @@ photography (later), optional delivery-time / refund-timeline / passport reward 
 next steps (account_user_id column on orders, stored stock balances) are in DECISIONS / this file.
 
 ## Carry-overs
-- **Payments: N-Genius replaces Ziina** (DECISIONS T101). Code ready on branch `ngenius`; go live with the
-  checklist below. The Ziina code was removed. Until then the site keeps the mock checkout.
+- **Payments: N-Genius replaces Ziina** (DECISIONS T101; Ziina code removed). Live on soleiperfumes.com in
+  **sandbox** mode since 2026-10-26 (test cards only); sandbox testing done (checklist steps 1–5). Waiting on
+  Network International (ticket 2783849, Pierre Santana) for live portal access — then steps 6–8. Payments
+  confirm on return (Server Action from `AwaitPayment`) even before NI enables the webhook.
+- **Known minor items:** the customer linked to `client@solei.test` has email `test@gmail.com` (a stranger's
+  inbox — change it); checkout doesn't remember the mobile number; test customers "NI Test Customer" and
+  "Sujal Link Test" in admin — delete before launch.
 - ~~**Account test code:**~~ off on the live site since 2026-10-17 (Resend on, variable deleted on Vercel).
 - **Contact details (client 2026-10-16):** WhatsApp 050 470 8053, support + owner-alert email
   soleiperfumes@gmail.com, Instagram @solei.ad — in Admin → Settings → Contact details and in the
@@ -161,6 +166,7 @@ next steps (account_user_id column on orders, stored stock balances) are in DECI
   (404 prefetches of not-yet-built routes), SEO 100. Re-check with real client photography.
 
 ## Go-live checklist — N-Genius payments
+Steps 1–5 done (2026-10-26/27). Next: step 6 once NI grants live portal access (portal.ngenius-payments.com).
 1. Get the **sandbox** service-account API key and the outlet reference from the client's N-Genius portal.
 2. Set on Vercel: `NGENIUS_API_KEY`, `NGENIUS_OUTLET_REF`, `NGENIUS_SANDBOX=1`, `NGENIUS_WEBHOOK_SECRET`
    (a long random string), and `PAYMENT_PROVIDER=ngenius` (or leave it empty).
