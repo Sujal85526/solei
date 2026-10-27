@@ -117,13 +117,21 @@ next steps (account_user_id column on orders, stored stock balances) are in DECI
 ## Carry-overs
 - **Payments: N-Genius replaces Ziina** (DECISIONS T101; Ziina code removed). **LIVE on soleiperfumes.com
   since 2026-10-27** — `NGENIUS_SANDBOX=0`, live service account `solei-website`, live outlet ref
-  `134a9468-1e10-4d64-84cc-597f4be6437f`, webhook `solei-orders-live` registered (checklist steps 1–6 done).
-  **Real cards now charge real money.** Still needed: AED 1 Visa + Mastercard pilot via staff payment link,
-  send order IDs to ecomsupport@network.global, cancel pilot orders with restock, upload the Solei logo under
-  Branding in the portal (checklist steps 7–8).
+  `5fdb5c00-37bf-4101-8161-a6694b1d0464` (the top-level merchant org GUID doesn't work as an outlet ref —
+  NI's hierarchy nests the real Outlet entity two levels down; see `solei-ngenius-sandbox` memory), webhook
+  `solei-orders-live` registered (checklist steps 1–6 done). **Real cards now charge real money.** First
+  pilot order confirmed paid (SOL-001499, AED 1, 2026-10-27). Still needed: the second pilot with the other
+  card brand, send both order IDs to ecomsupport@network.global, cancel pilot orders with restock, upload
+  the Solei logo under Branding in the portal (checklist steps 7–8).
 - **Known minor items:** the customer linked to `client@solei.test` has email `test@gmail.com` (a stranger's
   inbox — change it); checkout doesn't remember the mobile number; test customers "NI Test Customer" and
-  "Sujal Link Test" in admin — delete before launch.
+  "Sujal Link Test" in admin — delete before launch; test product "Solei Trial" (Dukhoon, AED 1) and hidden
+  product "Test from dashboard" — delete both before launch.
+- **M17 TODO — product title vs. destination:** setting a product's Destination (for the passport stamp)
+  always swaps the storefront title to the destination's name (`src/app/(store)/products/[slug]/page.tsx`) —
+  by design for the Perfumes/All-over-sprays line (e.g. "Capri Perfume" shows as "CAPRI"), but it means a
+  product can't keep a Destination and show its own name. Would need a per-product toggle (migration + admin
+  checkbox + storefront tweak) if that's ever wanted — paused for now, not built.
 - ~~**Account test code:**~~ off on the live site since 2026-10-17 (Resend on, variable deleted on Vercel).
 - **Contact details (client 2026-10-16):** WhatsApp 050 470 8053, support + owner-alert email
   soleiperfumes@gmail.com, Instagram @solei.ad — in Admin → Settings → Contact details and in the
