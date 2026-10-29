@@ -18,6 +18,7 @@ import {
   GiveawayPicker,
   type StaffGiveawayLine,
 } from "@/components/admin/giveaways/giveaway-picker";
+import { TillPromotionsPanel, useTillPromotions } from "@/components/admin/pos/till-promotions";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
@@ -29,6 +30,7 @@ import { giftCardApplies, giftCardRefusalMessage, maskGiftCode } from "@/modules
 import { daySummaryAction } from "@/modules/pos/actions";
 import type { StoreGiveaway } from "@/modules/giveaways/types";
 import type { DaySummary, PosEvent, PosProduct } from "@/modules/pos/queries";
+import type { PointsReward } from "@/modules/promotions/schema";
 import { queue, send, type QueuedSale } from "@/modules/pos/queue";
 import {
   balanceSplit,
@@ -53,6 +55,7 @@ export function PosScreen({
   summary: initialSummary,
   giftCards,
   giveaways = [],
+  rewards = [],
 }: {
   events: PosEvent[];
   eventId: string;
@@ -62,6 +65,8 @@ export function PosScreen({
   giftCards: boolean;
   /** Giveaways staff can sell with their choices (Products → a product → Giveaway). */
   giveaways?: StoreGiveaway[];
+  /** Points rewards customers can take at the till (Admin → Loyalty → Points & tiers). */
+  rewards?: PointsReward[];
 }) {
   const router = useRouter();
   const [products, setProducts] = useState(initialProducts);
@@ -105,10 +110,28 @@ export function PosScreen({
   const lines = cart
     .map((l) => ({ ...l, product: byId.get(l.variantId)! }))
     .filter((l) => l.product);
-  const total = cartTotal([
+  const listTotal = cartTotal([
     ...lines.map((l) => ({ priceFils: l.product.priceFils, qty: l.qty })),
     ...giveawayLines.map((l) => ({ priceFils: l.unitFils, qty: l.qty })),
   ]);
+  const saleLines = useMemo(
+    () => [
+      ...cart
+        .filter((l) => byId.has(l.variantId))
+        .map((l) => ({ variantId: l.variantId, qty: l.qty })),
+      ...giveawayLines.map((l) => ({
+        variantId: l.variantId,
+        qty: l.qty,
+        options: l.options,
+        giveawayId: l.giveawayId,
+      })),
+    ],
+    [cart, byId, giveawayLines],
+  );
+  // Sale prices, offers, codes and points from the database (catalogue prices offline).
+  const promo = useTillPromotions({ eventId, lines: saleLines, online, phone, email, rewards });
+  // What the payments must add up to: after offers, codes, rewards and points.
+  const total = promo.dueFils ?? listTotal;
   const items = lines.reduce((s, l) => s + l.qty, 0) + giveawayLines.reduce((s, l) => s + l.qty, 0);
   const qtyOf = (id: string) => cart.find((l) => l.variantId === id)?.qty ?? 0;
 
@@ -179,25 +202,21 @@ export function PosScreen({
   }
 
   async function complete(payments: SalePayment[]) {
-    if (!items || busy) return;
+    if (!items || busy || promo.pending) return;
     setBusy(true);
+    const extras = promo.saleExtras();
     const sale: QueuedSale = {
       clientUuid: crypto.randomUUID(),
       eventId,
       soldAt: new Date().toISOString(),
       customerPhone: phone.trim() || undefined,
       customerEmail: email.trim() || undefined,
-      lines: [
-        ...lines.map((l) => ({ variantId: l.variantId, qty: l.qty })),
-        ...giveawayLines.map((l) => ({
-          variantId: l.variantId,
-          qty: l.qty,
-          options: l.options,
-          giveawayId: l.giveawayId,
-        })),
-      ],
+      lines: [...saleLines, ...extras.rewardLines],
+      couponCodes: extras.couponCodes,
+      points: extras.points,
+      applyOffers: extras.applyOffers,
       payments,
-      totalFils: total,
+      totalFils: promo.totalFils ?? total,
       attempts: 0,
     };
     await queue.put(sale); // durable first — never lose a sale
@@ -225,6 +244,7 @@ export function PosScreen({
     await refreshQueue();
     setCart([]);
     setGiveawayLines([]);
+    promo.reset();
     setPhone("");
     setEmail("");
     setSplit(null);
@@ -655,6 +675,12 @@ export function PosScreen({
               className="h-12 text-base"
             />
           </fieldset>
+          <TillPromotionsPanel promo={promo} rewards={rewards} online={online} />
+          {promo.pending ? (
+            <p role="status" className="text-muted-foreground text-sm">
+              Updating the price…
+            </p>
+          ) : null}
           {gift === "entering" ? (
             <form
               className="flex flex-col gap-2"
@@ -702,7 +728,7 @@ export function PosScreen({
               {total - gift.appliedFils === 0 ? (
                 <Button
                   size="xl"
-                  disabled={busy}
+                  disabled={busy || promo.pending}
                   onClick={() =>
                     complete([
                       { method: "gift_card", amountFils: gift.appliedFils, reference: gift.code },
@@ -725,7 +751,7 @@ export function PosScreen({
                         key={m}
                         size="xl"
                         variant="outline"
-                        disabled={busy}
+                        disabled={busy || promo.pending}
                         onClick={() =>
                           complete([
                             {
@@ -807,7 +833,7 @@ export function PosScreen({
               </Button>
               <Button
                 size="xl"
-                disabled={!splitValid || busy}
+                disabled={!splitValid || busy || promo.pending}
                 onClick={() =>
                   complete(
                     split.map((r) => ({
@@ -827,7 +853,7 @@ export function PosScreen({
                   key={m}
                   size="xl"
                   variant={m === "cash" ? "default" : "outline"}
-                  disabled={busy}
+                  disabled={busy || promo.pending}
                   onClick={() => complete([{ method: m, amountFils: total }])}
                 >
                   {POS_METHOD_LABELS[m]}

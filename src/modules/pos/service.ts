@@ -43,7 +43,12 @@ export async function completeSale(input: unknown): Promise<CompleteSaleResult> 
           qty: l.qty,
           options: toDbOptions(l.options),
           giveaway_id: l.giveawayId,
+          reward_id: l.rewardId,
         })),
+        coupon_codes: v.couponCodes ?? [],
+        points: v.points ?? 0,
+        // Sales queued by an older till (no flag) were priced at catalogue prices.
+        apply_offers: v.applyOffers ?? false,
         payments: v.payments.map((p) => ({
           method: p.method,
           amount_fils: p.amountFils,

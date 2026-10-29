@@ -6,6 +6,8 @@ import { requirePagePermission } from "@/lib/auth/session";
 import { getGiftCardSettings } from "@/modules/gift-cards/queries";
 import { listGiveaways } from "@/modules/giveaways/queries";
 import { daySummary, posEvents, posProducts } from "@/modules/pos/queries";
+import { getRewardsProgramme } from "@/modules/points/queries";
+import { listLiveRewards } from "@/modules/promotions/queries";
 
 export const metadata: Metadata = { title: "POS" };
 
@@ -16,10 +18,12 @@ export default async function PosPage({ searchParams }: PageProps<"/admin/pos">)
   // With ?event= the tiles and day summary start alongside the event list (one round trip).
   const early = requested ? Promise.all([posProducts(requested), daySummary(requested)]) : null;
   early?.catch(() => {}); // unused when the event id is unknown — don't surface its error
-  const [events, giftSettings, giveaways] = await Promise.all([
+  const [events, giftSettings, giveaways, programme, rewards] = await Promise.all([
     posEvents(),
     getGiftCardSettings(),
     listGiveaways(),
+    getRewardsProgramme(),
+    listLiveRewards(),
   ]);
   const event = events.find((e) => e.id === requested) ?? events[0];
   if (!event) {
@@ -50,6 +54,7 @@ export default async function PosPage({ searchParams }: PageProps<"/admin/pos">)
         summary={summary}
         giftCards={giftSettings.atPos}
         giveaways={giveaways}
+        rewards={programme.settings.enabled ? rewards : []}
       />
     </>
   );

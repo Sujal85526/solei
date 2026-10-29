@@ -37,10 +37,21 @@ export const posSaleSchema = z.object({
         /** Giveaways: the chosen options and the giveaway (priced by the database). */
         options: lineOptionsSchema.optional(),
         giveawayId: z.uuid().optional(),
+        /** A points reward (paid by the customer's points). */
+        rewardId: z.uuid().optional(),
       }),
     )
     .min(1)
     .max(50),
+  /** Discount codes for this sale (checked by the database at this event). */
+  couponCodes: z.array(z.string().trim().max(40)).max(5).optional(),
+  /** Points the customer spends as money off (needs the customer). */
+  points: z.number().int().min(0).optional(),
+  /**
+   * False when the sale was rung up offline at catalogue prices: the database then skips sale
+   * prices and offers so the payments still match.
+   */
+  applyOffers: z.boolean().optional(),
   payments: z
     .array(
       z
