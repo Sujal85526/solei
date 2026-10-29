@@ -3,6 +3,7 @@ import Link from "next/link";
 import { ChevronRight, Download } from "lucide-react";
 import { ConsentBadge } from "@/components/admin/customers/badges";
 import { NewCustomerDialog } from "@/components/admin/customers/new-customer-dialog";
+import { SendWelcomeBatchButton } from "@/components/admin/customers/welcome-email";
 import { PageHeader } from "@/components/admin/page-header";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -14,6 +15,7 @@ import { can } from "@/lib/permissions";
 import { formatPhone } from "@/lib/phone";
 import { cn } from "@/lib/utils";
 import { CUSTOMERS_PAGE_SIZE, listCustomers } from "@/modules/customers/queries";
+import { WELCOME_BATCH, pendingWelcomeCount } from "@/modules/customers/welcome";
 import {
   customerSources,
   emirateLabels,
@@ -30,7 +32,11 @@ export const metadata: Metadata = { title: "Customers" };
 export default async function CustomersPage({ searchParams }: PageProps<"/admin/customers">) {
   const staff = await requirePagePermission("customers.view");
   const filters = parseCustomerFilters(await searchParams);
-  const { rows, total, page } = await listCustomers(filters);
+  const canManage = can(staff.permissions, "customers.manage");
+  const [{ rows, total, page }, toWelcome] = await Promise.all([
+    listCustomers(filters),
+    canManage ? pendingWelcomeCount() : Promise.resolve(0),
+  ]);
   const pages = Math.max(1, Math.ceil(total / CUSTOMERS_PAGE_SIZE));
   const showStats = can(staff.permissions, "orders.view");
   const filtered = Boolean(
@@ -52,10 +58,21 @@ export default async function CustomersPage({ searchParams }: PageProps<"/admin/
             >
               <Download /> Export CSV
             </a>
-            {can(staff.permissions, "customers.manage") ? <NewCustomerDialog /> : null}
+            {canManage ? <NewCustomerDialog /> : null}
           </>
         }
       />
+
+      {toWelcome > 0 ? (
+        <div className="bg-card mb-5 flex flex-wrap items-center justify-between gap-3 rounded-xl border p-4 text-sm">
+          <p>
+            <strong>{toWelcome}</strong> {toWelcome === 1 ? "customer" : "customers"} you added by
+            hand {toWelcome === 1 ? "hasn't" : "haven't"} had the welcome email yet. Add their
+            stickers first, then send.
+          </p>
+          <SendWelcomeBatchButton count={toWelcome} batch={WELCOME_BATCH} />
+        </div>
+      ) : null}
 
       <form
         method="get"

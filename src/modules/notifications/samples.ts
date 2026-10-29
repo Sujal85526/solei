@@ -28,6 +28,10 @@ export function sampleVars(siteUrl: string, variables: readonly string[] = []): 
     remaining: 4,
     reward: "a free all-over spray",
     passport_link: `${siteUrl}/passport`,
+    customer_email: "layla@example.com",
+    shop_link: `${siteUrl}/shop`,
+    stamps_line:
+      "From your previous orders you've already collected 3 stickers — just 9 more to unlock a free all-over spray.",
     product: "Capri Perfume · 50 ml",
     sku: "SOL-P-CAP-50",
     on_hand: 4,

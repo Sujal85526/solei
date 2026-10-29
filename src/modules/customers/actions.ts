@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { fail, ok, type ActionResult } from "@/lib/action-result";
 import type { CustomerOption } from "./queries";
 import * as customers from "./service";
+import * as welcome from "./welcome";
 
 const entries = (fd: FormData) => Object.fromEntries(fd.entries());
 
@@ -74,6 +75,30 @@ export async function recordOptOutAction(id: string): Promise<ActionResult> {
     await customers.recordOptOut({ id });
     refresh(id);
     return ok(undefined, "Opt-out recorded — no more marketing.");
+  } catch (e) {
+    return fail(e);
+  }
+}
+
+/** Send (or, with `force`, re-send) the welcome-to-the-website email to one customer. */
+export async function sendWelcomeAction(id: string, force = false): Promise<ActionResult> {
+  try {
+    await welcome.sendWelcome(id, { force });
+    refresh(id);
+    return ok(undefined, "Welcome email sent.");
+  } catch (e) {
+    return fail(e);
+  }
+}
+
+/** Send the welcome email to the next batch of customers who haven't had it. */
+export async function sendWelcomeBatchAction(): Promise<ActionResult<welcome.BatchResult>> {
+  try {
+    const res = await welcome.sendWelcomeBatch();
+    refresh();
+    const left = res.remaining ? ` ${res.remaining} still to go — click again.` : "";
+    const bad = res.failed ? ` ${res.failed} couldn't be sent.` : "";
+    return ok(res, `${res.sent} welcome ${res.sent === 1 ? "email" : "emails"} sent.${bad}${left}`);
   } catch (e) {
     return fail(e);
   }
