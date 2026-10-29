@@ -240,3 +240,44 @@ describe("inventory value and months", () => {
     });
   });
 });
+
+describe("business workbook", () => {
+  it("renders every section to PDF, and drops profit without the financial permission", async () => {
+    const { businessWorkbook } = await import("./business-tables");
+    const { workbookToPdf } = await import("./pdf");
+    const r = buildBusinessReport(sample, null);
+    const model = businessWorkbook(r, 60);
+    expect(model.sheets.map((s) => s.name)).toEqual([
+      "Overview",
+      "Profit & loss",
+      "Channels & payments",
+      "Products",
+      "Customers",
+      "Stock",
+      "Months",
+    ]);
+    const pdf = await workbookToPdf(model);
+    expect(new TextDecoder().decode(pdf.slice(0, 5))).toBe("%PDF-");
+
+    const plain = businessWorkbook(
+      buildBusinessReport(
+        {
+          ...sample,
+          financial: false,
+          lines: sample.lines.map((l) => ({ ...l, unit_cost_fils: null })),
+        },
+        null,
+      ),
+      60,
+    );
+    expect(plain.sheets.map((s) => s.name)).not.toContain("Profit & loss");
+    const headers = plain.sheets.flatMap((s) =>
+      s.blocks.flatMap((b) =>
+        b.kind === "table" ? b.columns.map((c) => c.header) : b.rows.map((x) => x.label),
+      ),
+    );
+    expect(
+      headers.some((h) => /COGS|cost|stock value|inventory value|profit|margin/i.test(h)),
+    ).toBe(false);
+  });
+});
