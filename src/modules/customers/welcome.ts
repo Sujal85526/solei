@@ -15,16 +15,12 @@ import { stampsLine } from "./welcome-text";
  */
 
 const KEY = "customer_welcome";
-/** A year is "never" for a dedupe window. */
-const ONCE = 24 * 365;
 /** Customers added by staff — not website sign-ups, newsletter or event-booking contacts. */
 const HAND_ENTERED = ["manual", "whatsapp", "direct"] as const;
 /** Emails per click: keeps one request short and well inside the email provider's rate limit. */
 export const WELCOME_BATCH = 20;
 
-/** When this customer was last sent the welcome email (null = never). */
-export async function welcomeSentAt(customerId: string): Promise<string | null> {
-  await assertPermission("customers.view");
+async function lastSent(customerId: string): Promise<string | null> {
   const { data } = await createAdminClient()
     .from("notification_log")
     .select("created_at")
@@ -35,6 +31,12 @@ export async function welcomeSentAt(customerId: string): Promise<string | null> 
     .limit(1)
     .maybeSingle();
   return data?.created_at ?? null;
+}
+
+/** When this customer was last sent the welcome email (null = never). */
+export async function welcomeSentAt(customerId: string): Promise<string | null> {
+  await assertPermission("customers.view");
+  return lastSent(customerId);
 }
 
 async function loadRule() {
@@ -62,6 +64,11 @@ export async function sendWelcome(customerId: string, opts: { force?: boolean } 
   if (!c) throw new UserError("Customer not found.");
   if (!c.email) throw new UserError("Add this customer's email first — the welcome goes by email.");
   if (c.unsubscribed_at) throw new UserError("This customer has opted out of messages from us.");
+  // Our own "already welcomed?" check (only real sends count — a blocked or skipped attempt must
+  // not stop the real one), instead of the notifier's dedupe, which treats skipped rows as sent.
+  if (!opts.force && (await lastSent(c.id))) {
+    throw new UserError("The welcome email was already sent to this customer.");
+  }
 
   const [rule, { data: balance }] = await Promise.all([
     loadRule(),
@@ -84,17 +91,9 @@ export async function sendWelcome(customerId: string, opts: { force?: boolean } 
       shop_link: `${site}/shop`,
       passport_link: `${site}/passport`,
     },
-    dedupeKey: opts.force ? `welcome:${Date.now()}` : "welcome",
-    dedupeHours: ONCE,
   });
   if (result.status === "failed") throw new UserError(`Sending failed: ${result.reason}`);
-  if (result.status === "skipped") {
-    throw new UserError(
-      result.reason === "Already sent recently"
-        ? "The welcome email was already sent to this customer."
-        : `Not sent: ${result.reason}.`,
-    );
-  }
+  if (result.status === "skipped") throw new UserError(`Not sent: ${result.reason}.`);
 }
 
 /** Hand-entered customers with an email who haven't had the welcome yet (oldest first). */
