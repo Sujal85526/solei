@@ -19,6 +19,7 @@ import {
 } from "@/modules/campaigns/actions";
 import type { SegmentPreview } from "@/modules/campaigns/queries";
 import { rulesToForm, type SegmentRules } from "@/modules/campaigns/schema";
+import { customerLabels, labelNames } from "@/modules/customers/labels";
 import { emirateLabels } from "@/modules/customers/schema";
 import { emirates } from "@/modules/cart/schema";
 
@@ -204,6 +205,24 @@ export function SegmentForm({
                 </NativeSelect>
               </Field>
             </div>
+
+            <fieldset>
+              <legend className="mb-2 text-sm font-medium">Label</legend>
+              <div className="grid grid-cols-2 gap-x-6 gap-y-2 sm:grid-cols-4">
+                {customerLabels.map((l) => (
+                  <label key={l} className={box}>
+                    <input
+                      type="checkbox"
+                      name="labels"
+                      value={l}
+                      defaultChecked={v.labels.includes(l)}
+                      className="accent-primary size-4"
+                    />
+                    {labelNames[l]}
+                  </label>
+                ))}
+              </div>
+            </fieldset>
 
             <fieldset>
               <legend className="mb-2 text-sm font-medium">Emirate</legend>

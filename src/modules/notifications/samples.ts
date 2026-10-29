@@ -36,6 +36,23 @@ export function sampleVars(siteUrl: string, variables: readonly string[] = []): 
     sku: "SOL-P-CAP-50",
     on_hand: 4,
     threshold: 5,
+    feedback_link: `${siteUrl}/feedback`,
+    review_link: `${siteUrl}/shop`,
+    unsubscribe_link: `${siteUrl}/feedback/stop`,
+    staff_name: "Mariam",
+    event_name: "Galleria pop-up",
+    event_role: " as Booth lead",
+    event_dates: "Sat 7 Nov – Sun 8 Nov",
+    start_time: "10:00",
+    event_location: "The Galleria, Al Maryah Island",
+    note: "Bring the Capri testers.",
+    event_link: `${siteUrl}/admin/calendar`,
+    shift_date: "Sat 7 Nov",
+    shift_time: "10:00–18:00",
+    rota_link: `${siteUrl}/admin/attendance/rota`,
+    events: "- **Galleria pop-up** — Sat 7 Nov – Sun 8 Nov, The Galleria. Staff: Mariam, Omar.",
+    calendar_link: `${siteUrl}/admin/calendar`,
+    first_name: "Layla",
   };
   const vars: TemplateVars = { ...known };
   for (const v of variables) if (!(v in vars)) vars[v] = `[${v}]`;

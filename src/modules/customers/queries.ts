@@ -124,7 +124,7 @@ export async function getCustomer(id: string) {
     supabase
       .from("customers")
       .select(
-        "id, name, phone, email, emirate, address, marketing_consent, marketing_consent_at, marketing_channels, unsubscribed_at, source, notes, auth_user_id, birth_month, birth_day, created_at, updated_at",
+        "id, name, phone, email, emirate, address, marketing_consent, marketing_consent_at, marketing_channels, unsubscribed_at, source, notes, auth_user_id, birth_month, birth_day, event_news, event_news_at, created_at, updated_at",
       )
       .eq("id", id)
       .maybeSingle(),

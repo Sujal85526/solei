@@ -3,7 +3,9 @@ import Link from "next/link";
 import { Suspense } from "react";
 import { notFound } from "next/navigation";
 import { ArrowLeft, ChevronRight } from "lucide-react";
-import { ConsentBadge } from "@/components/admin/customers/badges";
+import { ConsentBadge, LabelBadge } from "@/components/admin/customers/badges";
+import { EventNewsButton } from "@/components/admin/customers/event-news";
+import { FeedbackDialog, FeedbackList } from "@/components/admin/customers/feedback";
 import {
   ChannelBadge,
   OrderStatusBadge,
@@ -30,6 +32,7 @@ import { can } from "@/lib/permissions";
 import { formatPhone } from "@/lib/phone";
 import { customerOrders, getCustomer } from "@/modules/customers/queries";
 import { welcomeSentAt } from "@/modules/customers/welcome";
+import { assignableStaff, customerFeedback } from "@/modules/feedback/queries";
 import {
   averageOrderFils,
   channelLabel,
@@ -58,10 +61,12 @@ export default async function CustomerPage({ params }: PageProps<"/admin/custome
   const canManage = can(staff.permissions, "customers.manage");
   const canSeeOrders = can(staff.permissions, "orders.view");
 
-  const [data, orders, welcomedAt] = await Promise.all([
+  const [data, orders, welcomedAt, feedback, people] = await Promise.all([
     getCustomer(id),
     canSeeOrders ? customerOrders(id) : Promise.resolve([]),
     welcomeSentAt(id),
+    customerFeedback(id),
+    assignableStaff(),
   ]);
   if (!data) notFound();
   const { customer: c, stats } = data;
@@ -87,6 +92,12 @@ export default async function CustomerPage({ params }: PageProps<"/admin/custome
         description={
           <>
             {sourceLabels[c.source]} · customer since {formatBusinessDate(c.created_at)}
+            {canSeeOrders && stats.label ? (
+              <>
+                {" "}
+                <LabelBadge label={stats.label} />
+              </>
+            ) : null}
           </>
         }
         actions={<QuickActions phone={c.phone} email={c.email} name={c.name} />}
@@ -165,6 +176,26 @@ export default async function CustomerPage({ params }: PageProps<"/admin/custome
               )}
             </AdminSection>
           ) : null}
+
+          <AdminSection
+            title="Complaints & suggestions"
+            description="What this customer told you, and what was done about it."
+            actions={
+              canManage ? (
+                <FeedbackDialog
+                  customer={{ id: c.id, name: title }}
+                  orders={orders.slice(0, 50).map((o) => ({ id: o.id, number: o.number }))}
+                  staff={people}
+                />
+              ) : null
+            }
+          >
+            {feedback.length === 0 ? (
+              <p className="text-muted-foreground text-sm">Nothing logged.</p>
+            ) : (
+              <FeedbackList entries={feedback} staff={people} canManage={canManage} />
+            )}
+          </AdminSection>
 
           <AdminSection title="Notes">
             {canManage ? (
@@ -267,6 +298,12 @@ export default async function CustomerPage({ params }: PageProps<"/admin/custome
                   {consent !== "unsubscribed" ? <OptOutButton id={c.id} /> : null}
                 </div>
               ) : null}
+              <p className="border-t pt-3">
+                {c.event_news
+                  ? `Gets event news${c.event_news_at ? ` since ${formatBusinessDate(c.event_news_at)}` : ""}.`
+                  : "Not on the event news list."}
+              </p>
+              {canManage && c.email ? <EventNewsButton id={c.id} on={c.event_news} /> : null}
             </div>
           </AdminSection>
 

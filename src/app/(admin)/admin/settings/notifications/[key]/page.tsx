@@ -34,7 +34,11 @@ export default async function TemplatePage({
           <>
             {template.description}{" "}
             <Badge variant="outline" className="ms-1">
-              {template.audience === "owner" ? "To the owner" : "To the customer"}
+              {template.audience === "owner"
+                ? "To the owner"
+                : template.audience === "staff"
+                  ? "To staff"
+                  : "To the customer"}
             </Badge>
           </>
         }

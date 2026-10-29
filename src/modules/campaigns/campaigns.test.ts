@@ -43,6 +43,12 @@ describe("segmentFormSchema", () => {
     const back = segmentFormSchema.parse({ name: "x", ...rulesToForm(rules) });
     expect(back.rules).toEqual(rules);
   });
+
+  it("keeps label rules and ignores unknown labels", () => {
+    const rules = { labels: ["vip" as const, "inactive" as const] };
+    expect(segmentFormSchema.parse({ name: "x", ...rulesToForm(rules) }).rules).toEqual(rules);
+    expect(segmentFormSchema.safeParse({ name: "x", labels: ["gold"] }).success).toBe(false);
+  });
 });
 
 describe("rulesSummary", () => {

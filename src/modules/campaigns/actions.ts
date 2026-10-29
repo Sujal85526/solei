@@ -19,6 +19,7 @@ const formValues = (fd: FormData) => ({
   ...Object.fromEntries(fd.entries()),
   destinationIds: fd.getAll("destinationIds"),
   emirates: fd.getAll("emirates"),
+  labels: fd.getAll("labels"),
 });
 
 /** Live count while the segment form is edited (invalid input → no preview). */

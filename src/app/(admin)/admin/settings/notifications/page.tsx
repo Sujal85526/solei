@@ -19,6 +19,7 @@ export const metadata: Metadata = { title: "Notifications" };
 const AUDIENCES = [
   { key: "customer", title: "To customers" },
   { key: "owner", title: "To the owner" },
+  { key: "staff", title: "To staff" },
 ] as const;
 
 export default async function NotificationsPage() {

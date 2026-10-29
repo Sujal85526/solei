@@ -2,6 +2,7 @@ import { z } from "zod";
 import { aedToFils, filsToAed, formatAED, type Fils } from "@/lib/money";
 import { emirateLabels } from "@/modules/customers/schema";
 import { emirates } from "@/modules/cart/schema";
+import { customerLabels, labelNames, type CustomerLabel } from "@/modules/customers/labels";
 
 /**
  * Customer segments (saved filters) and email campaigns. The database evaluates the rules
@@ -22,6 +23,8 @@ export type SegmentRules = {
   destination_ids?: string[];
   passport?: PassportRule;
   emirates?: Emirate[];
+  /** Automatic labels (New / Returning / VIP / Inactive). */
+  labels?: CustomerLabel[];
   consent?: "opted_in";
 };
 
@@ -79,6 +82,7 @@ export const segmentFormSchema = z
       .optional()
       .transform((v) => (v ? v : undefined)),
     emirates: z.array(z.enum(emirates)).default([]),
+    labels: z.array(z.enum(customerLabels)).default([]),
     consent: z
       .union([z.literal("on"), z.literal(""), z.boolean()])
       .optional()
@@ -112,6 +116,7 @@ function toRules(v: {
   destinationIds: string[];
   passport?: PassportRule;
   emirates: Emirate[];
+  labels: CustomerLabel[];
   consent: boolean;
 }): SegmentRules {
   const r: SegmentRules = {};
@@ -123,6 +128,7 @@ function toRules(v: {
   if (v.destinationIds.length) r.destination_ids = v.destinationIds;
   if (v.passport) r.passport = v.passport;
   if (v.emirates.length) r.emirates = v.emirates;
+  if (v.labels.length) r.labels = v.labels;
   if (v.consent) r.consent = "opted_in";
   return r;
 }
@@ -138,6 +144,7 @@ export function rulesToForm(r: SegmentRules) {
     destinationIds: r.destination_ids ?? [],
     passport: r.passport ?? "",
     emirates: r.emirates ?? [],
+    labels: r.labels ?? [],
     consent: r.consent === "opted_in",
   };
 }
@@ -162,6 +169,7 @@ export function rulesSummary(r: SegmentRules, destinationNames: Map<string, stri
     parts.push(r.destination_ids.map((id) => destinationNames.get(id) ?? "?").join(", "));
   if (r.passport) parts.push(PASSPORT_TEXT[r.passport]);
   if (r.emirates?.length) parts.push(r.emirates.map((e) => emirateLabels[e]).join(", "));
+  if (r.labels?.length) parts.push(r.labels.map((l) => labelNames[l]).join(" or "));
   if (r.consent) parts.push("agreed to marketing");
   const text = parts.join(" · ") || "every customer";
   return text.charAt(0).toUpperCase() + text.slice(1);
