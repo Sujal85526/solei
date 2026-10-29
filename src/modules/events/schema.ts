@@ -22,10 +22,12 @@ export const eventTypeLabels: Record<EventType, string> = {
   exhibition: "Exhibition",
   popup: "Pop-up",
   private_booking: "Private booking",
+  wedding: "Wedding",
   other: "Other",
 };
 export const eventStatusLabels: Record<EventStatus, string> = {
-  potential: "Potential",
+  // Enum value stays `potential`; the owner calls it "Upcoming" (not yet confirmed).
+  potential: "Upcoming",
   confirmed: "Confirmed",
   completed: "Completed",
   cancelled: "Cancelled",

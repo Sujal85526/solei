@@ -96,7 +96,7 @@ export default function StyleguidePage() {
             <Input id="sg-phone" placeholder="050 123 4567" inputMode="tel" />
             <div className="mt-2 flex gap-2">
               <Badge>Confirmed</Badge>
-              <Badge variant="secondary">Potential</Badge>
+              <Badge variant="secondary">Upcoming</Badge>
               <Badge variant="outline">Draft</Badge>
             </div>
           </div>

@@ -1,4 +1,4 @@
-import { CalendarHeart, type LucideIcon, Sparkles, Store, Tent } from "lucide-react";
+import { CalendarHeart, Gem, type LucideIcon, Sparkles, Store, Tent } from "lucide-react";
 import { cn } from "@/lib/utils";
 import {
   eventStatusLabels,
@@ -8,7 +8,7 @@ import {
 } from "@/modules/events/schema";
 
 /**
- * Status drives the colour: potential = dashed outline, confirmed = burgundy,
+ * Status drives the colour: potential ("Upcoming") = dashed outline, confirmed = burgundy,
  * completed = muted sage, cancelled = struck-through grey. Type drives the icon.
  */
 export const statusChip: Record<EventStatus, string> = {
@@ -30,6 +30,7 @@ export const typeIcon: Record<EventType, LucideIcon> = {
   exhibition: Tent,
   popup: Store,
   private_booking: CalendarHeart,
+  wedding: Gem,
   other: Sparkles,
 };
 
