@@ -175,7 +175,7 @@ stock) → each packaging/design choice (photo tiles) → quantity (from the min
 total. Options can have photos (option dialog upload), shown as tiles on any product page too. The till has a
 "Giveaway" button and Admin → Orders → New order an "Add a giveaway" button (same picker). Prices and choices are
 checked by the database on every channel and snapshotted on the order line. Tests: `giveaways/flow.test.ts`,
-`giveaways/schema.test.ts`, pos/manual schema tests, SQL `190_giveaway_items_test.sql` (22 checks, local PG16
+`giveaways/schema.test.ts`, pos/manual schema tests, SQL `200_giveaway_items_test.sql` (22 checks, local PG16
 replay; existing SQL tests unchanged). Not looked at in a browser (the tables aren't on the hosted DB yet).
 
 **10 — Plan your event (2026-10-30):** homepage band after Destinations (`plan-your-event.tsx`, "Coming soon" while
