@@ -2,6 +2,7 @@ import "server-only";
 import { pointsSwitchLocked } from "@/lib/env.server";
 import { UserError } from "@/lib/action-result";
 import { assertPermission } from "@/lib/auth/session";
+import { formatBusinessDate } from "@/lib/dates";
 import { publicEnv } from "@/lib/env";
 import { formatAED } from "@/lib/money";
 import { createAdminClient, createClient } from "@/lib/supabase/server";
@@ -9,6 +10,9 @@ import { currentAccount } from "@/modules/account/service";
 import { notify } from "@/modules/notifications/service";
 import { customerForAccount, getRewardsProgramme, pointsSummaryFor } from "./queries";
 import {
+  birthdayDiscountText,
+  birthdayIncludesCode,
+  birthdayIncludesPoints,
   birthdaySchema,
   pointsAdjustSchema,
   pointsForOrder,
@@ -38,6 +42,16 @@ export async function saveRewardsSettings(input: unknown) {
       min_redeem_points: v.minRedeemPoints,
       birthday_enabled: v.birthdayEnabled,
       birthday_points: v.birthdayPoints,
+      birthday_reward: v.birthdayReward,
+      // An empty code value (reward is points only) keeps the stored one.
+      ...(v.birthdayCodePercentBp != null || v.birthdayCodeAmountFils != null
+        ? {
+            birthday_code_percent_bp: v.birthdayCodePercentBp,
+            birthday_code_amount_fils: v.birthdayCodeAmountFils,
+          }
+        : {}),
+      birthday_code_valid_days: v.birthdayCodeValidDays,
+      birthday_code_min_order_fils: v.birthdayCodeMinOrderFils,
       updated_by: staff.userId,
     })
     .eq("id", 1);
@@ -179,35 +193,79 @@ export async function checkoutCustomer(): Promise<{ id: string; balance: number 
   };
 }
 
-/** Give today's birthday bonuses and email them (scheduler or the admin button). */
+/**
+ * Give today's birthday rewards and email them (scheduler or the admin button): bonus points
+ * and/or a personal discount code, by the birthday reward setting. One email per customer per year.
+ */
 export async function sendBirthdayBonuses(): Promise<{ given: number }> {
   const { settings } = await getRewardsProgramme();
-  if (!settings.enabled || !settings.birthdayEnabled) return { given: 0 };
+  const withPoints = settings.enabled && birthdayIncludesPoints(settings.birthdayReward);
+  const withCode = birthdayIncludesCode(settings.birthdayReward);
+  if (!settings.birthdayEnabled || (!withPoints && !withCode)) return { given: 0 };
   const admin = createAdminClient();
   const { data: due, error } = await admin.rpc("birthdays_due");
   if (error) throw new Error(`birthdays_due failed: ${error.message}`);
+  const shopLink = `${publicEnv.NEXT_PUBLIC_SITE_URL}/shop`;
   let given = 0;
   for (const c of due) {
-    const { data: points } = await admin.rpc("points_birthday", { p_customer: c.customer_id });
-    if (!points) continue;
+    const { data: pointsData, error: pointsError } = await admin.rpc("points_birthday", {
+      p_customer: c.customer_id,
+    });
+    // One customer's failure doesn't stop the others.
+    if (pointsError) console.error(`points_birthday failed: ${pointsError.message}`);
+    const points = pointsError ? 0 : (pointsData ?? 0);
+    const { data: codeData, error: codeError } = await admin.rpc("birthday_code_issue", {
+      p_customer: c.customer_id,
+    });
+    if (codeError) console.error(`birthday_code_issue failed: ${codeError.message}`);
+    const code = codeError ? null : (codeData as BirthdayCode | null);
+    if (!points && !code) continue;
     given++;
-    const summary = await pointsSummaryFor(c.customer_id);
-    await notify("birthday_points", {
+    const base = {
       to: c.email,
       customerId: c.customer_id,
       dedupeKey: `birthday:${c.customer_id}:${new Date().getFullYear()}`,
       dedupeHours: 24 * 300,
-      vars: {
-        customer_name: c.name?.split(" ")[0] || "there",
-        points: points.toLocaleString("en-GB"),
-        balance: summary.balance.toLocaleString("en-GB"),
-        balance_value: formatAED(summary.balanceValueFils),
-        shop_link: `${publicEnv.NEXT_PUBLIC_SITE_URL}/shop`,
-      },
-    });
+    };
+    const customerName = c.name?.split(" ")[0] || "there";
+    if (code) {
+      await notify("birthday_code", {
+        ...base,
+        vars: {
+          customer_name: customerName,
+          code: code.code,
+          discount: birthdayDiscountText(code.percent_bp, code.amount_fils),
+          valid_until: formatBusinessDate(code.ends_at),
+          points_note: points
+            ? `We've also added ${points.toLocaleString("en-GB")} points to your account.`
+            : "",
+          shop_link: shopLink,
+        },
+      });
+    } else {
+      const summary = await pointsSummaryFor(c.customer_id);
+      await notify("birthday_points", {
+        ...base,
+        vars: {
+          customer_name: customerName,
+          points: points.toLocaleString("en-GB"),
+          balance: summary.balance.toLocaleString("en-GB"),
+          balance_value: formatAED(summary.balanceValueFils),
+          shop_link: shopLink,
+        },
+      });
+    }
   }
   return { given };
 }
+
+type BirthdayCode = {
+  code: string;
+  percent_bp: number | null;
+  amount_fils: number | null;
+  min_order_fils: number | null;
+  ends_at: string;
+};
 
 export async function runBirthdaysNow() {
   await assertPermission("loyalty.manage");

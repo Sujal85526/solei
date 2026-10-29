@@ -1,6 +1,6 @@
 begin;
 \ir helpers/setup.psql
-select plan(72);
+select plan(75);
 
 select id as p1 from public.product_variants where sku = 'SOL-P-CAN-50' \gset
 select id as p2 from public.product_variants where sku = 'SOL-P-CAP-50' \gset
@@ -235,6 +235,22 @@ select is(pg_temp.price(pg_temp.bag(:'p1', '1'), array[:'bday'], jsonb_build_obj
   'birthday code: 15% for its customer');
 select is(pg_temp.code(pg_temp.price(pg_temp.bag(:'p1', '1'), array[:'bday'], jsonb_build_object('customer_id', :'newbie')), :'bday') ->> 'reason',
   'not_eligible', 'birthday code is personal');
+
+-- ── 11. Saving the tiers keeps their ids (VIP codes and early access keep working) ─────────────
+select id as voyager from public.loyalty_tiers where name = 'Voyager' \gset
+select tests.login_as((select user_id from public.staff_profiles where email = 'promo-owner@solei.test'));
+select public.loyalty_tiers_save(jsonb_build_array(
+  jsonb_build_object('name', 'Explorer', 'min_spend_fils', 0, 'points_multiplier_bp', 10000),
+  jsonb_build_object('name', 'Voyager Plus', 'min_spend_fils', 120000, 'points_multiplier_bp', 12500),
+  jsonb_build_object('name', 'Globetrotter', 'min_spend_fils', 300000, 'points_multiplier_bp', 15000)));
+reset role;
+select is((select name from public.loyalty_tiers where id = :'voyager'), 'Voyager Plus', 'a renamed, re-priced tier keeps its id');
+select ok((select :'voyager'::uuid = any (tier_ids) from public.coupons where code = 'TSTVIP'), 'the VIP code still points at it');
+select tests.login_as((select user_id from public.staff_profiles where email = 'promo-owner@solei.test'));
+select public.loyalty_tiers_save(jsonb_build_array(
+  jsonb_build_object('name', 'Explorer', 'min_spend_fils', 0, 'points_multiplier_bp', 10000)));
+reset role;
+select is((select tier_ids from public.coupons where code = 'TSTVIP'), '{}'::uuid[], 'a removed tier is taken out of codes');
 
 select * from finish();
 rollback;

@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
+  birthdayDiscountText,
   birthdaySchema,
   multiplierText,
   pointsForOrder,
@@ -38,6 +39,11 @@ describe("rewardsSettingsSchema", () => {
       minRedeemPoints: 200,
       birthdayEnabled: true,
       birthdayPoints: 250,
+      birthdayReward: "points",
+      birthdayCodePercentBp: null,
+      birthdayCodeAmountFils: null,
+      birthdayCodeValidDays: 30,
+      birthdayCodeMinOrderFils: null,
     });
   });
   it("refuses fractions of a fils", () => {
@@ -49,6 +55,88 @@ describe("rewardsSettingsSchema", () => {
         birthdayPoints: "1",
       }).success,
     ).toBe(false);
+  });
+});
+
+describe("rewardsSettingsSchema · birthday code", () => {
+  const base = {
+    pointsPerAed: "1",
+    pointValue: "0.05",
+    minRedeemPoints: "200",
+    birthdayEnabled: "on",
+    birthdayPoints: "250",
+  };
+  it("reads a % code with days and a minimum order", () => {
+    const r = rewardsSettingsSchema.parse({
+      ...base,
+      birthdayReward: "both",
+      birthdayCodeKind: "percent",
+      birthdayCodeValue: "12.5",
+      birthdayCodeValidDays: "14",
+      birthdayCodeMinOrder: "150",
+    });
+    expect(r).toMatchObject({
+      birthdayReward: "both",
+      birthdayCodePercentBp: 1250,
+      birthdayCodeAmountFils: null,
+      birthdayCodeValidDays: 14,
+      birthdayCodeMinOrderFils: 15_000,
+    });
+  });
+  it("reads an AED code, no minimum", () => {
+    const r = rewardsSettingsSchema.parse({
+      ...base,
+      birthdayReward: "code",
+      birthdayCodeKind: "amount",
+      birthdayCodeValue: "50",
+      birthdayCodeValidDays: "30",
+      birthdayCodeMinOrder: "",
+    });
+    expect(r).toMatchObject({
+      birthdayCodePercentBp: null,
+      birthdayCodeAmountFils: 5_000,
+      birthdayCodeMinOrderFils: null,
+    });
+  });
+  it("needs a code value when the reward has a code", () => {
+    const r = rewardsSettingsSchema.safeParse({ ...base, birthdayReward: "code" });
+    expect(r.success).toBe(false);
+    expect(r.error?.issues[0].path).toEqual(["birthdayCodeValue"]);
+    // Points only: an empty value is fine (the stored one is kept).
+    expect(rewardsSettingsSchema.safeParse({ ...base, birthdayReward: "points" }).success).toBe(
+      true,
+    );
+  });
+  it("refuses bad values, days and minimums", () => {
+    const code = { ...base, birthdayReward: "code", birthdayCodeKind: "percent" };
+    expect(rewardsSettingsSchema.safeParse({ ...code, birthdayCodeValue: "0" }).success).toBe(
+      false,
+    );
+    expect(rewardsSettingsSchema.safeParse({ ...code, birthdayCodeValue: "101" }).success).toBe(
+      false,
+    );
+    expect(rewardsSettingsSchema.safeParse({ ...code, birthdayCodeValue: "1.234" }).success).toBe(
+      false,
+    );
+    const ok = { ...code, birthdayCodeValue: "15" };
+    expect(rewardsSettingsSchema.safeParse({ ...ok, birthdayCodeValidDays: "0" }).success).toBe(
+      false,
+    );
+    expect(rewardsSettingsSchema.safeParse({ ...ok, birthdayCodeValidDays: "366" }).success).toBe(
+      false,
+    );
+    expect(rewardsSettingsSchema.safeParse({ ...ok, birthdayCodeMinOrder: "abc" }).success).toBe(
+      false,
+    );
+    expect(rewardsSettingsSchema.safeParse({ ...ok, birthdayReward: "cake" }).success).toBe(false);
+  });
+});
+
+describe("birthdayDiscountText", () => {
+  it("says % or AED off", () => {
+    expect(birthdayDiscountText(1500, null)).toBe("15% off");
+    expect(birthdayDiscountText(1250, null)).toBe("12.5% off");
+    expect(birthdayDiscountText(null, 5_000)).toBe("AED 50 off");
   });
 });
 

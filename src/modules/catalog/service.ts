@@ -1,6 +1,7 @@
 import "server-only";
 import { UserError } from "@/lib/action-result";
 import { assertPermission } from "@/lib/auth/session";
+import { businessDayRange } from "@/lib/dates";
 import { can } from "@/lib/permissions";
 import { createClient } from "@/lib/supabase/server";
 import {
@@ -85,6 +86,11 @@ export async function saveProduct(input: unknown) {
     active: v.active,
     featured: v.featured,
     sort: v.sort,
+    // Early access fields only when the form sent them (the new-product form doesn't).
+    ...(v.launchDate !== undefined
+      ? { launch_at: v.launchDate ? businessDayRange(v.launchDate).start.toISOString() : null }
+      : {}),
+    ...(v.earlyAccessTierIds !== undefined ? { early_access_tier_ids: v.earlyAccessTierIds } : {}),
   };
   const { data, error } = v.id
     ? await supabase.from("products").update(row).eq("id", v.id).select("id, slug").single()

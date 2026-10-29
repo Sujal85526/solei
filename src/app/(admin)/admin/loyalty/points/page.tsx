@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { loyaltyNav } from "@/components/admin/loyalty/nav";
 import { RewardsSettingsForm, TiersForm } from "@/components/admin/loyalty/points-forms";
+import { RewardsCatalogue } from "@/components/admin/loyalty/rewards-catalogue";
 import { PageHeader } from "@/components/admin/page-header";
 import { AdminSection, StatCard } from "@/components/admin/section";
 import { SubNav } from "@/components/admin/sub-nav";
@@ -10,15 +11,18 @@ import { pointsSwitchLocked } from "@/lib/env.server";
 import { formatAED } from "@/lib/money";
 import { can } from "@/lib/permissions";
 import { getRewardsProgramme, pointsOverview } from "@/modules/points/queries";
+import { listRewardVariants, listRewards } from "@/modules/promotions/queries";
 
 export const metadata: Metadata = { title: "Points & tiers" };
 
 export default async function PointsPage() {
   const staff = await requirePagePermission("loyalty.view");
   const canManage = can(staff.permissions, "loyalty.manage");
-  const [{ settings, tiers }, overview] = await Promise.all([
+  const [{ settings, tiers }, overview, rewards, variants] = await Promise.all([
     getRewardsProgramme(),
     pointsOverview(),
+    listRewards(),
+    canManage ? listRewardVariants() : Promise.resolve([]),
   ]);
   const members = new Map(overview.tiers.map((t) => [t.name, t.members]));
 
@@ -26,7 +30,7 @@ export default async function PointsPage() {
     <>
       <PageHeader
         title="Points & tiers"
-        description="Points on every order, VIP tiers by yearly spend and a birthday bonus — beside the Solei Passport."
+        description="Points on every order, VIP tiers by yearly spend, rewards for points and a birthday gift — beside the Solei Passport."
         actions={
           <Badge variant={settings.enabled ? "success" : "muted"}>
             {settings.enabled ? "On" : "Off — customers see nothing"}
@@ -59,6 +63,12 @@ export default async function PointsPage() {
             .join(" · ")}.`}
         >
           <TiersForm tiers={tiers} canManage={canManage} />
+        </AdminSection>
+        <AdminSection
+          title="Rewards"
+          description="Customers choose these at checkout (website) or staff add them at the event till; the points are taken from the customer's balance. Rewards take no discounts."
+        >
+          <RewardsCatalogue rewards={rewards} variants={variants} canManage={canManage} />
         </AdminSection>
       </div>
     </>

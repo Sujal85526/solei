@@ -3,13 +3,14 @@
 import { useFormAction } from "@/hooks/use-form-action";
 
 import { useRouter } from "next/navigation";
-import { useCallback } from "react";
+import { useCallback, useState } from "react";
 import { Field } from "@/components/admin/field";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { NativeSelect } from "@/components/ui/native-select";
 import { Textarea } from "@/components/ui/textarea";
 import { useActionToast } from "@/hooks/use-action-toast";
+import { businessDay } from "@/lib/dates";
 import { saveProductAction } from "@/modules/catalog/actions";
 
 type Option = { id: string; name: string };
@@ -26,16 +27,21 @@ export type ProductFormValues = {
   active?: boolean;
   featured?: boolean;
   sort?: number;
+  launch_at?: string | null;
+  early_access_tier_ids?: string[];
 };
 
 export function ProductForm({
   product,
   categories,
   destinations,
+  tiers,
 }: {
   product?: ProductFormValues;
   categories: Option[];
   destinations: Option[];
+  /** VIP tiers for early access; without them the early access fields are not shown. */
+  tiers?: Option[];
 }) {
   const router = useRouter();
   const [state, action, pending] = useFormAction(saveProductAction, null);
@@ -165,6 +171,14 @@ export function ProductForm({
           />
         </Field>
       </div>
+      {tiers ? (
+        <EarlyAccessFields
+          launchAt={product?.launch_at ?? null}
+          tierIds={product?.early_access_tier_ids ?? []}
+          tiers={tiers}
+          error={e.launchDate ?? e.earlyAccessTierIds}
+        />
+      ) : null}
       <div className="flex flex-wrap gap-6">
         <label className="flex items-center gap-3 text-sm">
           <input
@@ -191,5 +205,73 @@ export function ProductForm({
         </Button>
       </div>
     </form>
+  );
+}
+
+/** Launch date + the VIP tiers that can see and buy the product before it. */
+function EarlyAccessFields({
+  launchAt,
+  tierIds,
+  tiers,
+  error,
+}: {
+  launchAt: string | null;
+  tierIds: string[];
+  tiers: Option[];
+  error?: string;
+}) {
+  const [chosen, setChosen] = useState<string[]>(tierIds);
+  return (
+    <fieldset className="grid gap-4 rounded-lg border p-4 sm:grid-cols-2">
+      <legend className="px-1 text-sm font-medium">Early access</legend>
+      <Field
+        label="Launch date"
+        htmlFor="launchDate"
+        error={error}
+        hint="Optional. Empty: on sale now (when visible)."
+      >
+        <Input
+          id="launchDate"
+          name="launchDate"
+          type="date"
+          defaultValue={launchAt ? businessDay(new Date(launchAt)) : ""}
+          className="h-11"
+        />
+      </Field>
+      <div className="flex flex-col gap-1.5">
+        <span className="text-sm font-medium" id="earlyAccessTiers-label">
+          Early access for tiers
+        </span>
+        <input type="hidden" name="earlyAccessTierIds" value={chosen.join(",")} />
+        <div
+          role="group"
+          aria-labelledby="earlyAccessTiers-label"
+          className="flex flex-wrap gap-x-5 gap-y-2"
+        >
+          {tiers.length ? (
+            tiers.map((t) => (
+              <label key={t.id} className="flex items-center gap-2 text-sm">
+                <input
+                  type="checkbox"
+                  checked={chosen.includes(t.id)}
+                  onChange={(ev) =>
+                    setChosen(
+                      ev.target.checked ? [...chosen, t.id] : chosen.filter((id) => id !== t.id),
+                    )
+                  }
+                  className="accent-burgundy size-5"
+                />
+                {t.name}
+              </label>
+            ))
+          ) : (
+            <span className="text-muted-foreground text-sm">No VIP tiers yet.</span>
+          )}
+        </div>
+        <p className="text-muted-foreground text-xs">
+          Before the launch date only customers in these tiers can see and buy it.
+        </p>
+      </div>
+    </fieldset>
   );
 }

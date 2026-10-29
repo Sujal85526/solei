@@ -76,3 +76,12 @@ export async function onHandByVariant() {
   const { data } = await supabase.rpc("stock_on_hand_by_variant");
   return new Map((data ?? []).map((row) => [row.variant_id, row.on_hand]));
 }
+
+/** VIP tiers (lowest first), for a product's early access. */
+export async function listLoyaltyTiers() {
+  const supabase = await createClient();
+  return must(
+    await supabase.from("loyalty_tiers").select("id, name").order("min_spend_fils"),
+    "loyalty_tiers",
+  );
+}

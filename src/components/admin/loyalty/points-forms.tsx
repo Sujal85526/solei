@@ -6,17 +6,27 @@ import { Cake, Plus, Trash2 } from "lucide-react";
 import { Field } from "@/components/admin/field";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { NativeSelect } from "@/components/ui/native-select";
 import { useActionToast } from "@/hooks/use-action-toast";
 import { useFormAction } from "@/hooks/use-form-action";
 import { filsToAed } from "@/lib/money";
+import { cn } from "@/lib/utils";
 import {
   runBirthdaysAction,
   saveRewardsSettingsAction,
   saveTiersAction,
 } from "@/modules/points/actions";
-import { tierFormValues, type RewardsSettings, type Tier } from "@/modules/points/schema";
+import {
+  BIRTHDAY_REWARD_LABELS,
+  birthdayIncludesCode,
+  birthdayIncludesPoints,
+  tierFormValues,
+  type BirthdayReward,
+  type RewardsSettings,
+  type Tier,
+} from "@/modules/points/schema";
 
-/** Master switch, earning and spending rates, birthday bonus. */
+/** Master switch, earning and spending rates, birthday reward (points and/or a code). */
 export function RewardsSettingsForm({
   settings,
   canManage,
@@ -30,6 +40,20 @@ export function RewardsSettingsForm({
   const [state, action, pending] = useFormAction(saveRewardsSettingsAction, null);
   const e = useActionToast(state);
   const [sending, start] = useTransition();
+  const [reward, setReward] = useState<BirthdayReward>(settings.birthdayReward);
+  const [codeKind, setCodeKind] = useState<"percent" | "amount">(
+    settings.birthdayCodeAmountFils != null ? "amount" : "percent",
+  );
+  const withPoints = birthdayIncludesPoints(reward);
+  const withCode = birthdayIncludesCode(reward);
+  const codeValue =
+    codeKind === "percent"
+      ? settings.birthdayCodePercentBp != null
+        ? settings.birthdayCodePercentBp / 100
+        : ""
+      : settings.birthdayCodeAmountFils != null
+        ? filsToAed(settings.birthdayCodeAmountFils)
+        : "";
   return (
     <form {...action} noValidate className="flex flex-col gap-5">
       <fieldset disabled={!canManage} className="flex flex-col gap-5">
@@ -102,7 +126,7 @@ export function RewardsSettingsForm({
             />
           </Field>
         </div>
-        <div className="grid gap-5 sm:grid-cols-[auto_12rem] sm:items-end">
+        <div className="flex flex-col gap-5 border-t pt-5">
           <label className="flex items-start gap-3 text-sm">
             <input
               type="checkbox"
@@ -111,21 +135,115 @@ export function RewardsSettingsForm({
               className="accent-primary mt-0.5 size-4"
             />
             <span>
-              Birthday bonus
+              Birthday reward
               <span className="text-muted-foreground block text-xs">
-                On the customer&apos;s birthday (they add it in their account), with an email.
+                On the customer&apos;s birthday (they add it in their account), with an email. Once
+                a year, for customers who have ordered before.
               </span>
             </span>
           </label>
-          <Field label="Birthday points" htmlFor="birthdayPoints" error={e.birthdayPoints} required>
-            <Input
-              id="birthdayPoints"
-              name="birthdayPoints"
-              inputMode="numeric"
-              defaultValue={settings.birthdayPoints}
-              className="numeric h-11"
-            />
-          </Field>
+          <fieldset className="flex flex-col gap-2">
+            <legend className="mb-2 text-sm font-medium">The birthday brings</legend>
+            <div className="flex flex-wrap gap-x-6 gap-y-2">
+              {(Object.keys(BIRTHDAY_REWARD_LABELS) as BirthdayReward[]).map((r) => (
+                <label key={r} className="flex items-center gap-2 text-sm">
+                  <input
+                    type="radio"
+                    name="birthdayReward"
+                    value={r}
+                    checked={reward === r}
+                    onChange={() => setReward(r)}
+                    className="accent-primary size-4"
+                  />
+                  {BIRTHDAY_REWARD_LABELS[r]}
+                </label>
+              ))}
+            </div>
+          </fieldset>
+          <div className={cn("grid gap-5 sm:grid-cols-3", !withPoints && "hidden")}>
+            <Field
+              label="Birthday points"
+              htmlFor="birthdayPoints"
+              error={e.birthdayPoints}
+              hint={settings.enabled ? undefined : "Given only while points & tiers are on"}
+              required
+            >
+              <Input
+                id="birthdayPoints"
+                name="birthdayPoints"
+                inputMode="numeric"
+                defaultValue={settings.birthdayPoints}
+                className="numeric h-11"
+              />
+            </Field>
+          </div>
+          {/* Hidden, not removed, while unused: the stored values are sent back unchanged. */}
+          <div className={cn("grid gap-5 sm:grid-cols-4", !withCode && "hidden")}>
+            <Field label="Code gives" htmlFor="birthdayCodeKind">
+              <NativeSelect
+                id="birthdayCodeKind"
+                name="birthdayCodeKind"
+                value={codeKind}
+                onChange={(ev) => setCodeKind(ev.target.value as "percent" | "amount")}
+                className="[&_select]:h-11"
+              >
+                <option value="percent">% off</option>
+                <option value="amount">AED off</option>
+              </NativeSelect>
+            </Field>
+            <Field
+              label={codeKind === "percent" ? "Discount (%)" : "Discount (AED)"}
+              htmlFor="birthdayCodeValue"
+              error={e.birthdayCodeValue}
+              required
+            >
+              <Input
+                key={codeKind}
+                id="birthdayCodeValue"
+                name="birthdayCodeValue"
+                inputMode="decimal"
+                defaultValue={codeValue}
+                className="numeric h-11"
+              />
+            </Field>
+            <Field
+              label="Valid for (days)"
+              htmlFor="birthdayCodeValidDays"
+              error={e.birthdayCodeValidDays}
+              hint="From the birthday"
+              required
+            >
+              <Input
+                id="birthdayCodeValidDays"
+                name="birthdayCodeValidDays"
+                inputMode="numeric"
+                defaultValue={settings.birthdayCodeValidDays}
+                className="numeric h-11"
+              />
+            </Field>
+            <Field
+              label="Minimum order (AED)"
+              htmlFor="birthdayCodeMinOrder"
+              error={e.birthdayCodeMinOrder}
+              hint="Optional"
+            >
+              <Input
+                id="birthdayCodeMinOrder"
+                name="birthdayCodeMinOrder"
+                inputMode="decimal"
+                defaultValue={
+                  settings.birthdayCodeMinOrderFils != null
+                    ? filsToAed(settings.birthdayCodeMinOrderFils)
+                    : ""
+                }
+                className="numeric h-11"
+              />
+            </Field>
+            <p className="text-muted-foreground text-xs sm:col-span-4">
+              A personal code, for this customer only, used once — on the website or at the event
+              till. It is in the birthday email.
+            </p>
+          </div>
         </div>
       </fieldset>
       {canManage ? (
@@ -145,7 +263,7 @@ export function RewardsSettingsForm({
               })
             }
           >
-            <Cake /> {sending ? "Sending…" : "Send today's birthday bonuses"}
+            <Cake /> {sending ? "Sending…" : "Send today's birthday gifts"}
           </Button>
         </div>
       ) : null}

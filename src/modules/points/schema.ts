@@ -14,7 +14,33 @@ export type RewardsSettings = {
   minRedeemPoints: number;
   birthdayEnabled: boolean;
   birthdayPoints: number;
+  /** What the birthday brings: bonus points, a personal discount code, or both. */
+  birthdayReward: BirthdayReward;
+  /** The birthday code's value: exactly one of the two is set. */
+  birthdayCodePercentBp: number | null;
+  birthdayCodeAmountFils: Fils | null;
+  birthdayCodeValidDays: number;
+  birthdayCodeMinOrderFils: Fils | null;
 };
+
+export type BirthdayReward = "points" | "code" | "both";
+
+export const BIRTHDAY_REWARD_LABELS: Record<BirthdayReward, string> = {
+  points: "Points",
+  code: "A discount code",
+  both: "Both",
+};
+
+export const birthdayIncludesPoints = (r: BirthdayReward) => r === "points" || r === "both";
+export const birthdayIncludesCode = (r: BirthdayReward) => r === "code" || r === "both";
+
+/** "15% off" / "AED 50 off" — the birthday code's value, for the email and the admin. */
+export function birthdayDiscountText(percentBp: number | null, amountFils: Fils | null): string {
+  if (percentBp != null) {
+    return `${(percentBp / 100).toFixed(2).replace(/\.?0+$/, "")}% off`;
+  }
+  return amountFils != null ? `${formatAED(amountFils)} off` : "";
+}
 
 export type Tier = {
   name: string;
@@ -93,26 +119,104 @@ const int = (label: string, min: number, max: number) =>
       return n;
     });
 
+/** "15" / "12.5" (%) → basis points, or "50" (AED) → fils; null when not a valid value. */
+function parseCodeValue(kind: "percent" | "amount", raw: string): number | null {
+  const n = Number(raw.replace(/[,\s%]/g, ""));
+  if (!raw || !Number.isFinite(n)) return null;
+  const units = Math.round(n * 100);
+  if (Math.abs(n * 100 - units) > 1e-6) return null;
+  if (kind === "percent") return units >= 1 && units <= 10_000 ? units : null;
+  return units >= 1 && units <= 10_000_000 ? units : null;
+}
+
+/** Birthday code fields of the settings form (all optional so older callers still parse). */
+const birthdayCodeFields = {
+  birthdayReward: z.enum(["points", "code", "both"]).default("points"),
+  birthdayCodeKind: z.enum(["percent", "amount"]).default("percent"),
+  /** % (e.g. 15) or AED (e.g. 50), by birthdayCodeKind. */
+  birthdayCodeValue: z.string().trim().default(""),
+  birthdayCodeValidDays: z.string().trim().default("30"),
+  /** Optional minimum order in AED; empty = none. */
+  birthdayCodeMinOrder: z.string().trim().default(""),
+};
+
+type BirthdayCodeRaw = {
+  birthdayReward: BirthdayReward;
+  birthdayCodeKind: "percent" | "amount";
+  birthdayCodeValue: string;
+  birthdayCodeValidDays: string;
+  birthdayCodeMinOrder: string;
+};
+
+/**
+ * Settle the birthday code: value as basis points or fils (exactly one; both null = an empty value
+ * while the reward is points only, so the stored value is kept), days 1–365, minimum order or null.
+ */
+function birthdayCodeTransform<T extends BirthdayCodeRaw>(v: T, ctx: z.RefinementCtx) {
+  const {
+    birthdayCodeKind: kind,
+    birthdayCodeValue: rawValue,
+    birthdayCodeValidDays: rawDays,
+    birthdayCodeMinOrder: rawMin,
+    ...rest
+  } = v;
+  const needsCode = birthdayIncludesCode(v.birthdayReward);
+  const value = parseCodeValue(kind, rawValue);
+  if (value == null && (needsCode || rawValue)) {
+    ctx.addIssue({
+      code: "custom",
+      path: ["birthdayCodeValue"],
+      message:
+        kind === "percent" ? "A percentage from 0.01 to 100, e.g. 15" : "An amount in AED, e.g. 50",
+    });
+  }
+  const days = Number(rawDays || "30");
+  if (!Number.isSafeInteger(days) || days < 1 || days > 365) {
+    ctx.addIssue({ code: "custom", path: ["birthdayCodeValidDays"], message: "1 to 365 days" });
+  }
+  let minOrder: number | null = null;
+  if (rawMin) {
+    minOrder = parseCodeValue("amount", rawMin);
+    if (minOrder == null) {
+      ctx.addIssue({
+        code: "custom",
+        path: ["birthdayCodeMinOrder"],
+        message: "An amount in AED, or leave empty",
+      });
+    }
+  }
+  return {
+    ...rest,
+    birthdayCodePercentBp: value != null && kind === "percent" ? value : null,
+    birthdayCodeAmountFils: value != null && kind === "amount" ? value : null,
+    birthdayCodeValidDays: days,
+    birthdayCodeMinOrderFils: minOrder,
+  };
+}
+
 /** Owner settings. The point value is typed in AED (e.g. 0.05). */
-export const rewardsSettingsSchema = z.object({
-  enabled: checkbox,
-  pointsPerAed: int("Points per AED", 1, 100),
-  pointValue: z
-    .string()
-    .trim()
-    .transform((v, ctx) => {
-      const n = Number(v);
-      const fils = Math.round(n * 100);
-      if (!Number.isFinite(n) || fils < 1 || fils > 10_000 || Math.abs(n * 100 - fils) > 1e-6) {
-        ctx.addIssue({ code: "custom", message: "In AED with up to 2 decimals, e.g. 0.05" });
-        return z.NEVER;
-      }
-      return fils;
-    }),
-  minRedeemPoints: int("Minimum", 1, 1_000_000),
-  birthdayEnabled: checkbox,
-  birthdayPoints: int("Birthday points", 1, 100_000),
-});
+export const rewardsSettingsSchema = z
+  .object({
+    enabled: checkbox,
+    pointsPerAed: int("Points per AED", 1, 100),
+    pointValue: z
+      .string()
+      .trim()
+      .transform((v, ctx) => {
+        const n = Number(v);
+        const fils = Math.round(n * 100);
+        if (!Number.isFinite(n) || fils < 1 || fils > 10_000 || Math.abs(n * 100 - fils) > 1e-6) {
+          ctx.addIssue({ code: "custom", message: "In AED with up to 2 decimals, e.g. 0.05" });
+          return z.NEVER;
+        }
+        return fils;
+      }),
+    minRedeemPoints: int("Minimum", 1, 1_000_000),
+    birthdayEnabled: checkbox,
+    birthdayPoints: int("Birthday points", 1, 100_000),
+    ...birthdayCodeFields,
+  })
+  .transform(birthdayCodeTransform);
 
 /** One tier row of the tiers form (AED and "1.25" in, fils and basis points out). */
 export const tierRowSchema = z.object({

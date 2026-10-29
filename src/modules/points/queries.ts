@@ -3,7 +3,7 @@ import { cacheLife, cacheTag } from "next/cache";
 import { assertPermission } from "@/lib/auth/session";
 import { createAdminClient, createClient, createPublicClient } from "@/lib/supabase/server";
 import { CONTENT_TAGS } from "@/modules/content/queries";
-import type { PointsEntry, PointsSummary, RewardsSettings, Tier } from "./schema";
+import type { BirthdayReward, PointsEntry, PointsSummary, RewardsSettings, Tier } from "./schema";
 
 /** Programme settings + tiers (public, cached under the settings tag; refreshed on save). */
 export async function getRewardsProgramme(): Promise<{ settings: RewardsSettings; tiers: Tier[] }> {
@@ -28,6 +28,13 @@ export async function getRewardsProgramme(): Promise<{ settings: RewardsSettings
       minRedeemPoints: s.data.min_redeem_points,
       birthdayEnabled: s.data.birthday_enabled,
       birthdayPoints: s.data.birthday_points,
+      // Defaults before the promotions migration (columns missing): points only, 10% for 30 days.
+      birthdayReward: (s.data.birthday_reward ?? "points") as BirthdayReward,
+      birthdayCodePercentBp:
+        s.data.birthday_code_percent_bp ?? (s.data.birthday_code_amount_fils ? null : 1000),
+      birthdayCodeAmountFils: s.data.birthday_code_amount_fils ?? null,
+      birthdayCodeValidDays: s.data.birthday_code_valid_days ?? 30,
+      birthdayCodeMinOrderFils: s.data.birthday_code_min_order_fils ?? null,
     },
     tiers: t.data.map((x) => ({
       name: x.name,

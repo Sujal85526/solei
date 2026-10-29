@@ -24,6 +24,7 @@ import {
   getProduct,
   listCategories,
   listDestinations,
+  listLoyaltyTiers,
   onHandByVariant,
 } from "@/modules/catalog/queries";
 
@@ -32,7 +33,7 @@ export const metadata: Metadata = { title: "Product" };
 export default async function ProductPage({ params }: PageProps<"/admin/products/[id]">) {
   const staff = await requirePagePermission("catalog.view");
   const { id } = await params;
-  const [product, categories, destinations, stock, giveaway, occasions, bottles] =
+  const [product, categories, destinations, stock, giveaway, occasions, bottles, tiers] =
     await Promise.all([
       getProduct(id),
       listCategories(),
@@ -41,6 +42,7 @@ export default async function ProductPage({ params }: PageProps<"/admin/products
       getGiveawaySettings(id),
       listOccasionsAdmin(),
       listBottles(),
+      listLoyaltyTiers(),
     ]);
   if (!product) notFound();
   const canManage = can(staff.permissions, "catalog.manage");
@@ -142,7 +144,12 @@ export default async function ProductPage({ params }: PageProps<"/admin/products
       </AdminSection>
       <AdminSection title="Details">
         {canManage ? (
-          <ProductForm product={product} categories={categories} destinations={destinations} />
+          <ProductForm
+            product={product}
+            categories={categories}
+            destinations={destinations}
+            tiers={tiers}
+          />
         ) : (
           <p className="text-sm">{product.description}</p>
         )}

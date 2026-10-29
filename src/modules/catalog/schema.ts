@@ -91,6 +91,25 @@ export const destinationSchema = z.object({
   sort: z.coerce.number().int().min(0).max(999).default(0),
 });
 
+/** Optional business day (`YYYY-MM-DD`); empty = none (null), missing = leave as it is. */
+const optionalDay = z
+  .string()
+  .trim()
+  .optional()
+  .refine((v) => !v || /^\d{4}-\d{2}-\d{2}$/.test(v), "Choose a date")
+  .transform((v) => (v === undefined ? undefined : v || null));
+
+/** Comma separated (or repeated) ids → unique uuids; missing = leave as it is. */
+const optionalIds = z
+  .union([z.string(), z.array(z.string())])
+  .optional()
+  .transform((v) =>
+    v === undefined
+      ? undefined
+      : [...new Set((Array.isArray(v) ? v : v.split(",")).map((s) => s.trim()).filter(Boolean))],
+  )
+  .pipe(z.array(z.uuid()).max(20).optional());
+
 export const productSchema = z.object({
   id: z.uuid().optional(),
   name: z.string().trim().min(2, "Enter a product name").max(120),
@@ -107,6 +126,10 @@ export const productSchema = z.object({
   active: checkbox,
   featured: checkbox,
   sort: z.coerce.number().int().min(0).max(999).default(0),
+  /** Early access: the day it launches for everyone (Asia/Dubai). */
+  launchDate: optionalDay,
+  /** Early access: VIP tiers that can see and buy it before the launch date. */
+  earlyAccessTierIds: optionalIds,
 });
 
 export const variantSchema = z.object({

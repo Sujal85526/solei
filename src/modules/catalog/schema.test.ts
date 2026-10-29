@@ -49,3 +49,29 @@ describe("catalog schema", () => {
     expect(variantSchema.safeParse({ productId: uuid, sku: "x", price: "1" }).success).toBe(false);
   });
 });
+
+describe("productSchema · early access", () => {
+  const tier = "1d2b3c4d-5e6f-4a1b-8c55-9e1f8d6f0a2e";
+  const base = { name: "Capri Perfume", categoryId: uuid };
+  it("leaves early access alone when the form doesn't send it", () => {
+    const p = productSchema.parse(base);
+    expect(p.launchDate).toBeUndefined();
+    expect(p.earlyAccessTierIds).toBeUndefined();
+  });
+  it("reads a launch day and tier ids", () => {
+    const p = productSchema.parse({
+      ...base,
+      launchDate: "2026-11-15",
+      earlyAccessTierIds: `${tier}, ${tier},${uuid}`,
+    });
+    expect(p.launchDate).toBe("2026-11-15");
+    expect(p.earlyAccessTierIds).toEqual([tier, uuid]);
+  });
+  it("clears with empty values and refuses junk", () => {
+    const p = productSchema.parse({ ...base, launchDate: "", earlyAccessTierIds: "" });
+    expect(p.launchDate).toBeNull();
+    expect(p.earlyAccessTierIds).toEqual([]);
+    expect(productSchema.safeParse({ ...base, launchDate: "15/11/2026" }).success).toBe(false);
+    expect(productSchema.safeParse({ ...base, earlyAccessTierIds: "gold" }).success).toBe(false);
+  });
+});
