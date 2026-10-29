@@ -213,17 +213,18 @@ export function saleOff(sale: Pick<LiveSale, "percentBp" | "amountFils">, unitFi
 /**
  * The best sale running now for a product at a price — the same choice the database makes (the
  * largest reduction; ties to the first sale in the list, which comes sorted like the database's).
+ * `now` null skips the date check (the list is already the live sales).
  */
 export function bestSale(
   productId: string,
   unitFils: Fils,
   sales: LiveSale[],
-  now: Date = new Date(),
+  now: Date | null = new Date(),
 ): { sale: LiveSale; priceFils: Fils } | null {
   let best: { sale: LiveSale; off: Fils } | null = null;
   for (const s of sales) {
-    if (s.startsAt && new Date(s.startsAt) > now) continue;
-    if (s.endsAt && new Date(s.endsAt) <= now) continue;
+    if (now && s.startsAt && new Date(s.startsAt) > now) continue;
+    if (now && s.endsAt && new Date(s.endsAt) <= now) continue;
     if (s.productIds && !s.productIds.includes(productId)) continue;
     const off = saleOff(s, unitFils);
     if (off > 0 && (!best || off > best.off)) best = { sale: s, off };

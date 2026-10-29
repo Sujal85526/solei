@@ -69,9 +69,13 @@ export async function listLiveSales(): Promise<LiveSale[]> {
   ]);
   // Before the promotions migration (e.g. the live DB) there are simply no sales.
   if (offers.error || products.error) return [];
+  const now = new Date();
   return offers.data
     .filter((o) => o.channels.includes("website"))
-    .filter((o) => !o.ends_at || new Date(o.ends_at) > new Date())
+    .filter(
+      (o) =>
+        (!o.starts_at || new Date(o.starts_at) <= now) && (!o.ends_at || new Date(o.ends_at) > now),
+    )
     .map((o) => ({
       id: o.id,
       name: o.name,

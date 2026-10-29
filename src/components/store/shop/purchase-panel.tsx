@@ -5,6 +5,7 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { t } from "@/content/en";
 import { formatAED } from "@/lib/money";
+import { bestSale, type LiveSale } from "@/modules/promotions/quote";
 import { cn } from "@/lib/utils";
 import {
   cleanChoices,
@@ -32,6 +33,8 @@ export function PurchasePanel({
   availability,
   optionGroups = [],
   minOrderQty = 1,
+  productId,
+  sales = [],
 }: {
   variants: StoreVariant[];
   availability: Availability | null;
@@ -39,6 +42,9 @@ export function PurchasePanel({
   optionGroups?: OptionGroup[];
   /** Fewest pieces per order; the quantity starts here. */
   minOrderQty?: number;
+  /** Live sales (was/now prices; the bag and checkout price them in the database). */
+  productId?: string;
+  sales?: LiveSale[];
 }) {
   const router = useRouter();
   const state = useCart();
@@ -56,7 +62,10 @@ export function PurchasePanel({
   const allInCart = known && !soldOut && available - inCart <= 0;
   const room = available - inCart;
   const canAdd = known && state !== null && room >= (customised ? qty : 1);
-  const unitFils = unitPriceWithOptions(variant.priceFils, optionGroups, choices);
+  const listFils = unitPriceWithOptions(variant.priceFils, optionGroups, choices);
+  const salePrice = (fils: number) =>
+    productId ? (bestSale(productId, fils, sales, null)?.priceFils ?? fils) : fils;
+  const unitFils = salePrice(listFils);
 
   function add() {
     if (!canAdd) return false;
@@ -120,7 +129,13 @@ export function PurchasePanel({
                     onChange={() => setVariantId(v.id)}
                     className="sr-only"
                   />
-                  {v.label || v.sku} · <span className="numeric">{formatAED(v.priceFils)}</span>
+                  {v.label || v.sku} ·{" "}
+                  <span className="numeric">
+                    {salePrice(v.priceFils) < v.priceFils ? (
+                      <s className="me-1 opacity-60">{formatAED(v.priceFils)}</s>
+                    ) : null}
+                    {formatAED(salePrice(v.priceFils))}
+                  </span>
                 </label>
               );
             })}

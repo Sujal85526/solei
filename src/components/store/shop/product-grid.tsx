@@ -1,4 +1,6 @@
 import { cn } from "@/lib/utils";
+import { listLiveSales } from "@/modules/promotions/queries";
+import { bestSale } from "@/modules/promotions/quote";
 import { availabilityFor } from "@/modules/storefront/queries";
 import type { StoreProduct } from "@/modules/storefront/types";
 import { ProductCard, ProductCardSkeleton } from "./product-card";
@@ -16,7 +18,7 @@ export async function ProductGrid({
   className?: string;
   columns?: string;
 }) {
-  const availability = await availabilityFor(products);
+  const [availability, sales] = await Promise.all([availabilityFor(products), listLiveSales()]);
   return (
     <ul className={cn(gridClass, columns, className)}>
       {products.map((p, i) => (
@@ -25,11 +27,20 @@ export async function ProductGrid({
             product={p}
             priority={i < 2}
             available={p.variants.reduce((sum, v) => sum + (availability[v.id] ?? 0), 0)}
+            sale={cardSale(p, sales)}
           />
         </li>
       ))}
     </ul>
   );
+}
+
+/** The lowest price after a live sale, when a sale lowers this product's price. */
+function cardSale(p: StoreProduct, sales: Awaited<ReturnType<typeof listLiveSales>>) {
+  if (!sales.length) return undefined;
+  const from = Math.min(...p.variants.map((v) => v.priceFils));
+  const best = bestSale(p.id, from, sales, null);
+  return best ? { name: best.sale.name, priceFils: best.priceFils } : undefined;
 }
 
 export function ProductGridSkeleton({

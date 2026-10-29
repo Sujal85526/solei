@@ -10,6 +10,8 @@ import { PurchasePanel } from "@/components/store/shop/purchase-panel";
 import { t } from "@/content/en";
 import { publicEnv } from "@/lib/env";
 import { formatAED } from "@/lib/money";
+import { listLiveSales } from "@/modules/promotions/queries";
+import { bestSale, type LiveSale } from "@/modules/promotions/quote";
 import { productTypeLabel } from "@/modules/storefront/labels";
 import {
   availabilityFor,
@@ -64,7 +66,6 @@ export default async function ProductPage({ params }: PageProps<"/products/[slug
     optionGroups: product.optionGroups,
     minOrderQty: product.minOrderQty,
   };
-  const prices = product.variants.map((v) => v.priceFils);
   const title = product.destination
     ? [product.destination.name, productTypeLabel(product.category)]
     : [product.name];
@@ -161,13 +162,9 @@ export default async function ProductPage({ params }: PageProps<"/products/[slug
                 </span>
               ) : null}
             </h1>
-            <p
-              className="numeric text-primary mt-4 text-sm tracking-[0.22em]"
-              data-testid="product-price"
-            >
-              {new Set(prices).size > 1 ? `${t.shop.from} ` : ""}
-              {formatAED(Math.min(...prices))}
-            </p>
+            <Suspense fallback={<ProductPrice product={product} sales={[]} />}>
+              <LiveProductPrice product={product} />
+            </Suspense>
             {vatNote ? <p className="text-primary/55 mt-1 text-[0.7rem]">{vatNote}</p> : null}
             <span aria-hidden className="border-primary/20 mt-6 block border-t" />
             <div className="mt-8">
@@ -202,6 +199,31 @@ export default async function ProductPage({ params }: PageProps<"/products/[slug
   );
 }
 
+/** "From AED 190", or "AED 190 AED 161.50" while a sale runs. */
+function ProductPrice({ product, sales }: { product: StoreProduct; sales: LiveSale[] }) {
+  const prices = product.variants.map((v) => v.priceFils);
+  const from = Math.min(...prices);
+  const sale = bestSale(product.id, from, sales, null);
+  return (
+    <p className="numeric text-primary mt-4 text-sm tracking-[0.22em]" data-testid="product-price">
+      {new Set(prices).size > 1 ? `${t.shop.from} ` : ""}
+      {sale ? (
+        <>
+          <s className="text-primary/55 me-2">{formatAED(from)}</s>
+          {formatAED(sale.priceFils)}
+          <span className="ms-3 text-[0.65rem] tracking-[0.18em] uppercase">{sale.sale.name}</span>
+        </>
+      ) : (
+        formatAED(from)
+      )}
+    </p>
+  );
+}
+
+async function LiveProductPrice({ product }: { product: StoreProduct }) {
+  return <ProductPrice product={product} sales={await listLiveSales()} />;
+}
+
 /** Two on phones (the third is hidden), three from tablets up. */
 const relatedColumns = "md:grid-cols-3 [&>li:nth-child(3)]:hidden md:[&>li:nth-child(3)]:block";
 
@@ -212,7 +234,7 @@ async function Purchase({
   product: StoreProduct;
   purchaseProps: Omit<Parameters<typeof PurchasePanel>[0], "availability">;
 }) {
-  const availability = await availabilityFor([product]);
+  const [availability, sales] = await Promise.all([availabilityFor([product]), listLiveSales()]);
   const site = publicEnv.NEXT_PUBLIC_SITE_URL;
   const abs = (url: string) => (url.startsWith("http") ? url : `${site}${url}`);
   const jsonLd = {
@@ -243,7 +265,12 @@ async function Purchase({
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd).replace(/</g, "\\u003c") }}
       />
-      <PurchasePanel {...purchaseProps} availability={availability} />
+      <PurchasePanel
+        {...purchaseProps}
+        availability={availability}
+        productId={product.id}
+        sales={sales}
+      />
     </>
   );
 }

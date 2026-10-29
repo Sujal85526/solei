@@ -16,8 +16,11 @@ export function ProductCard({
   available,
   sizes = "(min-width: 1024px) 30vw, 50vw",
   priority = false,
+  sale,
 }: {
   product: StoreProduct;
+  /** A live sale on this product: its name and the lowest price after it. */
+  sale?: { name: string; priceFils: number };
   /** Units available online across variants; `undefined` while unknown. */
   available?: number;
   sizes?: string;
@@ -52,6 +55,10 @@ export function ProductCard({
           <span className="bg-noir/90 text-pink eyebrow absolute start-3 top-3 px-3 py-1.5 text-[0.6rem]">
             {t.shop.soldOut}
           </span>
+        ) : sale ? (
+          <span className="bg-primary text-primary-foreground eyebrow absolute start-3 top-3 px-3 py-1.5 text-[0.6rem]">
+            {t.shop.sale}
+          </span>
         ) : null}
       </Link>
       <div className="pt-4">
@@ -61,7 +68,14 @@ export function ProductCard({
         <div className="border-primary/20 mt-3 flex min-h-[3.25rem] items-center justify-between gap-3 border-t pt-3">
           <span className="numeric text-primary text-[0.7rem] tracking-[0.18em] sm:text-xs">
             {varies ? `${t.shop.from} ` : ""}
-            {formatAED(Math.min(...prices))}
+            {sale ? (
+              <>
+                <s className="text-muted-foreground me-1.5">{formatAED(Math.min(...prices))}</s>
+                <span title={sale.name}>{formatAED(sale.priceFils)}</span>
+              </>
+            ) : (
+              formatAED(Math.min(...prices))
+            )}
           </span>
           {soldOut ? null : product.optionGroups.length || product.minOrderQty > 1 ? (
             // Giveaways need choices (and a quantity) first: the + opens the product. Same bare

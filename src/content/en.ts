@@ -67,6 +67,7 @@ export const en = {
     results: (n: number) => (n === 1 ? "1 scent" : `${n} scents`),
     noResults: "No scents match these filters yet.",
     soldOut: "Sold out",
+    sale: "Sale",
     viewAll: "View the whole collection",
     from: "From",
     comingSoon: "Coming soon",
