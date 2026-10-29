@@ -127,6 +127,11 @@ next steps (account_user_id column on orders, stored stock balances) are in DECI
   inbox — change it); checkout doesn't remember the mobile number; test customers "NI Test Customer" and
   "Sujal Link Test" in admin — delete before launch; test product "Solei Trial" (Dukhoon, AED 1) and hidden
   product "Test from dashboard" — delete both before launch.
+- **Western Region delivery (2026-10-29):** new `western_region` emirate + `delivery_zones` row (AED 50), migrations
+  `20261029000001/2`. They were applied to the hosted DB with `psql` (both idempotent), **not** `supabase db push`:
+  the hosted DB already has `phase-2`'s `20261024*` migrations that aren't on `main`, so `db push` refuses until
+  that branch merges — don't `migration repair` around it. Perfume variants were also changed 50 ml → 100 ml in the
+  DB (SKUs still `-50`); `seedSizes` in `src/modules/content/seed.ts` still says 50, so a fresh local seed differs.
 - **M17 TODO — product title vs. destination:** setting a product's Destination (for the passport stamp)
   always swaps the storefront title to the destination's name (`src/app/(store)/products/[slug]/page.tsx`) —
   by design for the Perfumes/All-over-sprays line (e.g. "Capri Perfume" shows as "CAPRI"), but it means a
