@@ -3,6 +3,7 @@ import Link from "next/link";
 import { ChevronRight, Plus } from "lucide-react";
 import { PageHeader } from "@/components/admin/page-header";
 import { CouponStateBadge } from "@/components/admin/coupons/coupon-state-badge";
+import { PromotionsTabs } from "@/components/admin/promotions/promotions-tabs";
 import { buttonVariants } from "@/components/ui/button";
 import { requirePagePermission } from "@/lib/auth/session";
 import { formatBusinessDate } from "@/lib/dates";
@@ -27,6 +28,7 @@ export default async function PromotionsPage() {
           </Link>
         }
       />
+      <PromotionsTabs />
       {coupons.length === 0 ? (
         <div className="bg-card rounded-xl border p-8 text-center">
           <p className="font-medium">No promotions yet</p>
