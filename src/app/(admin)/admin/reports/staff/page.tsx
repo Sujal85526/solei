@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { Download } from "lucide-react";
 import { PageHeader } from "@/components/admin/page-header";
+import { ReportsTabs } from "@/components/admin/reports/reports-tabs";
 import { AdminSection, StatCard } from "@/components/admin/section";
 import { Badge } from "@/components/ui/badge";
 import { Button, buttonVariants } from "@/components/ui/button";
@@ -52,6 +53,7 @@ export default async function StaffReportPage({ searchParams }: PageProps<"/admi
           </a>
         }
       />
+      <ReportsTabs financial={can(staff.permissions, "reports.financial.view")} />
       <form method="get" className="mb-5 flex flex-wrap items-end gap-3" aria-label="Period">
         <label className="flex flex-col gap-1.5 text-sm">
           From

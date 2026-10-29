@@ -607,7 +607,7 @@ Open client questions are built as configurable defaults. Each row: what we chos
   Optional daily owner digest of the next 7 days' events and who works them, to the owner alert email.
 - **P2-76 — Event news:** its own consent (`customers.event_news`), separate from marketing consent: sign-up page
   `/event-news` (footer link; creates the customer when new, source newsletter), Account → Emails switch, and
-  staff can add / remove on the profile. Announcing = "Announce" on a public calendar event (not private bookings,
+  staff can add / remove on the profile. Announcing = "Announce" on a public calendar event (not private bookings or weddings,
   not cancelled or past) creates a **draft campaign** with `audience = event_news`, filled from the editable
   `event_announcement` template; the owner reviews, tests and sends it with the existing campaign sender. Its
   footer says why they get it; unsubscribing turns off event news as well as marketing.

@@ -212,7 +212,7 @@ migrations. Pushed with the user's OK on 2026-10-24 (see "Preview deployment"). 
   events and planned shifts, optional owner digest, event news sign-up (`/event-news`, Account → Emails) and
   "Announce" on a calendar event (draft campaign to event news subscribers). All off by default; need the
   scheduler (`PHASE2_MERGE.md` §6).
-- Verified: SQL tests `supabase/tests/190_crm_staff_test.sql` (31 checks) on a throwaway native Postgres with all
+- Verified: SQL tests `supabase/tests/210_crm_staff_test.sql` (31 checks) on a throwaway native Postgres with all
   migrations, unit tests, typecheck, lint, build. Not run: e2e and the pages against a DB with these migrations.
 
 ## Current notes

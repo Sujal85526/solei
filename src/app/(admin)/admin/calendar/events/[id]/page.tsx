@@ -62,11 +62,12 @@ export default async function EventPage({
     financial: can(staff.permissions, "reports.financial.view"),
     transfer: can(staff.permissions, "inventory.transfer"),
     stock: can(staff.permissions, "inventory.view"),
-    // Public events (not private bookings) that haven't ended can be announced to event news.
+    // Public events (not private bookings or weddings) that haven't ended can be announced.
     announce:
       can(staff.permissions, "marketing.manage") &&
       event.status !== "cancelled" &&
       event.type !== "private_booking" &&
+      event.type !== "wedding" &&
       event.end_date >= businessDay(),
   };
   const tabs = TABS.filter((t) =>
