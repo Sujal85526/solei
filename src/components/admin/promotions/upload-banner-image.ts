@@ -4,7 +4,7 @@ const MAX_BYTES = 5 * 1024 * 1024;
 const TYPES = ["image/jpeg", "image/png", "image/webp", "image/avif"];
 
 /**
- * Upload a banner image from the browser to the public `banners` bucket as `<uuid>.<ext>`
+ * Upload a banner image from the browser to the public `promo-banners` bucket as `<uuid>.<ext>`
  * (Storage RLS: coupons.manage). Returns its public URL and path, or an error in staff words.
  */
 export async function uploadBannerImage(
@@ -19,7 +19,7 @@ export async function uploadBannerImage(
       ?.toLowerCase()
       .replace(/[^a-z0-9]/g, "") || "jpg";
   const path = `${crypto.randomUUID()}.${ext}`;
-  const bucket = createClient().storage.from("banners");
+  const bucket = createClient().storage.from("promo-banners");
   const { error } = await bucket.upload(path, file, {
     cacheControl: "31536000",
     contentType: file.type,

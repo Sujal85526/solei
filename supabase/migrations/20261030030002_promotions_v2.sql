@@ -5,7 +5,7 @@
 --     birthday code)
 --   · early access: a product can launch later for everyone and earlier for chosen tiers
 --   · a points rewards catalogue (a product for N points)
---   · homepage banners and the announcement bar
+--   · homepage promotion banners (under the hero) and the announcement bar
 --   · a birthday discount code instead of / as well as birthday points
 --   · one pricing function, promo_price(), used by the bag, checkout, the order RPC and the till.
 --
@@ -169,15 +169,16 @@ create policy promo_banners_read on public.promo_banners for select
 create policy promo_banners_write on public.promo_banners for all to authenticated
   using (public.has_permission('coupons.manage')) with check (public.has_permission('coupons.manage'));
 
+-- Own bucket: main's hero banners (20261030000001) use `banners` with settings.manage.
 insert into storage.buckets (id, name, public, file_size_limit, allowed_mime_types)
-values ('banners', 'banners', true, 5242880, array['image/jpeg', 'image/png', 'image/webp', 'image/avif'])
+values ('promo-banners', 'promo-banners', true, 5242880, array['image/jpeg', 'image/png', 'image/webp', 'image/avif'])
 on conflict (id) do nothing;
-create policy "public reads banner images" on storage.objects
-  for select using (bucket_id = 'banners');
-create policy "coupons.manage uploads banner images" on storage.objects
-  for insert to authenticated with check (bucket_id = 'banners' and public.has_permission('coupons.manage'));
-create policy "coupons.manage deletes banner images" on storage.objects
-  for delete to authenticated using (bucket_id = 'banners' and public.has_permission('coupons.manage'));
+create policy "public reads promotion banner images" on storage.objects
+  for select using (bucket_id = 'promo-banners');
+create policy "coupons.manage uploads promotion banner images" on storage.objects
+  for insert to authenticated with check (bucket_id = 'promo-banners' and public.has_permission('coupons.manage'));
+create policy "coupons.manage deletes promotion banner images" on storage.objects
+  for delete to authenticated using (bucket_id = 'promo-banners' and public.has_permission('coupons.manage'));
 
 -- ── Birthday code ────────────────────────────────────────────────────────────────────────────
 alter table public.rewards_settings

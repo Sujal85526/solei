@@ -113,6 +113,6 @@ export async function deleteBanner(id: string) {
 /** Best effort: a leftover image in the bucket is harmless, so a failure is only logged. */
 async function removeBannerImage(path: string) {
   const supabase = await createClient();
-  const { error } = await supabase.storage.from("banners").remove([path]);
+  const { error } = await supabase.storage.from("promo-banners").remove([path]);
   if (error) console.error(`banner image ${path} not removed: ${error.message}`);
 }

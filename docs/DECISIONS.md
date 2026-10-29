@@ -664,7 +664,7 @@ Open client questions are built as configurable defaults. Each row: what we chos
   (`birthday_code_issue`). Sent with the `birthday_code` template (points mentioned when both). Works with the
   points programme off.
 - **P2-69 — Banners:** `promo_banners` — announcement bar (one line above the header; phones show the first)
-  and homepage banners (cards under the hero, optional photo in bucket `banners`), text, link, dates, on/off,
+  and homepage banners (cards under the hero, optional photo in bucket `promo-banners`; main's hero banners use `banners`), text, link, dates, on/off,
   order; managed with `coupons.manage` under Admin → Promotions → Banners. Promotions report =
   `promotion_performance(from, to)` from `applied_promotions` (codes with their event, sales, bundles, buy X get Y;
   website and till).

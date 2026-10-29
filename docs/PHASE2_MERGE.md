@@ -111,7 +111,7 @@ external pinger / Supabase `pg_cron` + `pg_net`):
   live sale would make the database refuse main's orders ("prices changed"), and main's admin doesn't know the
   new code kinds. Banners are harmless (main doesn't read them). Keep `birthday_reward = points` until then.
 - The till sends `apply_offers`; sales queued offline by main's till are priced at catalogue prices.
-- New: bucket `banners` (public), template `birthday_code` (appears in the live Settings → Notifications list;
+- New: bucket `promo-banners` (public; main's hero banners keep `banners`), template `birthday_code` (appears in the live Settings → Notifications list;
   leave it). No new permission keys (`coupons.manage`, `loyalty.*`, `reports.view`, `pos.use`).
 - After the merge: regenerate `database.types.ts` (hand-edited here).
 
