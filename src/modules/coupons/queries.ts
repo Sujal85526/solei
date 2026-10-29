@@ -22,6 +22,15 @@ const toCoupon = (r: Row): Coupon => ({
   minOrderFils: r.min_order_fils,
   productIds: r.product_ids,
   categoryIds: r.category_ids,
+  buyQty: r.buy_qty,
+  getQty: r.get_qty,
+  combinable: r.combinable,
+  channels: r.channels as Coupon["channels"],
+  eventId: r.event_id,
+  tierIds: r.tier_ids,
+  customerIds: r.customer_ids,
+  segmentId: r.segment_id,
+  birthday: r.birthday_customer_id !== null,
   active: r.active,
   createdAt: r.created_at,
 });
@@ -79,6 +88,36 @@ export async function listPromotionScope(): Promise<{
   if (categories.error) throw new Error(categories.error.message);
   if (products.error) throw new Error(products.error.message);
   return { categories: categories.data, products: products.data };
+}
+
+export type CodeTargets = {
+  events: { id: string; name: string; startDate: string }[];
+  tiers: { id: string; name: string }[];
+  segments: { id: string; name: string }[];
+};
+
+/** Events a code can belong to (recent and upcoming), VIP tiers and customer segments. */
+export async function listCodeTargets(): Promise<CodeTargets> {
+  await assertPermission("coupons.manage");
+  const admin = createAdminClient();
+  const [events, tiers, segments] = await Promise.all([
+    admin
+      .from("events")
+      .select("id, name, start_date")
+      .neq("status", "cancelled")
+      .order("start_date", { ascending: false })
+      .limit(100),
+    admin.from("loyalty_tiers").select("id, name").order("min_spend_fils"),
+    admin.from("customer_segments").select("id, name").order("name"),
+  ]);
+  if (events.error) throw new Error(events.error.message);
+  if (tiers.error) throw new Error(tiers.error.message);
+  if (segments.error) throw new Error(segments.error.message);
+  return {
+    events: events.data.map((e) => ({ id: e.id, name: e.name, startDate: e.start_date })),
+    tiers: tiers.data,
+    segments: segments.data,
+  };
 }
 
 /** Id → name for scope labels. */

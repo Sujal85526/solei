@@ -44,6 +44,37 @@ describe("couponFormSchema", () => {
     expect(form({ perCustomerLimit: "" }).success && form({}).data?.perCustomerLimit).toBeNull();
   });
 
+  it("buy X get Y: quantities required, the get items free unless a % is given", () => {
+    const r = form({ kind: "buy_x_get_y", value: "", buyQty: "2", getQty: "1" });
+    expect(r.success && [r.data.buyQty, r.data.getQty, r.data.percentBp]).toEqual([2, 1, 10000]);
+    const half = form({ kind: "buy_x_get_y", value: "50", buyQty: "1", getQty: "1" });
+    expect(half.success && half.data.percentBp).toBe(5000);
+    expect(form({ kind: "buy_x_get_y", value: "", getQty: "1" }).success).toBe(false);
+    // Other kinds never keep quantities.
+    const pct = form({ buyQty: "2", getQty: "1" });
+    expect(pct.success && [pct.data.buyQty, pct.data.getQty]).toEqual([null, null]);
+  });
+
+  it("where it works, the event, tiers and combining", () => {
+    const ev = "8f0a4f8c-6b1e-4c39-9a51-7b1b2b8e5c12";
+    const tier = "8f0a4f8c-6b1e-4c39-9a51-7b1b2b8e5c13";
+    const r = form({
+      channels: ["website", "pos"],
+      eventId: ev,
+      tierIds: [tier],
+      combinable: "on",
+    });
+    expect(r.success && r.data.channels).toEqual(["website", "pos"]);
+    expect(r.success && [r.data.eventId, r.data.tierIds, r.data.combinable]).toEqual([
+      ev,
+      [tier],
+      true,
+    ]);
+    expect(form({}).data?.channels).toEqual(["website"]);
+    expect(form({ channels: [] }).success).toBe(false);
+    expect(form({ eventId: "" }).data?.eventId).toBeUndefined();
+  });
+
   it("refuses an end date before the start", () => {
     expect(form({ startsOn: "2026-11-02", endsOn: "2026-11-01" }).success).toBe(false);
   });
@@ -63,11 +94,26 @@ const coupon: Coupon = {
   minOrderFils: null,
   productIds: [],
   categoryIds: [],
+  buyQty: null,
+  getQty: null,
+  combinable: false,
+  channels: ["website"],
+  eventId: null,
+  tierIds: [],
+  customerIds: [],
+  segmentId: null,
+  birthday: false,
   active: true,
   createdAt: "",
 };
 
 describe("labels and state", () => {
+  it("labels a buy X get Y code", () => {
+    expect(
+      couponValueLabel({ ...coupon, kind: "buy_x_get_y", percentBp: 10000, buyQty: 2, getQty: 1 }),
+    ).toBe("Buy 2 get 1 free");
+  });
+
   it("describes the value", () => {
     expect(couponValueLabel(coupon)).toBe("10% off");
     expect(couponValueLabel({ ...coupon, kind: "free_delivery", percentBp: null })).toBe(

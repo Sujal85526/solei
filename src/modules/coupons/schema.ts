@@ -28,6 +28,22 @@ export type Coupon = {
   /** Scope: empty product and category lists = the whole bag. */
   productIds: string[];
   categoryIds: string[];
+  /** Buy X get Y codes: buy `buyQty`, get `getQty` at `percentBp` off (10000 = free). */
+  buyQty: number | null;
+  getQty: number | null;
+  /** Usable with other codes and on items an automatic offer already reduced. */
+  combinable: boolean;
+  /** Where it works: the website and/or the event till. */
+  channels: ("website" | "pos")[];
+  /** An event's code: reported per event; at the till only at that event. */
+  eventId: string | null;
+  /** Only for these VIP tiers and/or these customers (both empty = anyone). */
+  tierIds: string[];
+  customerIds: string[];
+  /** The segment the customers were taken from. */
+  segmentId: string | null;
+  /** A personal birthday code (made automatically). */
+  birthday: boolean;
   active: boolean;
   createdAt: string;
 };
@@ -98,7 +114,23 @@ export const couponFormSchema = z
       .transform(normaliseCode)
       .refine((v) => CODE_PATTERN.test(v), "3–32 letters, numbers, - or _ (e.g. SUMMER20)"),
     description: optionalText.pipe(z.string().max(200).nullable()),
-    kind: z.enum(["percent", "fixed", "free_delivery"]),
+    kind: z.enum(["percent", "fixed", "free_delivery", "buy_x_get_y"]),
+    buyQty: positiveInt,
+    getQty: positiveInt,
+    combinable: checkbox,
+    channels: z
+      .array(z.enum(["website", "pos"]))
+      .min(1, "Choose where it works")
+      .default(["website"]),
+    eventId: z
+      .uuid()
+      .optional()
+      .or(z.literal("").transform(() => undefined)),
+    tierIds: z.array(z.uuid()).default([]),
+    segmentId: z
+      .uuid()
+      .optional()
+      .or(z.literal("").transform(() => undefined)),
     value: z.string().trim().optional().default(""),
     startsOn: day,
     endsOn: day,
@@ -113,11 +145,35 @@ export const couponFormSchema = z
     const n = Number(v.value.replace(/[,\s%]/g, ""));
     let percentBp: number | null = null;
     let amountFils: Fils | null = null;
-    if (v.kind !== "free_delivery" && !v.value) {
+    if (v.kind !== "free_delivery" && v.kind !== "buy_x_get_y" && !v.value) {
       ctx.addIssue({ code: "custom", path: ["value"], message: "Enter the discount" });
       return z.NEVER;
     }
-    if (v.kind === "percent") {
+    if (v.kind === "buy_x_get_y") {
+      if (!v.buyQty || v.buyQty > 20) {
+        ctx.addIssue({ code: "custom", path: ["buyQty"], message: "Buy 1 to 20" });
+        return z.NEVER;
+      }
+      if (!v.getQty || v.getQty > 20) {
+        ctx.addIssue({ code: "custom", path: ["getQty"], message: "Get 1 to 20" });
+        return z.NEVER;
+      }
+      const pct = v.value ? Number(v.value.replace(/[,\s%]/g, "")) : 100;
+      percentBp = Math.round(pct * 100);
+      if (
+        !Number.isFinite(pct) ||
+        pct <= 0 ||
+        pct > 100 ||
+        Math.abs(pct * 100 - percentBp) > 1e-6
+      ) {
+        ctx.addIssue({
+          code: "custom",
+          path: ["value"],
+          message: "A percentage from 0.01 to 100 (100 = free)",
+        });
+        return z.NEVER;
+      }
+    } else if (v.kind === "percent") {
       percentBp = Math.round(n * 100);
       if (!Number.isFinite(n) || n <= 0 || n > 100 || Math.abs(n * 100 - percentBp) > 1e-6) {
         ctx.addIssue({ code: "custom", path: ["value"], message: "A percentage from 0.01 to 100" });
@@ -138,7 +194,14 @@ export const couponFormSchema = z
       ctx.addIssue({ code: "custom", path: ["endsOn"], message: "Ends before it starts" });
       return z.NEVER;
     }
-    return { ...v, percentBp, amountFils };
+    const bxgy = v.kind === "buy_x_get_y";
+    return {
+      ...v,
+      percentBp,
+      amountFils,
+      buyQty: bxgy ? v.buyQty : null,
+      getQty: bxgy ? v.getQty : null,
+    };
   });
 
 export type CouponFormData = z.output<typeof couponFormSchema>;
@@ -159,9 +222,15 @@ export function storedDays(startsAt: string | null, endsAt: string | null) {
   };
 }
 
-/** "10% off", "AED 50 off", "Free delivery". */
-export function couponValueLabel(c: Pick<Coupon, "kind" | "percentBp" | "amountFils">) {
+/** "10% off", "AED 50 off", "Free delivery", "Buy 2 get 1 free". */
+export function couponValueLabel(
+  c: Pick<Coupon, "kind" | "percentBp" | "amountFils"> & Partial<Pick<Coupon, "buyQty" | "getQty">>,
+) {
   if (c.kind === "free_delivery") return "Free delivery";
+  if (c.kind === "buy_x_get_y")
+    return `Buy ${c.buyQty ?? "?"} get ${c.getQty ?? "?"} ${
+      c.percentBp === 10000 ? "free" : `${(c.percentBp ?? 0) / 100}% off`
+    }`;
   return c.kind === "percent"
     ? `${(c.percentBp ?? 0) / 100}% off`
     : `${formatAED(c.amountFils ?? 0)} off`;

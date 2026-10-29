@@ -12,6 +12,8 @@ export async function saveCouponAction(_: unknown, fd: FormData): Promise<Action
       ...Object.fromEntries(fd.entries()),
       productIds: fd.getAll("productIds"),
       categoryIds: fd.getAll("categoryIds"),
+      channels: fd.getAll("channels"),
+      tierIds: fd.getAll("tierIds"),
     });
   } catch (e) {
     return fail(e);

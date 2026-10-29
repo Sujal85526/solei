@@ -7,7 +7,7 @@ import { CouponStateBadge } from "@/components/admin/coupons/coupon-state-badge"
 import { PageHeader } from "@/components/admin/page-header";
 import { requirePagePermission } from "@/lib/auth/session";
 import { formatAED } from "@/lib/money";
-import { getCoupon, listPromotionScope } from "@/modules/coupons/queries";
+import { getCoupon, listCodeTargets, listPromotionScope } from "@/modules/coupons/queries";
 import { couponState, couponValueLabel } from "@/modules/coupons/schema";
 
 export const metadata: Metadata = { title: "Promotion" };
@@ -15,7 +15,11 @@ export const metadata: Metadata = { title: "Promotion" };
 export default async function PromotionPage({ params }: PageProps<"/admin/promotions/[id]">) {
   await requirePagePermission("coupons.manage");
   const { id } = await params;
-  const [coupon, scope] = await Promise.all([getCoupon(id), listPromotionScope()]);
+  const [coupon, scope, targets] = await Promise.all([
+    getCoupon(id),
+    listPromotionScope(),
+    listCodeTargets(),
+  ]);
   if (!coupon) notFound();
   return (
     <>
@@ -39,7 +43,7 @@ export default async function PromotionPage({ params }: PageProps<"/admin/promot
         }
       />
       <div className="grid max-w-5xl gap-6 lg:grid-cols-[minmax(0,1fr)_16rem] lg:items-start">
-        <CouponForm coupon={coupon} {...scope} />
+        <CouponForm coupon={coupon} {...scope} targets={targets} />
         <aside className="bg-card flex flex-col gap-4 rounded-xl border p-5 text-sm lg:order-last">
           <div className="flex items-center justify-between">
             <span className="text-muted-foreground">Status</span>

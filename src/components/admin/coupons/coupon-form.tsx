@@ -9,7 +9,9 @@ import { useFormAction } from "@/hooks/use-form-action";
 import { filsToAed } from "@/lib/money";
 import { cn } from "@/lib/utils";
 import { saveCouponAction } from "@/modules/coupons/actions";
+import type { CodeTargets } from "@/modules/coupons/queries";
 import type { Coupon, CouponKind } from "@/modules/coupons/schema";
+import { NativeSelect } from "@/components/ui/native-select";
 
 type ScopeOption = { id: string; name: string; active: boolean };
 
@@ -21,10 +23,13 @@ export function CouponForm({
   coupon,
   products,
   categories,
+  targets,
 }: {
   coupon?: Coupon;
   products: ScopeOption[];
   categories: ScopeOption[];
+  /** Events, VIP tiers and segments a code can be tied to. */
+  targets: CodeTargets;
 }) {
   const [state, action, pending] = useFormAction(saveCouponAction, null);
   const e = useActionToast(state);
@@ -33,9 +38,10 @@ export function CouponForm({
     (coupon?.productIds.length ?? 0) + (coupon?.categoryIds.length ?? 0) > 0,
   );
   const [limitDates, setLimitDates] = useState(Boolean(coupon?.startsOn || coupon?.endsOn));
+  const [limitWho, setLimitWho] = useState(Boolean(coupon?.tierIds.length || coupon?.segmentId));
 
   const value =
-    coupon?.kind === "percent"
+    coupon?.kind === "percent" || coupon?.kind === "buy_x_get_y"
       ? String((coupon.percentBp ?? 0) / 100)
       : coupon?.amountFils
         ? String(filsToAed(coupon.amountFils))
@@ -89,6 +95,7 @@ export function CouponForm({
                 ["percent", "Percentage off"],
                 ["fixed", "Fixed amount off (AED)"],
                 ["free_delivery", "Free delivery"],
+                ["buy_x_get_y", "Buy X get Y"],
               ] as const
             ).map(([k, label]) => (
               <label
@@ -114,6 +121,42 @@ export function CouponForm({
             <p className="text-muted-foreground text-xs">
               Waives the delivery fee; the products are charged in full.
             </p>
+          ) : kind === "buy_x_get_y" ? (
+            <>
+              <div className="grid grid-cols-3 gap-4">
+                <Field label="Buy" htmlFor="buyQty" error={e.buyQty} hint="Items paid in full">
+                  <Input
+                    id="buyQty"
+                    name="buyQty"
+                    inputMode="numeric"
+                    defaultValue={coupon?.buyQty ?? 2}
+                    className="h-11"
+                  />
+                </Field>
+                <Field label="Get" htmlFor="getQty" error={e.getQty} hint="Items discounted">
+                  <Input
+                    id="getQty"
+                    name="getQty"
+                    inputMode="numeric"
+                    defaultValue={coupon?.getQty ?? 1}
+                    className="h-11"
+                  />
+                </Field>
+                <Field label="% off them" htmlFor="value" error={e.value} hint="100 = free">
+                  <Input
+                    id="value"
+                    name="value"
+                    inputMode="decimal"
+                    defaultValue={coupon ? value : "100"}
+                    className="h-11"
+                  />
+                </Field>
+              </div>
+              <p className="text-muted-foreground text-xs">
+                The cheapest items are the ones discounted, e.g. buy 2 get 1 free on 3 sprays: the
+                cheapest spray is free.
+              </p>
+            </>
           ) : (
             <>
               <Field
@@ -279,6 +322,133 @@ export function CouponForm({
                 options={products}
                 selected={coupon?.productIds ?? []}
               />
+            </div>
+          ) : null}
+        </div>
+      </section>
+
+      <section className="bg-card flex flex-col gap-5 rounded-xl border p-6">
+        <div>
+          <h2 className="font-sans text-base font-medium">Where and who</h2>
+          <p className="text-muted-foreground mt-0.5 text-sm">
+            Codes work on the website unless you also tick the event till.
+          </p>
+        </div>
+        <fieldset className="flex flex-col gap-2">
+          <legend className="mb-1.5 text-sm font-medium">Works on</legend>
+          <div className="flex flex-wrap gap-4">
+            {(
+              [
+                ["website", "Website checkout"],
+                ["pos", "Event till"],
+              ] as const
+            ).map(([ch, label]) => (
+              <label key={ch} className="flex items-center gap-2 text-sm">
+                <input
+                  type="checkbox"
+                  name="channels"
+                  value={ch}
+                  defaultChecked={(coupon?.channels ?? ["website"]).includes(ch)}
+                  className="accent-primary size-4"
+                />
+                {label}
+              </label>
+            ))}
+          </div>
+          {e.channels ? <p className="text-destructive text-xs">{e.channels}</p> : null}
+        </fieldset>
+        <Field
+          label="Event"
+          htmlFor="eventId"
+          error={e.eventId}
+          hint="Optional — shows this code's sales per event in Reports. At the till it then works only at that event."
+        >
+          <NativeSelect id="eventId" name="eventId" defaultValue={coupon?.eventId ?? ""}>
+            <option value="">No event</option>
+            {targets.events.map((ev) => (
+              <option key={ev.id} value={ev.id}>
+                {ev.name} · {ev.startDate}
+              </option>
+            ))}
+          </NativeSelect>
+        </Field>
+        <label className="flex items-start gap-3 text-sm">
+          <input
+            type="checkbox"
+            name="combinable"
+            defaultChecked={coupon?.combinable ?? false}
+            className="accent-primary mt-0.5 size-4"
+          />
+          <span>
+            Can be combined
+            <span className="text-muted-foreground block text-xs">
+              Works together with other combinable codes and on items already on sale or in an
+              offer. Otherwise it is the only code on the order and skips reduced items.
+            </span>
+          </span>
+        </label>
+        <div className="flex flex-col gap-3">
+          <label className="flex items-start gap-3 text-sm">
+            <input
+              type="checkbox"
+              checked={limitWho}
+              onChange={(ev) => setLimitWho(ev.target.checked)}
+              className="accent-primary mt-0.5 size-4"
+            />
+            <span>
+              Only for VIP tiers or a customer segment
+              <span className="text-muted-foreground block text-xs">
+                Customers must be signed in (website) or found by mobile / email (till).
+              </span>
+            </span>
+          </label>
+          {limitWho ? (
+            <div className="flex flex-col gap-4 rounded-lg border p-4">
+              <fieldset>
+                <legend className="text-muted-foreground mb-2 text-xs font-medium tracking-wide uppercase">
+                  VIP tiers
+                </legend>
+                <div className="flex flex-wrap gap-4">
+                  {targets.tiers.map((t) => (
+                    <label key={t.id} className="flex items-center gap-2 text-sm">
+                      <input
+                        type="checkbox"
+                        name="tierIds"
+                        value={t.id}
+                        defaultChecked={coupon?.tierIds.includes(t.id)}
+                        className="accent-primary size-4"
+                      />
+                      {t.name}
+                    </label>
+                  ))}
+                </div>
+              </fieldset>
+              <Field
+                label="Or customers in a segment"
+                htmlFor="segmentId"
+                error={e.segmentId}
+                hint="The customers in the segment when you save (save again to refresh the list)."
+              >
+                <NativeSelect
+                  id="segmentId"
+                  name="segmentId"
+                  defaultValue={coupon?.segmentId ?? ""}
+                >
+                  <option value="">No segment</option>
+                  {targets.segments.map((sg) => (
+                    <option key={sg.id} value={sg.id}>
+                      {sg.name}
+                    </option>
+                  ))}
+                </NativeSelect>
+              </Field>
+              {coupon?.customerIds.length ? (
+                <p className="text-muted-foreground text-xs">
+                  {coupon.birthday
+                    ? "A personal birthday code for one customer."
+                    : `${coupon.customerIds.length} customer${coupon.customerIds.length === 1 ? "" : "s"} can use it now.`}
+                </p>
+              ) : null}
             </div>
           ) : null}
         </div>
