@@ -19,6 +19,7 @@ export const emirateLabels: Record<Emirate, string> = {
   umm_al_quwain: "Umm Al Quwain",
   ras_al_khaimah: "Ras Al Khaimah",
   fujairah: "Fujairah",
+  western_region: "Western Region",
 };
 
 export const sourceLabels: Record<CustomerSource, string> = {

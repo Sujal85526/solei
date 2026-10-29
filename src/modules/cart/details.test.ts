@@ -52,6 +52,25 @@ describe("resolveCart", () => {
     expect(d.pricing.amountToFreeDeliveryFils).toBe(31_000);
   });
 
+  it("charges the Western Region's own AED 50 delivery fee", () => {
+    const d = resolveCart(
+      { lines: [{ variantId: S, qty: 1 }], emirate: "western_region" },
+      products,
+      { [S]: 5 },
+      {
+        ...settings,
+        freeDeliveryThresholdFils: null,
+        zones: [
+          ...settings.zones,
+          { emirate: "western_region", name: "Western Region", feeFils: 5_000 },
+        ],
+      },
+    );
+    expect(d.zoneName).toBe("Western Region");
+    expect(d.pricing.deliveryFeeFils).toBe(5_000);
+    expect(d.pricing.totalFils).toBe(24_000);
+  });
+
   it("leaves delivery pending without an emirate or for an unknown zone", () => {
     for (const emirate of [null, "fujairah" as const]) {
       const d = resolveCart(

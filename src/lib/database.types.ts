@@ -3404,6 +3404,7 @@ export type Database = {
         | "umm_al_quwain"
         | "ras_al_khaimah"
         | "fujairah"
+        | "western_region"
       employment_status:
         | "full_time"
         | "part_time"
@@ -3642,6 +3643,7 @@ export const Constants = {
         "umm_al_quwain",
         "ras_al_khaimah",
         "fujairah",
+        "western_region",
       ],
       employment_status: [
         "full_time",
