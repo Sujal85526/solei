@@ -13,14 +13,21 @@ import { getAvailability } from "@/modules/storefront/queries";
 
 export const ensureStatic = "navigation";
 
+/** Cache Components needs at least one param: a placeholder (404) while there are no giveaways. */
+const NONE = "__none__";
+
 export async function generateStaticParams() {
-  return (await listGiveaways()).map((g) => ({ slug: g.slug }));
+  // A database without the giveaways tables yet (before the migration) builds with the placeholder.
+  const giveaways = await listGiveaways().catch(() => []);
+  const slugs = giveaways.map((g) => ({ slug: g.slug }));
+  return slugs.length ? slugs : [{ slug: NONE }];
 }
 
 export async function generateMetadata({
   params,
 }: PageProps<"/giveaways/[slug]">): Promise<Metadata> {
-  const giveaway = await getGiveaway((await params).slug);
+  const { slug } = await params;
+  const giveaway = slug === NONE ? null : await getGiveaway(slug);
   if (!giveaway) return {};
   return {
     title: giveaway.name,
@@ -32,7 +39,8 @@ export async function generateMetadata({
 
 /** A giveaway: photographs beside the guided order (type → scent → packaging → quantity → names). */
 export default async function GiveawayPage({ params }: PageProps<"/giveaways/[slug]">) {
-  const giveaway = await getGiveaway((await params).slug);
+  const { slug } = await params;
+  const giveaway = slug === NONE ? null : await getGiveaway(slug);
   if (!giveaway) notFound();
 
   return (
