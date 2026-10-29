@@ -1,8 +1,10 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { after } from "next/server";
 import { fail, ok, type ActionResult } from "@/lib/action-result";
 import * as account from "./service";
+import { sendAccountWelcome } from "./welcome";
 
 export async function signInAction(input: unknown): Promise<ActionResult<account.SignInResult>> {
   try {
@@ -22,7 +24,9 @@ export async function signUpAction(input: unknown): Promise<ActionResult<{ email
 
 export async function verifyCodeAction(input: unknown): Promise<ActionResult> {
   try {
-    await account.verifyCode(input);
+    const user = await account.verifyCode(input);
+    // Welcome email (once per address) — after the response, so verifying isn't slowed down.
+    if (user) after(() => sendAccountWelcome(user));
     return ok(undefined);
   } catch (e) {
     return fail(e);

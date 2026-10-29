@@ -15,7 +15,7 @@ export async function submitReviewAction(input: unknown): Promise<ActionResult> 
   try {
     await submitReview(input);
     revalidatePath("/admin/reviews");
-    return ok(undefined, "Thank you — your review will appear once it's approved.");
+    return ok(undefined, "Thank you for sharing your thoughts.");
   } catch (e) {
     return fail(e);
   }

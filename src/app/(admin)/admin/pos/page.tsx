@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { PosScreen } from "@/components/admin/pos/pos-screen";
-import { PosServiceWorker } from "@/components/admin/pos/pos-sw";
 import { buttonVariants } from "@/components/ui/button";
 import { requirePagePermission } from "@/lib/auth/session";
 import { getGiftCardSettings } from "@/modules/gift-cards/queries";
@@ -46,7 +45,6 @@ export default async function PosPage({ searchParams }: PageProps<"/admin/pos">)
         summary={summary}
         giftCards={giftSettings.atPos}
       />
-      <PosServiceWorker />
     </>
   );
 }

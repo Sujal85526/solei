@@ -133,6 +133,23 @@ export async function getPublicQuote(token: string): Promise<PublicQuote | null>
   return (data as unknown as PublicQuote | null) ?? null;
 }
 
+/** The orders (deposit / balance) of the booking behind a quote link. */
+export async function quoteOrderIds(token: string): Promise<string[]> {
+  if (!TOKEN.test(token)) return [];
+  const admin = createAdminClient();
+  const { data: quote } = await admin
+    .from("booking_quotes")
+    .select("booking_id")
+    .eq("token", token)
+    .maybeSingle();
+  if (!quote) return [];
+  const { data: orders } = await admin
+    .from("orders")
+    .select("id")
+    .eq("booking_id", quote.booking_id);
+  return (orders ?? []).map((o) => o.id);
+}
+
 export async function acceptQuote(token: string) {
   if (!TOKEN.test(token)) throw new UserError("Quotation not found.");
   const { data, error } = await createPublicClient()

@@ -108,7 +108,7 @@ async function findUser(email: string): Promise<User | null> {
 }
 
 /** Enter the emailed code: verifies the email and signs the customer in. */
-export async function verifyCode(input: unknown) {
+export async function verifyCode(input: unknown): Promise<User | null> {
   const v = codeSchema.parse(input);
   let token = v.code;
   const fixed = testCode();
@@ -124,12 +124,13 @@ export async function verifyCode(input: unknown) {
     token = data.properties.email_otp;
   }
   const supabase = await createClient();
-  const { error } = await supabase.auth.verifyOtp({
+  const { data, error } = await supabase.auth.verifyOtp({
     email: v.email,
     token,
     type: "recovery",
   });
   if (error) throw new UserError("That code is wrong or has expired. Ask for a new one.");
+  return data.user;
 }
 
 export async function resendCode(input: unknown, kind: "verify" | "reset") {

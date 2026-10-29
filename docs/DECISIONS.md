@@ -15,7 +15,7 @@ Open client questions are built as configurable defaults. Each row: what we chos
 | D9 | Booth availability limits | Overlap **warning**, no hard block | ❓ confirm | — |
 | D10 | Package prices | Placeholder prices | ❓ client to supply | booking packages admin |
 | D11 | Brand font "Nove" | Keep the web substitutes (Cormorant Garamond + Jost) | ✅ client 2026-10-15: use current | `src/app/fonts.ts` |
-| D12 | Payment gateway | Ziina (client 2026-10-15) behind `PaymentProvider`; Stripe/mock remain for tests | ⏳ Ziina API key | `src/providers/payment` |
+| D12 | Payment gateway | **Network International N-Genius** (client 2026-10-26, replaces Ziina — T101) behind `PaymentProvider`; Stripe/mock remain for tests; Ziina code removed | ⏳ NI sandbox key + outlet ref | `src/providers/payment` |
 
 ## Technical decisions
 - **T1 — Next.js 16 (App Router) with `cacheComponents`** as scaffolded by `create-next-app`; local docs in
@@ -296,8 +296,9 @@ Open client questions are built as configurable defaults. Each row: what we chos
   a booth sale is never blocked; close-out reconciles), `event_day` is the Asia/Dubai date of when the sale
   happened on the device (offline sales land on the right day), order status `completed`, then `settle_if_paid`.
 - **T80 — Offline**: every sale is written to IndexedDB before sending; the queue replays on reconnect / every
-  30 s; rejected sales stay visible until dismissed. A service worker (registered only from the POS page) caches
-  the POS page + static assets so it reopens offline; the app is installable (manifest, apple-touch icon).
+  30 s; rejected sales stay visible until dismissed. (The POS service worker and install manifest were removed
+  on 2026-10-26 — Chrome offered shoppers "Install Solei POS"; `public/sw.js` is now a stub that unregisters
+  itself on devices that had it. An open POS tab still queues sales offline.)
 - **T81 — Tap count**: tile, tile, Charge, Cash = 4 taps for a 2-perfume cash sale; customer phone is optional
   on the payment sheet (creates/links the customer for passport stamps).
 ## Solei Passport (milestone 15)
@@ -485,3 +486,23 @@ Open client questions are built as configurable defaults. Each row: what we chos
 - **P2-24 — PDF reports:** generated on the server with `pdf-lib` from the same report model as the Excel
   download (one renderer for every report); standard Helvetica, so non-Latin characters print as "?" until a
   brand font is embedded (Arabic is out of scope for Phase 2).
+
+## Payments: N-Genius (2026-10-26)
+- **T101 — Network International N-Genius replaces Ziina** (client is dropping Ziina). `NgeniusProvider`
+  (`src/providers/payment/ngenius.ts`) uses the hosted payment page only (no card data, no PCI scope):
+  access token from the portal's service-account key (cached ~5 min), a `PURCHASE` order in fils with the
+  customer's email + billing address (account name, delivery address, city or emirate, `AE`), redirect and
+  cancel URLs. Selected when `NGENIUS_API_KEY` is set (`NGENIUS_SANDBOX=1` = sandbox gateway). The Ziina
+  provider and its webhook script were removed (never live). No migration (`online_card`).
+- **NI webhooks are unsigned and never retried**, so (1) the webhook must carry our shared secret in the
+  custom header `x-solei-webhook-secret` (`NGENIUS_WEBHOOK_SECRET`, set in the portal), and the payload is
+  never trusted: the order is re-fetched from the NI API, and only `PURCHASED`/`CAPTURED` in AED for the
+  ordered amount marks it paid; (2) when the customer returns (`?paid=1` on the order or quote page), the
+  server asks NI too. Both go through `applyPaymentEvent` (`src/modules/checkout/payment-events.ts`):
+  `payment_events` dedupe on `<reference>:<state>`, then the idempotent `confirm_payment` / `fail_payment`,
+  so double processing never sends two emails or moves stock twice. Still "paid only from a verified
+  source": the source is NI's own API answer.
+- **Purchase terms on the checkout screen** (NI merchant terms §11.5): beside the pay button, with the
+  total on the button, a short returns summary taken from the owner-edited Help returns topic (an
+  "## At checkout" section if the owner adds one, else the first sentence of the policy), the refund method,
+  and links to the full Terms and Returns policy.

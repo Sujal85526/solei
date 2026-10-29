@@ -29,30 +29,58 @@ describe("createCustomerSchema", () => {
       emirate: "abu_dhabi",
       marketingConsent: true,
       source: "manual",
+      pastStamps: 0,
+      sendWelcome: false,
     });
   });
 
-  it("treats blank optional fields as null", () => {
+  it("takes earlier-order stickers and the welcome tick-box", () => {
+    const v = createCustomerSchema.parse({
+      name: "Noor",
+      email: "noor@example.com",
+      pastStamps: "4",
+      sendWelcome: "on",
+    });
+    expect(v).toMatchObject({ pastStamps: 4, sendWelcome: true });
+    expect(
+      createCustomerSchema.parse({ name: "Noor", email: "noor@example.com", pastStamps: "" })
+        .pastStamps,
+    ).toBe(0);
+    for (const bad of ["-1", "101", "2.5", "abc"]) {
+      expect(
+        createCustomerSchema.safeParse({ name: "Noor", email: "noor@example.com", pastStamps: bad })
+          .success,
+      ).toBe(false);
+    }
+  });
+
+  it("treats a blank phone, emirate and source as null / defaults", () => {
     const v = createCustomerSchema.parse({
       name: "Omar",
-      phone: "0559876543",
-      email: "",
+      phone: "",
+      email: "omar@example.com",
       emirate: "",
       source: "pos",
     });
-    expect(v).toMatchObject({ email: null, emirate: null, marketingConsent: false, source: "pos" });
+    expect(v).toMatchObject({
+      phone: null,
+      email: "omar@example.com",
+      emirate: null,
+      marketingConsent: false,
+      source: "pos",
+    });
   });
 
-  it("needs a name and a phone or email", () => {
+  it("needs a name and an email — a phone alone isn't enough", () => {
     const r = createCustomerSchema.safeParse({ name: "A", phone: "", email: "" });
     expect(r.success).toBe(false);
     const paths = r.error!.issues.map((i) => i.path.join("."));
     expect(paths).toContain("name");
-    const r2 = createCustomerSchema.safeParse({ name: "Amal", phone: "", email: "" });
-    expect(r2.error!.issues[0]).toMatchObject({
-      path: ["phone"],
-      message: "Enter a phone number or an email",
-    });
+    expect(paths).toContain("email");
+    const phoneOnly = createCustomerSchema.safeParse({ name: "Amal", phone: "0501234567" });
+    expect(phoneOnly.success).toBe(false);
+    expect(phoneOnly.error!.issues[0]).toMatchObject({ path: ["email"] });
+    expect(phoneOnly.error!.issues[0].message).toMatch(/Enter the customer's email/);
   });
 
   it("rejects invalid phones and emails with friendly messages", () => {
@@ -64,11 +92,15 @@ describe("createCustomerSchema", () => {
 
   it("rejects unknown emirates and sources", () => {
     expect(
-      createCustomerSchema.safeParse({ name: "Amal", phone: "0501234567", emirate: "doha" })
-        .success,
+      createCustomerSchema.safeParse({
+        name: "Amal",
+        email: "amal@example.com",
+        emirate: "doha",
+      }).success,
     ).toBe(false);
     expect(
-      createCustomerSchema.safeParse({ name: "Amal", phone: "0501234567", source: "x" }).success,
+      createCustomerSchema.safeParse({ name: "Amal", email: "amal@example.com", source: "x" })
+        .success,
     ).toBe(false);
   });
 });
@@ -79,7 +111,7 @@ describe("updateContactSchema", () => {
       id: ID,
       name: "Layla",
       phone: "+971501234567",
-      email: "",
+      email: "Layla@Example.com",
       emirate: "dubai",
       line1: "Villa 12",
       line2: "",
@@ -93,13 +125,15 @@ describe("updateContactSchema", () => {
       city: "Dubai",
       emirate: "dubai",
     });
-    const none = updateContactSchema.parse({ id: ID, name: "", phone: "0501234567" });
-    expect(none).toMatchObject({ name: null, address: null, email: null });
+    expect(v.email).toBe("layla@example.com");
+    const none = updateContactSchema.parse({ id: ID, name: "", email: "a@b.co" });
+    expect(none).toMatchObject({ name: null, phone: null, address: null, email: "a@b.co" });
   });
 
-  it("still requires a phone or email", () => {
+  it("requires an email (a phone alone is not enough)", () => {
     expect(
-      updateContactSchema.safeParse({ id: ID, name: "Layla", phone: "", email: "" }).success,
+      updateContactSchema.safeParse({ id: ID, name: "Layla", phone: "0501234567", email: "" })
+        .success,
     ).toBe(false);
   });
 });

@@ -32,6 +32,8 @@ export type CustomerPickerProps = {
   canCreate?: boolean;
   /** `customers.source` for customers created here: "pos" at events, "whatsapp"/"direct" for manual orders. */
   source?: CustomerSource;
+  /** Customers list: also ask for earlier-order stickers and offer the welcome email. */
+  welcome?: boolean;
   label?: string;
   placeholder?: string;
   autoFocus?: boolean;
@@ -49,6 +51,7 @@ export function CustomerPicker({
   onSelect,
   canCreate = true,
   source = "manual",
+  welcome,
   label = "Customer",
   placeholder = "Phone, name or email",
   autoFocus,
@@ -133,6 +136,7 @@ export function CustomerPicker({
         <QuickCreateCustomerForm
           initialQuery={creating}
           source={source}
+          welcome={welcome}
           onCreated={choose}
           onCancel={() => {
             setCreating(null);
@@ -261,11 +265,13 @@ function prefill(query: string) {
 export function QuickCreateCustomerForm({
   initialQuery = "",
   source = "manual",
+  welcome,
   onCreated,
   onCancel,
 }: {
   initialQuery?: string;
   source?: CustomerSource;
+  welcome?: boolean;
   onCreated: (customer: CustomerOption) => void;
   onCancel?: () => void;
 }) {
@@ -345,7 +351,13 @@ export function QuickCreateCustomerForm({
             className="h-12 text-base"
           />
         </Field>
-        <Field label="Email" htmlFor={id("email")} error={errors.email}>
+        <Field
+          label="Email"
+          htmlFor={id("email")}
+          error={errors.email}
+          required
+          hint="Check it's spelled right — their Solei Passport links to this email."
+        >
           <Input
             {...aria("email")}
             type="email"
@@ -368,6 +380,35 @@ export function QuickCreateCustomerForm({
           <input type="checkbox" data-field="marketingConsent" className="accent-burgundy size-5" />
           Agrees to marketing messages
         </label>
+        {welcome ? (
+          <>
+            <Field
+              label="Stickers already collected"
+              htmlFor={id("pastStamps")}
+              error={errors.pastStamps}
+              hint="From their earlier orders — leave 0 if none."
+            >
+              <Input
+                {...aria("pastStamps")}
+                type="number"
+                min={0}
+                max={100}
+                inputMode="numeric"
+                defaultValue={0}
+                className="h-12 text-base"
+              />
+            </Field>
+            <label className="flex min-h-12 items-center gap-3 text-sm sm:self-end">
+              <input
+                type="checkbox"
+                data-field="sendWelcome"
+                defaultChecked
+                className="accent-burgundy size-5"
+              />
+              Email them a welcome to the website now
+            </label>
+          </>
+        ) : null}
       </div>
       {state && !state.ok && !Object.keys(errors).length ? (
         <p className="text-destructive text-sm">{state.error}</p>

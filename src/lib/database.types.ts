@@ -4396,6 +4396,7 @@ export type Database = {
         | "umm_al_quwain"
         | "ras_al_khaimah"
         | "fujairah"
+        | "western_region"
       employment_status:
         "full_time" | "part_time" | "freelance" | "event_only" | "former"
       event_expense_category:
@@ -4632,6 +4633,7 @@ export const Constants = {
         "umm_al_quwain",
         "ras_al_khaimah",
         "fujairah",
+        "western_region",
       ],
       employment_status: [
         "full_time",

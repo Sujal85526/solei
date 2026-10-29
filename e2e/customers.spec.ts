@@ -27,7 +27,7 @@ async function seedCustomer(name: string) {
         source: "whatsapp",
         marketing_consent: true,
         marketing_consent_at: new Date().toISOString(),
-        marketing_channels: ["whatsapp"],
+        marketing_channels: ["email", "whatsapp"],
       })
       .select("id")
       .single();
@@ -134,6 +134,8 @@ test.describe("customers CRM", () => {
     // Phone is prefilled from the search; add a name and save.
     await expect(dialog.getByLabel("Phone")).toHaveValue(phone.local);
     await dialog.getByLabel("Name").fill(name);
+    // Email is required for staff-added customers (it's how they later claim their passport).
+    await dialog.getByLabel("Email").fill(`e2e-${Date.now()}@example.com`);
     await dialog.getByLabel("Emirate").selectOption({ label: "Dubai" });
     await dialog.getByLabel("Agrees to marketing messages").check();
     await dialog.getByRole("button", { name: "Save customer" }).click();

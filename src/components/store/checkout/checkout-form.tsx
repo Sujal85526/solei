@@ -183,7 +183,6 @@ export function CheckoutFlow({
 
       <div className="flex-1 lg:order-1">
         <div className="mx-auto w-full max-w-xl px-5 py-10 sm:px-10 lg:me-0 lg:py-14 lg:ps-10 lg:pe-14">
-          <Steps current={account ? "delivery" : "account"} />
           {account ? (
             <DeliveryForm
               account={account}
@@ -205,49 +204,6 @@ export function CheckoutFlow({
         </div>
       </div>
     </div>
-  );
-}
-
-function Steps({ current }: { current: "account" | "delivery" }) {
-  const steps = [
-    { key: "bag", label: c.steps.bag },
-    { key: "account", label: c.steps.account },
-    { key: "delivery", label: c.steps.delivery },
-    { key: "payment", label: c.steps.payment },
-  ] as const;
-  const at = steps.findIndex((s) => s.key === current);
-  return (
-    <nav aria-label="Checkout steps">
-      <ol className="flex flex-wrap items-center gap-x-2 gap-y-1 text-[0.65rem] tracking-[0.2em] uppercase">
-        {steps.map((s, i) => (
-          <li key={s.key} className="flex items-center gap-2">
-            {s.key === "bag" ? (
-              <button
-                type="button"
-                onClick={cartDrawer.open}
-                className="text-muted-foreground hover:text-primary uppercase"
-              >
-                {s.label}
-              </button>
-            ) : (
-              <span
-                aria-current={i === at ? "step" : undefined}
-                className={cn(
-                  i === at ? "text-primary" : i < at ? "text-muted-foreground" : "text-[#b9a5ab]",
-                )}
-              >
-                {s.label}
-              </span>
-            )}
-            {i < steps.length - 1 ? (
-              <span aria-hidden className="text-[#c9b6bb]">
-                /
-              </span>
-            ) : null}
-          </li>
-        ))}
-      </ol>
-    </nav>
   );
 }
 
@@ -277,14 +233,18 @@ function DeliveryForm({
   const router = useRouter();
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [formError, setFormError] = useState<string | null>(null);
+  const [agreed, setAgreed] = useState(false);
   const [submitting, startSubmit] = useTransition();
   const [signingOut, startSignOut] = useTransition();
   // Idempotency key for this checkout, created on first submit (re-submits reuse it).
   const clientUuid = useRef<string | null>(null);
   const pricing = details?.pricing;
+  // After points / a gift card (null when neither is applied).
+  const due = details ? amountDue(details) : null;
 
   function onSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
+    if (!agreed) return setFormError(c.policy.mustAgree);
     const fd = Object.fromEntries(new FormData(e.currentTarget));
     setErrors({});
     setFormError(null);
@@ -383,6 +343,74 @@ function DeliveryForm({
       </section>
 
       <div className="flex flex-col gap-4">
+        {/* On phones the order summary is folded away at the top — show the sums by the button. */}
+        <dl className="numeric border-border flex flex-col gap-2 border-t pt-5 text-sm lg:hidden">
+          <div className="flex justify-between">
+            <dt className="text-muted-foreground">{c.subtotal}</dt>
+            <dd>{pricing ? formatAED(pricing.subtotalFils) : "—"}</dd>
+          </div>
+          {couponCode && pricing?.discountFils ? (
+            <div className="flex justify-between">
+              <dt className="text-muted-foreground">{c.discount}</dt>
+              <dd className="text-primary">−{formatAED(pricing.discountFils)}</dd>
+            </div>
+          ) : null}
+          <div className="flex justify-between">
+            <dt className="text-muted-foreground">{c.shipping}</dt>
+            <dd>
+              {pricing?.deliveryFeeFils == null
+                ? c.chooseEmirate
+                : pricing.deliveryFeeFils === 0
+                  ? c.free
+                  : formatAED(pricing.deliveryFeeFils)}
+            </dd>
+          </div>
+          <div className="flex items-baseline justify-between pt-1">
+            <dt className="font-display text-lg">{c.total}</dt>
+            <dd className="font-display text-primary text-xl">
+              {pricing ? formatAED(pricing.totalFils) : "—"}
+            </dd>
+          </div>
+          {due !== null ? (
+            <div className="flex justify-between font-medium">
+              <dt>{c.toPay}</dt>
+              <dd>{formatAED(due)}</dd>
+            </div>
+          ) : null}
+        </dl>
+        {/* Purchase terms by the total, where the customer commits (card-acquirer requirement):
+            a tick to agree, linking out to the Terms and Returns policy. */}
+        <div className="border-border flex flex-col gap-2 border-t pt-5">
+          <label className="flex items-start gap-3 text-sm">
+            <input
+              type="checkbox"
+              checked={agreed}
+              onChange={(e) => {
+                setAgreed(e.target.checked);
+                if (e.target.checked) setFormError(null);
+              }}
+              className="accent-primary mt-0.5 size-4 shrink-0"
+            />
+            <span className="text-foreground/85">
+              {c.policy.agree}{" "}
+              <Link
+                href="/help?tab=terms"
+                target="_blank"
+                className="hover:text-primary underline underline-offset-4"
+              >
+                {c.policy.terms}
+              </Link>{" "}
+              {c.policy.and}{" "}
+              <Link
+                href="/help?tab=returns"
+                target="_blank"
+                className="hover:text-primary underline underline-offset-4"
+              >
+                {c.policy.returnsLink}
+              </Link>
+            </span>
+          </label>
+        </div>
         {formError ? (
           <p role="alert" className="bg-destructive/8 text-destructive px-4 py-3 text-sm">
             {formError}
@@ -397,11 +425,12 @@ function DeliveryForm({
           <Lock className="size-3.5" />
           {submitting || redirecting
             ? c.paying
-            : details && amountDue(details) === 0
+            : due === 0
               ? c.placeOrder
-              : c.pay}
+              : pricing
+                ? `${c.pay} · ${formatAED(due ?? pricing.totalFils)}`
+                : c.pay}
         </Button>
-        <p className="text-muted-foreground text-xs leading-relaxed">{c.payNote}</p>
         <button
           type="button"
           onClick={cartDrawer.open}

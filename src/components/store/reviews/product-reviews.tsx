@@ -30,9 +30,7 @@ export async function ProductReviews({ productId }: { productId: string }) {
               <Stars rating={average} size="size-4" />
               <span className="text-foreground/70 text-sm">{r.count(count)}</span>
             </p>
-          ) : (
-            <p className="text-foreground/70 text-sm">{r.none}</p>
-          )}
+          ) : null}
           <div className="mt-2 w-full">
             <ReviewComposer productId={productId} />
           </div>

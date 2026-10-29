@@ -23,6 +23,7 @@ import {
 } from "@/modules/storefront/queries";
 import { paymentProvider } from "@/providers/payment";
 import type { CheckoutLine } from "@/providers/payment/types";
+import { billingFromOrder } from "./billing";
 import { orderToken } from "./order-link";
 import { checkoutSchema, fullName } from "./schema";
 
@@ -206,7 +207,11 @@ export async function startPayment(
 ): Promise<string> {
   const admin = createAdminClient();
   const [{ data: order }, { data: summary }] = await Promise.all([
-    admin.from("orders").select("id, number, status, contact_email").eq("id", orderId).single(),
+    admin
+      .from("orders")
+      .select("id, number, status, contact_email, contact_name, delivery_address, delivery_emirate")
+      .eq("id", orderId)
+      .single(),
     admin.from("order_payment_summary").select("outstanding_fils").eq("order_id", orderId).single(),
   ]);
   if (!order) throw new UserError("Order not found.");
@@ -228,6 +233,7 @@ export async function startPayment(
     lines,
     amountFils: outstanding,
     customerEmail: opts.email ?? order.contact_email,
+    billing: billingFromOrder(order),
     successUrl,
     cancelUrl,
   });

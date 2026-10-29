@@ -19,6 +19,7 @@ export const emirateLabels: Record<Emirate, string> = {
   umm_al_quwain: "Umm Al Quwain",
   ras_al_khaimah: "Ras Al Khaimah",
   fujairah: "Fujairah",
+  western_region: "Western Region",
 };
 
 export const sourceLabels: Record<CustomerSource, string> = {
@@ -75,13 +76,21 @@ export const optionalEmail = z
   )
   .transform((v) => v ?? null);
 
+/**
+ * Staff-added customers must have an email: it's how they later claim their Solei Passport (an
+ * account verified with the same email is linked to this record) and how stamp emails reach them.
+ */
+export const requiredEmail = z.preprocess(
+  (v) => (typeof v === "string" ? v.trim().toLowerCase() : v),
+  z
+    .string("Enter the customer's email")
+    .min(1, "Enter the customer's email — their Solei Passport links to it")
+    .pipe(z.email("Enter a valid email").max(254)),
+);
+
 const optionalEmirate = z
   .preprocess(blankToNull, z.enum(emirates).nullable().optional())
   .transform((v) => v ?? null);
-
-const contactRequired = (v: { phone: string | null; email: string | null }) =>
-  Boolean(v.phone || v.email);
-const contactIssue = { message: "Enter a phone number or an email", path: ["phone"] };
 
 // ---------------------------------------------------------------------------------------------
 // Quick-create (picker, list page, POS, manual orders)
@@ -90,12 +99,26 @@ export const createCustomerSchema = z
   .object({
     name: z.string().trim().min(2, "Enter the customer's name").max(80),
     phone: optionalPhone,
-    email: optionalEmail,
+    email: requiredEmail,
     emirate: optionalEmirate,
     marketingConsent: checkbox,
     source: z.preprocess(blankToNull, z.enum(customerSources).nullable().optional()),
+    /** Stickers from earlier orders (Instagram / WhatsApp), added as the customer is created. */
+    pastStamps: z
+      .preprocess(
+        blankToNull,
+        z.coerce
+          .number("Enter a number")
+          .int("Whole stickers only")
+          .min(0, "Can't be negative")
+          .max(100, "Up to 100")
+          .nullable()
+          .optional(),
+      )
+      .transform((v) => v ?? 0),
+    /** Email the "welcome to the website" message as soon as the customer is saved. */
+    sendWelcome: checkbox,
   })
-  .refine(contactRequired, contactIssue)
   .transform((v) => ({ ...v, source: v.source ?? "manual" }));
 export type CreateCustomerInput = z.input<typeof createCustomerSchema>;
 export type CreateCustomerData = z.output<typeof createCustomerSchema>;
@@ -119,14 +142,13 @@ export const updateContactSchema = z
     id: z.uuid(),
     name: z.preprocess(blankToNull, z.string().trim().min(2, "Enter a name").max(80).nullable()),
     phone: optionalPhone,
-    email: optionalEmail,
+    email: requiredEmail,
     emirate: optionalEmirate,
     line1: optionalText(160),
     line2: optionalText(160),
     area: optionalText(80),
     city: optionalText(80),
   })
-  .refine(contactRequired, contactIssue)
   .transform(({ line1, line2, area, city, ...rest }) => ({
     ...rest,
     address:

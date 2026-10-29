@@ -4,12 +4,18 @@ import { revalidatePath, updateTag } from "next/cache";
 import { fail, ok, type ActionResult } from "@/lib/action-result";
 import { BOOKING_CONFIG_TAG } from "./queries";
 import type { ConfigKind } from "./schema";
+import { confirmOnReturn } from "@/modules/checkout/payment-events";
 import * as bookings from "./service";
 import type { Estimate } from "./types";
 
 const entries = (fd: FormData) => Object.fromEntries(fd.entries());
 
 // ─── Public ─────────────────────────────────────────────────────────────────────────────────
+
+/** Back from paying a deposit/balance: ask the provider (see confirmOrderReturnAction). */
+export async function confirmQuoteReturnAction(token: string) {
+  await confirmOnReturn(await bookings.quoteOrderIds(token));
+}
 
 export async function previewEstimateAction(input: unknown): Promise<ActionResult<Estimate>> {
   try {

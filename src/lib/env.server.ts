@@ -5,13 +5,25 @@ import { z } from "zod";
 const serverSchema = z
   .object({
     SUPABASE_SECRET_KEY: z.string().min(1),
-    PAYMENT_PROVIDER: z.enum(["stripe", "ziina", "mock"]).optional(),
-    /** Ziina (client's gateway): API key with write_payment_intents; ZIINA_TEST_MODE=1 for test payments. */
-    ZIINA_API_KEY: z
+    PAYMENT_PROVIDER: z.enum(["ngenius", "stripe", "mock"]).optional(),
+    /**
+     * Network International N-Genius (client's gateway): the portal's service-account API key (used
+     * as-is), the outlet reference, NGENIUS_SANDBOX=1 for the sandbox gateway, and the shared secret
+     * sent in the webhook's custom header (NGENIUS_WEBHOOK_HEADER).
+     */
+    NGENIUS_API_KEY: z
       .string()
       .optional()
       .or(z.literal("").transform(() => undefined)),
-    ZIINA_TEST_MODE: z.enum(["0", "1"]).optional(),
+    NGENIUS_OUTLET_REF: z
+      .string()
+      .optional()
+      .or(z.literal("").transform(() => undefined)),
+    NGENIUS_SANDBOX: z.enum(["0", "1"]).optional(),
+    NGENIUS_WEBHOOK_SECRET: z
+      .string()
+      .optional()
+      .or(z.literal("").transform(() => undefined)),
     STRIPE_SECRET_KEY: z
       .string()
       .startsWith("sk_test_", "Only Stripe test keys are allowed in Phase 1")
@@ -64,7 +76,7 @@ const serverSchema = z
     ...env,
     PAYMENT_PROVIDER:
       env.PAYMENT_PROVIDER ??
-      (env.ZIINA_API_KEY ? "ziina" : env.STRIPE_SECRET_KEY ? "stripe" : "mock"),
+      (env.NGENIUS_API_KEY ? "ngenius" : env.STRIPE_SECRET_KEY ? "stripe" : "mock"),
   }))
   .superRefine((env, ctx) => {
     if (

@@ -57,3 +57,35 @@ export function splitMarkers(text: string): { text: string; marker: boolean }[] 
         : { text: part, marker: false },
     );
 }
+
+/**
+ * One-line returns summary for the checkout screen, taken from the owner-edited returns topic:
+ * the text under a "## At checkout" (or "## In short" / "## Summary") heading when there is one,
+ * else the first sentence of the first section. `[to confirm]` notes are dropped. Null if empty.
+ */
+export function policySummary(body: string): string | null {
+  const blocks = parseHelpBody(body);
+  const text = (b: HelpBlock) => (b.type === "paragraph" ? b.text : "");
+  const at = blocks.findIndex(
+    (b) => b.type === "heading" && /^(at checkout|in short|summary)$/i.test(b.text),
+  );
+  let summary = "";
+  if (at >= 0) {
+    const end = blocks.findIndex((b, i) => i > at && b.type === "heading");
+    summary = blocks
+      .slice(at + 1, end < 0 ? undefined : end)
+      .map(text)
+      .filter(Boolean)
+      .join(" ");
+  } else {
+    const first = blocks.findIndex((b) => b.type === "heading");
+    const para = blocks.slice(first + 1).find((b) => b.type === "paragraph");
+    summary = para ? (text(para).match(/^.+?[.!?](?=\s|$)/)?.[0] ?? text(para)) : "";
+  }
+  summary = summary
+    .replace(/\[[^\]\n]*\]/g, "")
+    .replace(/\s+/g, " ")
+    .replace(/\s+([.,;:!?])/g, "$1")
+    .trim();
+  return summary || null;
+}

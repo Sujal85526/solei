@@ -11,7 +11,9 @@ import {
 } from "@/components/admin/orders/order-badges";
 import { PassportPanel } from "@/components/admin/customers/passport-panel";
 import { PointsPanel } from "@/components/admin/customers/points-panel";
+import { SendWelcomeButton } from "@/components/admin/customers/welcome-email";
 import {
+  DeleteCustomerButton,
   EditContactDialog,
   NotesForm,
   OptOutButton,
@@ -27,6 +29,7 @@ import { formatAED } from "@/lib/money";
 import { can } from "@/lib/permissions";
 import { formatPhone } from "@/lib/phone";
 import { customerOrders, getCustomer } from "@/modules/customers/queries";
+import { welcomeSentAt } from "@/modules/customers/welcome";
 import {
   averageOrderFils,
   channelLabel,
@@ -55,9 +58,10 @@ export default async function CustomerPage({ params }: PageProps<"/admin/custome
   const canManage = can(staff.permissions, "customers.manage");
   const canSeeOrders = can(staff.permissions, "orders.view");
 
-  const [data, orders] = await Promise.all([
+  const [data, orders, welcomedAt] = await Promise.all([
     getCustomer(id),
     canSeeOrders ? customerOrders(id) : Promise.resolve([]),
+    welcomeSentAt(id),
   ]);
   if (!data) notFound();
   const { customer: c, stats } = data;
@@ -206,6 +210,29 @@ export default async function CustomerPage({ params }: PageProps<"/admin/custome
             </dl>
           </AdminSection>
 
+          <AdminSection
+            title="Welcome email"
+            description="Welcomes a customer you added by hand to the website, with their sticker count."
+          >
+            <div className="flex flex-col items-start gap-3 text-sm">
+              <p className="text-muted-foreground">
+                {welcomedAt
+                  ? `Sent on ${formatBusinessDate(welcomedAt, dateTime)}.`
+                  : "Not sent yet."}
+              </p>
+              {!canManage ? null : c.email ? (
+                <SendWelcomeButton
+                  id={c.id}
+                  name={c.name}
+                  email={c.email}
+                  alreadySent={Boolean(welcomedAt)}
+                />
+              ) : (
+                <p>Add an email to this customer first — the welcome goes by email.</p>
+              )}
+            </div>
+          </AdminSection>
+
           <AdminSection title="Marketing">
             <div className="flex flex-col gap-3 text-sm">
               <div>
@@ -242,6 +269,15 @@ export default async function CustomerPage({ params }: PageProps<"/admin/custome
               ) : null}
             </div>
           </AdminSection>
+
+          {canManage ? (
+            <AdminSection
+              title="Delete customer"
+              description="Removes this customer, their stickers and their login. Orders stay in your records."
+            >
+              <DeleteCustomerButton id={c.id} name={title} />
+            </AdminSection>
+          ) : null}
 
           {/* Streams in on its own so the customer details don't wait for the passport. */}
           <Suspense fallback={<Skeleton className="h-64 rounded-xl" />}>

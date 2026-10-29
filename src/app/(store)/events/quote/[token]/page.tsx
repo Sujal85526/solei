@@ -8,6 +8,7 @@ import { QuoteActions } from "@/components/store/events/quote-actions";
 import { eventsCopy as c } from "@/content/events";
 import { formatBusinessDate } from "@/lib/dates";
 import { formatAED } from "@/lib/money";
+import { confirmQuoteReturnAction } from "@/modules/bookings/actions";
 import { getPublicQuote } from "@/modules/bookings/service";
 
 export const metadata: Metadata = { title: c.quote.metaTitle, robots: { index: false } };
@@ -157,7 +158,7 @@ async function QuoteView({ params, searchParams }: PageProps<"/events/quote/[tok
             <p className="font-display text-burgundy flex items-center gap-3 text-2xl">
               <Clock className="size-5" strokeWidth={1.5} /> {c.quote.confirming}
             </p>
-            <AwaitPayment />
+            <AwaitPayment check={confirmQuoteReturnAction.bind(null, token)} />
           </div>
         ) : q.status === "accepted" ? (
           <div className="mb-6" role="status">

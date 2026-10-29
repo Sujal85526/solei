@@ -50,9 +50,12 @@ export function OrdersList({ rows }: { rows: OrderListRow[] }) {
           </thead>
           <tbody className="divide-y">
             {rows.map((o) => (
-              <tr key={o.id} className="hover:bg-muted/30">
+              <tr key={o.id} className="hover:bg-muted/30 relative">
                 <th scope="row" className="px-4 py-3 text-start font-normal">
-                  <Link href={`/admin/orders/${o.id}`} className="font-medium hover:underline">
+                  <Link
+                    href={`/admin/orders/${o.id}`}
+                    className="font-medium after:absolute after:inset-0 hover:underline"
+                  >
                     {o.number}
                   </Link>
                   <span className="numeric text-muted-foreground block text-xs">

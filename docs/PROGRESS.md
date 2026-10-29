@@ -252,7 +252,7 @@ domain verified (eu-west-1), sending key "Solei website (Vercel)" (Keychain `sol
 = soleiperfumes.com (+ redirect entries). ⏳ First real email not yet tested end-to-end. Supabase free-project
 limit counts orgs where you're Owner/Admin — client upgrading Solei to Pro at launch frees your slot.
 
-**Still needed from the client (not blocking):** Ziina API key (`PAYMENT_PROVIDER=ziina`, `ZIINA_API_KEY`, then `pnpm ziina:webhook https://<site>`), dark product
+**Still needed from the client (not blocking):** dark product
 photography (later), optional delivery-time / refund-timeline / passport reward rules, Dukhoon products?
 
 **Before launch (ours):** separate production Supabase project, re-enable 2FA for owner/manager, remove
@@ -260,10 +260,36 @@ photography (later), optional delivery-time / refund-timeline / passport reward 
 next steps (account_user_id column on orders, stored stock balances) are in DECISIONS / this file.
 
 ## Carry-overs
-- **Ziina payments (client's gateway):** code is ready (`src/providers/payment/ziina.ts`). To go live, set on
-  Vercel `PAYMENT_PROVIDER=ziina`, `ZIINA_API_KEY=…` (token with `write_payment_intents`; `ZIINA_TEST_MODE=1`
-  first for test payments), then run once `ZIINA_API_KEY=… pnpm ziina:webhook https://<site>`. Until then the
-  site keeps the mock test checkout.
+- **Payments: N-Genius replaces Ziina** (DECISIONS T101; Ziina code removed). **LIVE on soleiperfumes.com
+  since 2026-10-27** — `NGENIUS_SANDBOX=0`, live service account `solei-website`, live outlet ref
+  `5fdb5c00-37bf-4101-8161-a6694b1d0464` (the top-level merchant org GUID doesn't work as an outlet ref —
+  NI's hierarchy nests the real Outlet entity two levels down; see `solei-ngenius-sandbox` memory), webhook
+  `solei-orders-live` registered (checklist steps 1–6 done). **Real cards now charge real money.** First
+  pilot order confirmed paid (SOL-001499, AED 1, 2026-10-27). Still needed: the second pilot with the other
+  card brand, send both order IDs to ecomsupport@network.global, cancel pilot orders with restock, upload
+  the Solei logo under Branding in the portal (checklist steps 7–8).
+- **Pre-launch clean-up (2026-10-29):** the hosted DB was cleared of all test data in one transaction — every order,
+  payment, stock movement, loyalty stamp, review, notification and audit-log row; the 3 "Report Test" events and the
+  "Demo Pop-up"; the test products ("Solei Trial", "Test from dashboard"); all customers except Reem Alnaqbi and
+  sujal rajput; and the test logins (`client@solei.test`, `dev-bot@solei.test`, `*+shop`, kushal, aryan, …).
+  Kept: the 8 real products (Main stock numbers unchanged, one "Opening stock (launch)" entry each), settings,
+  delivery zones, policies, templates, loyalty/booking config, "The Edit" event, and 3 Owners (Sujal, CityReach
+  Admin, Solei Perfumes). Order numbers continue from SOL-001504 (sequence not reset). A full data backup is at
+  `~/personal/solei-backups/` (outside the repo, contains customer data). The two live pilot payments
+  (SOL-001499 AED 1, SOL-001503 AED 31) still need refunding in the N-Genius portal. The old Keychain test
+  passwords (`solei-client-test-password`, `solei-dev-bot-*`, `solei-shop-test-password`) no longer match any login.
+- **Known minor items:** checkout doesn't remember the mobile number; the "The Edit" event's location reads
+  "Emirates Placa Terrace" (typo).
+- **Western Region delivery (2026-10-29):** new `western_region` emirate + `delivery_zones` row (AED 50), migrations
+  `20261029000001/2`. They were applied to the hosted DB with `psql` (both idempotent), **not** `supabase db push`:
+  the hosted DB already has `phase-2`'s `20261024*` migrations that aren't on `main`, so `db push` refuses until
+  that branch merges — don't `migration repair` around it. Perfume variants were also changed 50 ml → 100 ml in the
+  DB (SKUs still `-50`); `seedSizes` in `src/modules/content/seed.ts` still says 50, so a fresh local seed differs.
+- **M17 TODO — product title vs. destination:** setting a product's Destination (for the passport stamp)
+  always swaps the storefront title to the destination's name (`src/app/(store)/products/[slug]/page.tsx`) —
+  by design for the Perfumes/All-over-sprays line (e.g. "Capri Perfume" shows as "CAPRI"), but it means a
+  product can't keep a Destination and show its own name. Would need a per-product toggle (migration + admin
+  checkbox + storefront tweak) if that's ever wanted — paused for now, not built.
 - ~~**Account test code:**~~ off on the live site since 2026-10-17 (Resend on, variable deleted on Vercel).
 - **Contact details (client 2026-10-16):** WhatsApp 050 470 8053, support + owner-alert email
   soleiperfumes@gmail.com, Instagram @solei.ad — in Admin → Settings → Contact details and in the
@@ -306,3 +332,20 @@ next steps (account_user_id column on orders, stored stock balances) are in DECI
   passport magic-link form.
 - **M17 (hardening):** Lighthouse mobile on `/` measured locally at perf 90–91, a11y 100, best-practices 96
   (404 prefetches of not-yet-built routes), SEO 100. Re-check with real client photography.
+
+## Go-live checklist — N-Genius payments
+Steps 1–6 done (2026-10-26/27, NI granted live portal access 2026-10-27). Next: step 7, the AED 1 pilot.
+1. Get the **sandbox** service-account API key and the outlet reference from the client's N-Genius portal.
+2. Set on Vercel: `NGENIUS_API_KEY`, `NGENIUS_OUTLET_REF`, `NGENIUS_SANDBOX=1`, `NGENIUS_WEBHOOK_SECRET`
+   (a long random string), and `PAYMENT_PROVIDER=ngenius` (or leave it empty).
+3. In the portal, register the webhook URL `https://soleiperfumes.com/api/webhooks/payments/ngenius` with
+   the custom header `x-solei-webhook-secret: <NGENIUS_WEBHOOK_SECRET>`, and ask Network International
+   to whitelist it (sandbox webhooks are whitelisted manually).
+4. Test with the NI sandbox test cards: one Visa and one Mastercard payment (plus a declined card), and
+   check that the order turns paid, the emails go once and the stock moves once.
+5. Send Network International the completed merchant checklist.
+6. Get the **live** kit: swap `NGENIUS_API_KEY` and `NGENIUS_OUTLET_REF` for the live ones, set
+   `NGENIUS_SANDBOX=0` (live gateway), and register the same webhook + header on the live outlet.
+7. Run one real AED 1 pilot with a Visa card and one with a Mastercard; send the order IDs to
+   ecomsupport@network.global.
+8. Upload the Solei logo under Branding in the portal (shown on the payment page).

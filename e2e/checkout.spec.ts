@@ -49,6 +49,7 @@ async function checkoutCapri(page: Page, qty: number, phone: string) {
   await page.getByLabel("Street address").fill("Villa 12, Street 4");
   await page.getByLabel("Area").fill("Al Bateen");
   await page.getByLabel("City").fill("Abu Dhabi");
+  await page.getByRole("checkbox", { name: /I agree to the/i }).check();
   const pay = page.getByRole("button", { name: /continue to payment/i });
   await expect(pay).toBeEnabled();
   await pay.click();

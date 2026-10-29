@@ -1,7 +1,8 @@
 import "server-only";
 import { UserError } from "@/lib/action-result";
 import { assertPermission } from "@/lib/auth/session";
-import { createClient } from "@/lib/supabase/server";
+import { createAdminClient, createClient } from "@/lib/supabase/server";
+import { adjustStamps } from "@/modules/loyalty/service";
 import { searchCustomerOptions, toOption, type CustomerOption } from "./queries";
 import {
   consentChannels,
@@ -11,6 +12,7 @@ import {
   updateContactSchema,
   updateNotesSchema,
 } from "./schema";
+import { sendWelcome } from "./welcome";
 
 /*
  * Customer writes go through the caller's session: RLS requires customers.manage and the
@@ -38,28 +40,36 @@ export async function searchCustomers(query: unknown): Promise<CustomerOption[]>
 }
 
 /**
- * Quick-create. Dedupes like `upsert_customer`: an existing customer with the same phone (or,
- * without a phone, the same email) is returned instead of creating a duplicate.
+ * Quick-create. Dedupes like `upsert_customer`: an existing customer with the same phone, or else the same
+ * email, is returned instead of creating a duplicate (one email = one record to link an account to).
  */
+export type WelcomeOutcome = { sent: true } | { sent: false; reason: string };
+
 export async function createCustomer(
   input: unknown,
-): Promise<{ customer: CustomerOption; existing: boolean }> {
+): Promise<{ customer: CustomerOption; existing: boolean; welcome?: WelcomeOutcome }> {
   await assertPermission("customers.manage");
   const v = createCustomerSchema.parse(input);
   const supabase = await createClient();
 
   const findExisting = async () => {
-    const q = supabase
-      .from("customer_summary")
-      .select("id, name, phone, email, emirate, marketing_consent, order_count");
-    const { data } = v.phone
-      ? await q.eq("phone", v.phone).maybeSingle()
-      : await q.eq("email", v.email!).order("created_at").limit(1).maybeSingle();
+    const select = () =>
+      supabase
+        .from("customer_summary")
+        .select("id, name, phone, email, emirate, marketing_consent, order_count");
+    if (v.phone) {
+      const { data } = await select().eq("phone", v.phone).maybeSingle();
+      if (data?.id) return toOption(data);
+    }
+    const { data } = await select().eq("email", v.email).order("created_at").limit(1).maybeSingle();
     return data?.id ? toOption(data) : null;
   };
 
   const existing = await findExisting();
   if (existing) return { customer: existing, existing: true };
+
+  // Check before saving anything, so a refusal can't leave a half-created customer behind.
+  if (v.pastStamps > 0) await assertPermission("loyalty.adjust");
 
   const now = new Date().toISOString();
   const { data, error } = await supabase
@@ -84,7 +94,37 @@ export async function createCustomer(
     }
     dbError(error);
   }
-  return { customer: toOption({ ...data, order_count: 0 }), existing: false };
+
+  if (v.pastStamps > 0) {
+    try {
+      await adjustStamps({
+        customerId: data.id,
+        direction: "add",
+        stamps: v.pastStamps,
+        reason: "Stickers from earlier orders (before the website)",
+      });
+    } catch (e) {
+      const why = e instanceof UserError ? ` (${e.message})` : "";
+      throw new UserError(
+        `Customer saved, but the stickers couldn't be added${why}. Open their page and use Adjust stamps.`,
+      );
+    }
+  }
+
+  // After the stickers, so the email shows the right count. A failed email never undoes the customer.
+  let welcome: WelcomeOutcome | undefined;
+  if (v.sendWelcome) {
+    try {
+      await sendWelcome(data.id);
+      welcome = { sent: true };
+    } catch (e) {
+      welcome = {
+        sent: false,
+        reason: e instanceof UserError ? e.message : "something went wrong",
+      };
+    }
+  }
+  return { customer: toOption({ ...data, order_count: 0 }), existing: false, welcome };
 }
 
 export async function updateContact(input: unknown) {
@@ -148,6 +188,40 @@ export async function recordConsent(input: unknown) {
     })
     .eq("id", v.id);
   if (error) dbError(error);
+}
+
+/**
+ * Wipe a customer: the record, their Passport stickers and their website login (so the same email
+ * can sign up again). Orders, bookings and reviews stay for the books, just no longer linked to
+ * anyone (the foreign keys set them to null). A staff login is never removed.
+ */
+export async function deleteCustomer(id: unknown) {
+  await assertPermission("customers.manage");
+  const customerId = optOutSchema.parse({ id }).id;
+  const supabase = await createClient();
+  const { data: customer, error: readError } = await supabase
+    .from("customers")
+    .select("id, auth_user_id")
+    .eq("id", customerId)
+    .maybeSingle();
+  if (readError) dbError(readError);
+  if (!customer) throw new UserError("Customer not found.");
+
+  const { error } = await supabase.from("customers").delete().eq("id", customerId);
+  if (error) dbError(error);
+
+  if (customer.auth_user_id) {
+    const admin = createAdminClient();
+    const { data: staff } = await admin
+      .from("staff_profiles")
+      .select("user_id")
+      .eq("user_id", customer.auth_user_id)
+      .maybeSingle();
+    if (!staff) {
+      const { error: authError } = await admin.auth.admin.deleteUser(customer.auth_user_id);
+      if (authError) console.error("customer login not removed", customerId, authError);
+    }
+  }
 }
 
 /** Opt-out: consent off on every channel, with the time it was recorded. */
