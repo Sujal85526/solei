@@ -40,10 +40,13 @@ export function CampaignEditor({
   campaign,
   segments,
   testRecipient,
+  eventNews,
 }: {
   campaign?: Draft;
   segments: SegmentOption[];
   testRecipient: string;
+  /** An event announcement: goes to the event news subscribers (this many), not a segment. */
+  eventNews?: number;
 }) {
   const [subject, setSubject] = useState(campaign?.subject ?? "");
   const [body, setBody] = useState(campaign?.body ?? "");
@@ -52,17 +55,21 @@ export function CampaignEditor({
   const e = useActionToast(state);
   const [testing, startTest] = useTransition();
 
-  const segment = segments.find((s) => s.id === segmentId);
+  const audience = eventNews === undefined ? "segment" : "event_news";
+  const segment =
+    eventNews === undefined
+      ? segments.find((s) => s.id === segmentId)
+      : { id: "", name: "event news subscribers", emailable: eventNews, total: eventNews };
   const preview = useMemo(
     () =>
       renderTemplate(
-        { subject, body: withFooter(body) },
+        { subject, body: withFooter(body, audience) },
         {
           first_name: "Layla",
           unsubscribe_link: `${process.env.NEXT_PUBLIC_SITE_URL ?? ""}/unsubscribe`,
         },
       ),
-    [subject, body],
+    [subject, body, audience],
   );
   // What's saved is what gets sent — sending checks the saved draft.
   const dirty =
@@ -70,7 +77,9 @@ export function CampaignEditor({
     subject !== campaign.subject ||
     body !== campaign.body ||
     segmentId !== (campaign.segmentId ?? "");
-  const problem = campaign ? readyToSend({ subject, body, segmentId: segmentId || null }) : null;
+  const problem = campaign
+    ? readyToSend({ subject, body, segmentId: segmentId || null, audience })
+    : null;
 
   return (
     <div className="grid grid-cols-1 gap-6 lg:grid-cols-2 [&>*]:min-w-0">
@@ -86,7 +95,14 @@ export function CampaignEditor({
           >
             <Input id="name" name="name" defaultValue={campaign?.name} className="h-11" />
           </Field>
+          {eventNews !== undefined ? (
+            <p className="text-sm">
+              <span className="text-muted-foreground">Send to: </span>
+              customers who asked for event news ({eventNews})
+            </p>
+          ) : null}
           <Field
+            className={eventNews !== undefined ? "hidden" : undefined}
             label="Send to"
             htmlFor="segmentId"
             error={e.segmentId}
@@ -187,7 +203,11 @@ export function CampaignEditor({
               <ConfirmButton
                 variant="default"
                 title={`Send to ${segment.emailable} customer${segment.emailable === 1 ? "" : "s"}?`}
-                description={`"${subject}" goes to everyone in ${segment.name} who agreed to email marketing. This can't be undone.`}
+                description={
+                  audience === "event_news"
+                    ? `"${subject}" goes to every customer who asked for event news. This can't be undone.`
+                    : `"${subject}" goes to everyone in ${segment.name} who agreed to email marketing. This can't be undone.`
+                }
                 confirmLabel="Send now"
                 action={() => sendCampaignAction(campaign.id!)}
               >

@@ -182,8 +182,16 @@ export const campaignFormSchema = z.object({
     .or(z.literal("").transform(() => undefined)),
 });
 
-export function readyToSend(c: { subject: string; body: string; segmentId: string | null }) {
-  if (!c.segmentId) return "Choose who it goes to.";
+/** segment = a saved segment (email marketing consent); event_news = event news subscribers. */
+export type CampaignAudience = "segment" | "event_news";
+
+export function readyToSend(c: {
+  subject: string;
+  body: string;
+  segmentId: string | null;
+  audience?: CampaignAudience;
+}) {
+  if (c.audience !== "event_news" && !c.segmentId) return "Choose who it goes to.";
   if (!c.subject.trim()) return "Write a subject line.";
   if (!c.body.trim()) return "Write the email.";
   return null;
@@ -195,6 +203,11 @@ export function readyToSend(c: { subject: string; body: string; segmentId: strin
 export const UNSUBSCRIBE_FOOTER =
   "You're receiving this because you agreed to hear from Solei. [Unsubscribe]({{unsubscribe_link}})";
 
-export const withFooter = (body: string) => `${body.trimEnd()}\n\n${UNSUBSCRIBE_FOOTER}`;
+/** Event announcements go to customers who asked for event news, not to every opt-in. */
+export const EVENT_NEWS_FOOTER =
+  "You're receiving this because you asked for news about Solei events. [Unsubscribe]({{unsubscribe_link}})";
+
+export const withFooter = (body: string, audience: CampaignAudience = "segment") =>
+  `${body.trimEnd()}\n\n${audience === "event_news" ? EVENT_NEWS_FOOTER : UNSUBSCRIBE_FOOTER}`;
 
 export const CAMPAIGN_VARIABLES = ["first_name"] as const;

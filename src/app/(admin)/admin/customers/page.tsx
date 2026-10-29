@@ -1,7 +1,8 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { ChevronRight, Download } from "lucide-react";
-import { ConsentBadge } from "@/components/admin/customers/badges";
+import { ConsentBadge, LabelBadge } from "@/components/admin/customers/badges";
+import { CustomersNav } from "@/components/admin/customers/customers-nav";
 import { NewCustomerDialog } from "@/components/admin/customers/new-customer-dialog";
 import { SendWelcomeBatchButton } from "@/components/admin/customers/welcome-email";
 import { PageHeader } from "@/components/admin/page-header";
@@ -14,6 +15,7 @@ import { formatAED } from "@/lib/money";
 import { can } from "@/lib/permissions";
 import { formatPhone } from "@/lib/phone";
 import { cn } from "@/lib/utils";
+import { customerLabels, labelNames } from "@/modules/customers/labels";
 import { CUSTOMERS_PAGE_SIZE, listCustomers } from "@/modules/customers/queries";
 import { WELCOME_BATCH, pendingWelcomeCount } from "@/modules/customers/welcome";
 import {
@@ -40,7 +42,12 @@ export default async function CustomersPage({ searchParams }: PageProps<"/admin/
   const pages = Math.max(1, Math.ceil(total / CUSTOMERS_PAGE_SIZE));
   const showStats = can(staff.permissions, "orders.view");
   const filtered = Boolean(
-    filters.q || filters.consent || filters.source || filters.emirate || filters.orders,
+    filters.q ||
+    filters.consent ||
+    filters.source ||
+    filters.emirate ||
+    filters.orders ||
+    filters.label,
   );
   const exportQuery = filtersToQuery(filters, { page: 1 });
 
@@ -62,6 +69,7 @@ export default async function CustomersPage({ searchParams }: PageProps<"/admin/
           </>
         }
       />
+      <CustomersNav canSettings={can(staff.permissions, "settings.manage")} />
 
       {toWelcome > 0 ? (
         <div className="bg-card mb-5 flex flex-wrap items-center justify-between gap-3 rounded-xl border p-4 text-sm">
@@ -78,7 +86,7 @@ export default async function CustomersPage({ searchParams }: PageProps<"/admin/
         method="get"
         role="search"
         aria-label="Filter customers"
-        className="mb-5 grid gap-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-[1fr_9rem_9rem_9rem_9rem_10rem_auto]"
+        className="mb-5 grid gap-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-[1fr_8rem_8rem_8rem_8rem_8rem_10rem_auto]"
       >
         <Input
           name="q"
@@ -88,6 +96,14 @@ export default async function CustomersPage({ searchParams }: PageProps<"/admin/
           aria-label="Search customers"
           className="h-10 sm:col-span-2 lg:col-span-3 xl:col-span-1"
         />
+        <NativeSelect name="label" defaultValue={filters.label ?? ""} aria-label="Label">
+          <option value="">Any label</option>
+          {customerLabels.map((l) => (
+            <option key={l} value={l}>
+              {labelNames[l]}
+            </option>
+          ))}
+        </NativeSelect>
         <NativeSelect
           name="consent"
           defaultValue={filters.consent ?? ""}
@@ -167,8 +183,9 @@ export default async function CustomersPage({ searchParams }: PageProps<"/admin/
                   className="hover:bg-muted/60 grid grid-cols-[1fr_auto] items-center gap-x-4 gap-y-1 px-4 py-3 md:grid-cols-[1fr_5rem_8rem_8rem_8rem_1rem] md:px-5"
                 >
                   <span className="min-w-0">
-                    <span className="block truncate font-medium">
-                      {c.name ?? c.email ?? "No name"}
+                    <span className="flex items-center gap-2">
+                      <span className="truncate font-medium">{c.name ?? c.email ?? "No name"}</span>
+                      {showStats ? <LabelBadge label={c.label} /> : null}
                     </span>
                     <span className="text-muted-foreground block truncate text-sm">
                       {[c.phone ? formatPhone(c.phone) : null, c.email].filter(Boolean).join(" · ")}

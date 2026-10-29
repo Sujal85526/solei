@@ -1,6 +1,7 @@
 import { z } from "zod";
 import { Constants } from "@/lib/database.types";
 import { normalizePhone } from "@/lib/phone";
+import { customerLabels } from "./labels";
 
 export const emirates = Constants.public.Enums.emirate;
 export const customerSources = Constants.public.Enums.customer_source;
@@ -210,6 +211,7 @@ export const customerFiltersSchema = z.object({
   source: oneOf(customerSources),
   emirate: oneOf(emirates),
   orders: oneOf(["yes", "no"] as const),
+  label: oneOf(customerLabels),
   sort: oneOf(sortKeys).transform((v): SortKey => v ?? "recent"),
   page: z.unknown().transform((v) => {
     const n = Number(typeof v === "string" ? v : 1);
@@ -232,6 +234,7 @@ export function parseCustomerFilters(
     source: get("source"),
     emirate: get("emirate"),
     orders: get("orders"),
+    label: get("label"),
     sort: get("sort"),
     page: get("page"),
   });
@@ -249,6 +252,7 @@ export function filtersToQuery(
   if (merged.source) params.set("source", merged.source);
   if (merged.emirate) params.set("emirate", merged.emirate);
   if (merged.orders) params.set("orders", merged.orders);
+  if (merged.label) params.set("label", merged.label);
   if (merged.sort && merged.sort !== "recent") params.set("sort", merged.sort);
   if (merged.page && merged.page > 1) params.set("page", String(merged.page));
   return params.toString();

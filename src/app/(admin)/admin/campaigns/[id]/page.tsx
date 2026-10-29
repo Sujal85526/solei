@@ -9,7 +9,12 @@ import { Badge } from "@/components/ui/badge";
 import { requirePagePermission } from "@/lib/auth/session";
 import { formatBusinessDate } from "@/lib/dates";
 import { sendCampaignAction } from "@/modules/campaigns/actions";
-import { campaignRecipients, getCampaign, listSegments } from "@/modules/campaigns/queries";
+import {
+  campaignRecipients,
+  eventNewsMembers,
+  getCampaign,
+  listSegments,
+} from "@/modules/campaigns/queries";
 import { withFooter } from "@/modules/campaigns/schema";
 import { renderTemplate } from "@/modules/notifications/render";
 
@@ -35,7 +40,11 @@ export default async function CampaignPage({ params }: PageProps<"/admin/campaig
   );
 
   if (campaign.status === "draft") {
-    const segments = await listSegments();
+    const eventNews = campaign.audience === "event_news";
+    const [segments, subscribers] = await Promise.all([
+      eventNews ? Promise.resolve([]) : listSegments(),
+      eventNews ? eventNewsMembers() : Promise.resolve([]),
+    ]);
     return (
       <>
         <PageHeader title={campaign.name} description={<>{back} · Draft</>} />
@@ -49,6 +58,7 @@ export default async function CampaignPage({ params }: PageProps<"/admin/campaig
             emailable: s.emailable,
           }))}
           testRecipient={staff.email}
+          eventNews={eventNews ? subscribers.length : undefined}
         />
       </>
     );
@@ -56,7 +66,7 @@ export default async function CampaignPage({ params }: PageProps<"/admin/campaig
 
   const recipients = await campaignRecipients(id);
   const email = renderTemplate(
-    { subject: campaign.subject, body: withFooter(campaign.body) },
+    { subject: campaign.subject, body: withFooter(campaign.body, campaign.audience) },
     {
       first_name: "Layla",
       unsubscribe_link: `${process.env.NEXT_PUBLIC_SITE_URL ?? ""}/unsubscribe`,

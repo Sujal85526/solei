@@ -581,9 +581,11 @@ export type Database = {
       }
       campaigns: {
         Row: {
+          audience: string
           body: string
           created_at: string
           created_by: string | null
+          event_id: string | null
           id: string
           name: string
           segment_id: string | null
@@ -595,9 +597,11 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          audience?: string
           body?: string
           created_at?: string
           created_by?: string | null
+          event_id?: string | null
           id?: string
           name: string
           segment_id?: string | null
@@ -609,9 +613,11 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          audience?: string
           body?: string
           created_at?: string
           created_by?: string | null
+          event_id?: string | null
           id?: string
           name?: string
           segment_id?: string | null
@@ -822,6 +828,72 @@ export type Database = {
         }
         Relationships: []
       }
+      customer_feedback: {
+        Row: {
+          assigned_to: string | null
+          created_at: string
+          created_by: string | null
+          customer_id: string | null
+          id: string
+          kind: Database["public"]["Enums"]["feedback_kind"]
+          message: string
+          order_id: string | null
+          rating: number | null
+          resolution: string | null
+          resolved_at: string | null
+          source: Database["public"]["Enums"]["feedback_source"]
+          status: Database["public"]["Enums"]["feedback_status"]
+          updated_at: string
+        }
+        Insert: {
+          assigned_to?: string | null
+          created_at?: string
+          created_by?: string | null
+          customer_id?: string | null
+          id?: string
+          kind?: Database["public"]["Enums"]["feedback_kind"]
+          message: string
+          order_id?: string | null
+          rating?: number | null
+          resolution?: string | null
+          resolved_at?: string | null
+          source?: Database["public"]["Enums"]["feedback_source"]
+          status?: Database["public"]["Enums"]["feedback_status"]
+          updated_at?: string
+        }
+        Update: {
+          assigned_to?: string | null
+          created_at?: string
+          created_by?: string | null
+          customer_id?: string | null
+          id?: string
+          kind?: Database["public"]["Enums"]["feedback_kind"]
+          message?: string
+          order_id?: string | null
+          rating?: number | null
+          resolution?: string | null
+          resolved_at?: string | null
+          source?: Database["public"]["Enums"]["feedback_source"]
+          status?: Database["public"]["Enums"]["feedback_status"]
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "customer_feedback_customer_id_fkey"
+            columns: ["customer_id"]
+            isOneToOne: false
+            referencedRelation: "customers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "customer_feedback_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "orders"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       customer_segments: {
         Row: {
           created_at: string
@@ -861,6 +933,9 @@ export type Database = {
           created_at: string
           email: string | null
           emirate: Database["public"]["Enums"]["emirate"] | null
+          event_news: boolean
+          event_news_at: string | null
+          feedback_optout_at: string | null
           id: string
           marketing_channels: string[]
           marketing_consent: boolean
@@ -880,6 +955,9 @@ export type Database = {
           created_at?: string
           email?: string | null
           emirate?: Database["public"]["Enums"]["emirate"] | null
+          event_news?: boolean
+          event_news_at?: string | null
+          feedback_optout_at?: string | null
           id?: string
           marketing_channels?: string[]
           marketing_consent?: boolean
@@ -899,6 +977,9 @@ export type Database = {
           created_at?: string
           email?: string | null
           emirate?: Database["public"]["Enums"]["emirate"] | null
+          event_news?: boolean
+          event_news_at?: string | null
+          feedback_optout_at?: string | null
           id?: string
           marketing_channels?: string[]
           marketing_consent?: boolean
@@ -1202,6 +1283,45 @@ export type Database = {
             columns: ["booking_id"]
             isOneToOne: false
             referencedRelation: "bookings"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      feedback_requests: {
+        Row: {
+          answered_at: string | null
+          customer_id: string | null
+          email: string
+          order_id: string
+          sent_at: string
+        }
+        Insert: {
+          answered_at?: string | null
+          customer_id?: string | null
+          email: string
+          order_id: string
+          sent_at?: string
+        }
+        Update: {
+          answered_at?: string | null
+          customer_id?: string | null
+          email?: string
+          order_id?: string
+          sent_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "feedback_requests_customer_id_fkey"
+            columns: ["customer_id"]
+            isOneToOne: false
+            referencedRelation: "customers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "feedback_requests_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: true
+            referencedRelation: "orders"
             referencedColumns: ["id"]
           },
         ]
@@ -3356,6 +3476,8 @@ export type Database = {
           contact_phone: string | null
           currency: string
           delivery_policy: string | null
+          feedback_request_days: number
+          feedback_requests_enabled: boolean
           free_delivery_threshold_fils: number | null
           gift_card_amounts_fils: number[]
           gift_card_expiry_months: number | null
@@ -3364,9 +3486,17 @@ export type Database = {
           id: number
           instagram_handle: string | null
           instagram_url: string | null
+          label_inactive_days: number
+          label_new_days: number
+          label_returning_orders: number
+          label_vip_months: number
+          label_vip_spend_fils: number
           legal_name: string | null
+          owner_event_digest_enabled: boolean
           prices_include_vat: boolean
           returns_policy: string | null
+          staff_reminder_hours: number
+          staff_reminders_enabled: boolean
           trn: string | null
           updated_at: string
           updated_by: string | null
@@ -3386,6 +3516,8 @@ export type Database = {
           contact_phone?: string | null
           currency?: string
           delivery_policy?: string | null
+          feedback_request_days?: number
+          feedback_requests_enabled?: boolean
           free_delivery_threshold_fils?: number | null
           gift_card_amounts_fils?: number[]
           gift_card_expiry_months?: number | null
@@ -3394,9 +3526,17 @@ export type Database = {
           id?: number
           instagram_handle?: string | null
           instagram_url?: string | null
+          label_inactive_days?: number
+          label_new_days?: number
+          label_returning_orders?: number
+          label_vip_months?: number
+          label_vip_spend_fils?: number
           legal_name?: string | null
+          owner_event_digest_enabled?: boolean
           prices_include_vat?: boolean
           returns_policy?: string | null
+          staff_reminder_hours?: number
+          staff_reminders_enabled?: boolean
           trn?: string | null
           updated_at?: string
           updated_by?: string | null
@@ -3416,6 +3556,8 @@ export type Database = {
           contact_phone?: string | null
           currency?: string
           delivery_policy?: string | null
+          feedback_request_days?: number
+          feedback_requests_enabled?: boolean
           free_delivery_threshold_fils?: number | null
           gift_card_amounts_fils?: number[]
           gift_card_expiry_months?: number | null
@@ -3424,9 +3566,17 @@ export type Database = {
           id?: number
           instagram_handle?: string | null
           instagram_url?: string | null
+          label_inactive_days?: number
+          label_new_days?: number
+          label_returning_orders?: number
+          label_vip_months?: number
+          label_vip_spend_fils?: number
           legal_name?: string | null
+          owner_event_digest_enabled?: boolean
           prices_include_vat?: boolean
           returns_policy?: string | null
+          staff_reminder_hours?: number
+          staff_reminders_enabled?: boolean
           trn?: string | null
           updated_at?: string
           updated_by?: string | null
@@ -3530,6 +3680,57 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "roles"
             referencedColumns: ["id"]
+          },
+        ]
+      }
+      staff_shifts: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          ends_at: string
+          event_id: string | null
+          id: string
+          note: string | null
+          starts_at: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          ends_at: string
+          event_id?: string | null
+          id?: string
+          note?: string | null
+          starts_at: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          ends_at?: string
+          event_id?: string | null
+          id?: string
+          note?: string | null
+          starts_at?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "staff_shifts_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "events"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "staff_shifts_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "staff_profiles"
+            referencedColumns: ["user_id"]
           },
         ]
       }
@@ -3749,6 +3950,7 @@ export type Database = {
           emirate: Database["public"]["Enums"]["emirate"] | null
           first_purchase_at: string | null
           id: string | null
+          label: string | null
           last_purchase_at: string | null
           marketing_channels: string[] | null
           marketing_consent: boolean | null
@@ -3756,6 +3958,7 @@ export type Database = {
           name: string | null
           order_count: number | null
           phone: string | null
+          recent_spent_fils: number | null
           source: Database["public"]["Enums"]["customer_source"] | null
           total_spent_fils: number | null
           unsubscribed_at: string | null
@@ -4071,6 +4274,15 @@ export type Database = {
           isSetofReturn: false
         }
       }
+      customer_label: {
+        Args: {
+          p_first: string
+          p_last: string
+          p_orders: number
+          p_recent_spent: number
+        }
+        Returns: string
+      }
       customer_tier: {
         Args: { p_customer: string }
         Returns: {
@@ -4092,6 +4304,10 @@ export type Database = {
       customer_tier_spend: { Args: { p_customer: string }; Returns: number }
       customer_unsubscribe: { Args: { p_customer: string }; Returns: undefined }
       dashboard_summary: { Args: never; Returns: Json }
+      event_news_opt_in: {
+        Args: { p_email: string; p_name?: string }
+        Returns: string
+      }
       event_report_data: { Args: { p_event_ids: string[] }; Returns: Json }
       event_staff_options: {
         Args: never
@@ -4107,6 +4323,25 @@ export type Database = {
       export_stock_levels: { Args: never; Returns: Json }
       fail_payment: {
         Args: { p_provider: string; p_provider_ref: string; p_reason: string }
+        Returns: string
+      }
+      feedback_requests_due: {
+        Args: never
+        Returns: {
+          customer_id: string
+          email: string
+          name: string
+          order_id: string
+          order_number: string
+        }[]
+      }
+      feedback_submit: {
+        Args: {
+          p_kind: Database["public"]["Enums"]["feedback_kind"]
+          p_message: string
+          p_order: string
+          p_rating: number
+        }
         Returns: string
       }
       get_booking_quote: { Args: { p_token: string }; Returns: Json }
@@ -4484,6 +4719,43 @@ export type Database = {
         Returns: undefined
       }
       settle_if_paid: { Args: { p_order_id: string }; Returns: boolean }
+      staff_performance: {
+        Args: { p_from: string; p_to: string }
+        Returns: {
+          active: boolean
+          events_worked: number
+          full_name: string
+          job_title: string
+          orders: number
+          planned_minutes: number
+          planned_shifts: number
+          sales_fils: number
+          shifts_worked: number
+          units: number
+          user_id: string
+          worked_minutes: number
+        }[]
+      }
+      staff_reminders_due: {
+        Args: { p_hours: number }
+        Returns: {
+          email: string
+          emirate: Database["public"]["Enums"]["emirate"]
+          end_date: string
+          ends_at: string
+          event_id: string
+          event_name: string
+          full_name: string
+          kind: string
+          location: string
+          note: string
+          ref_id: string
+          role: string
+          start_date: string
+          starts_at: string
+          user_id: string
+        }[]
+      }
       stock_on_hand_by_variant: {
         Args: never
         Returns: {
@@ -4632,6 +4904,9 @@ export type Database = {
       event_type: "exhibition" | "popup" | "private_booking" | "wedding" | "other"
       fee_payment_status:
         "unpaid" | "partially_paid" | "paid" | "waived" | "not_applicable"
+      feedback_kind: "complaint" | "suggestion" | "compliment" | "other"
+      feedback_source: "staff" | "email"
+      feedback_status: "open" | "in_progress" | "resolved"
       fulfilment_status:
         | "booked"
         | "picked_up"
@@ -4652,7 +4927,7 @@ export type Database = {
         | "percent"
       loyalty_stamp_kind:
         "earned" | "manual" | "reversed" | "redeemed" | "expired"
-      notification_audience: "customer" | "owner"
+      notification_audience: "customer" | "owner" | "staff"
       notification_channel: "email" | "whatsapp"
       notification_status: "sent" | "failed" | "skipped"
       option_group_kind: "single" | "multi" | "text"
@@ -4890,6 +5165,9 @@ export const Constants = {
         "failed",
         "cancelled",
       ],
+      feedback_kind: ["complaint", "suggestion", "compliment", "other"],
+      feedback_source: ["staff", "email"],
+      feedback_status: ["open", "in_progress", "resolved"],
       fulfilment_type: ["delivery", "pickup", "handed_over"],
       gift_card_entry: ["issue", "redeem", "refund", "adjust", "void"],
       gift_card_status: ["pending", "active", "void"],
@@ -4908,7 +5186,7 @@ export const Constants = {
         "redeemed",
         "expired",
       ],
-      notification_audience: ["customer", "owner"],
+      notification_audience: ["customer", "owner", "staff"],
       notification_channel: ["email", "whatsapp"],
       notification_status: ["sent", "failed", "skipped"],
       option_group_kind: ["single", "multi", "text"],

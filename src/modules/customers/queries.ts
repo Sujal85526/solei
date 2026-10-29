@@ -10,7 +10,7 @@ export const EXPORT_MAX_ROWS = 20_000;
 const EXPORT_CHUNK = 1000;
 
 const SUMMARY_COLUMNS =
-  "id, name, phone, email, emirate, source, marketing_consent, marketing_consent_at, marketing_channels, unsubscribed_at, created_at, order_count, total_spent_fils, first_purchase_at, last_purchase_at";
+  "id, name, phone, email, emirate, source, marketing_consent, marketing_consent_at, marketing_channels, unsubscribed_at, created_at, order_count, total_spent_fils, first_purchase_at, last_purchase_at, label";
 
 type Client = Awaited<ReturnType<typeof createClient>>;
 
@@ -23,6 +23,7 @@ function filteredSummary(supabase: Client, f: Omit<CustomerFilters, "page">, cou
   if (f.emirate) q = q.eq("emirate", f.emirate);
   if (f.orders === "yes") q = q.gt("order_count", 0);
   if (f.orders === "no") q = q.eq("order_count", 0);
+  if (f.label) q = q.eq("label", f.label);
 
   switch (f.sort) {
     case "spent":
@@ -129,7 +130,7 @@ export async function getCustomer(id: string) {
       .maybeSingle(),
     supabase
       .from("customer_summary")
-      .select("order_count, total_spent_fils, first_purchase_at, last_purchase_at")
+      .select("order_count, total_spent_fils, first_purchase_at, last_purchase_at, label")
       .eq("id", id)
       .maybeSingle(),
   ]);
@@ -142,6 +143,7 @@ export async function getCustomer(id: string) {
       totalSpentFils: summary.data?.total_spent_fils ?? 0,
       firstPurchaseAt: summary.data?.first_purchase_at ?? null,
       lastPurchaseAt: summary.data?.last_purchase_at ?? null,
+      label: summary.data?.label ?? null,
     },
   };
 }

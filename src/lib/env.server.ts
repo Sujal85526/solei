@@ -113,6 +113,8 @@ export const orderLinkSecret = () => derived("order-links", serverEnv().ORDER_LI
 export const cartLinkSecret = () => derived("cart-links", serverEnv().CART_LINK_SECRET);
 /** Signs campaign unsubscribe links (same derivation as the cart links). */
 export const unsubscribeSecret = () => derived("unsubscribe", serverEnv().CART_LINK_SECRET);
+/** Signs the links in feedback request emails (answer / stop asking). */
+export const feedbackLinkSecret = () => derived("feedback-links", serverEnv().CART_LINK_SECRET);
 
 /** The Points & tiers master switch can't be changed on this deployment (POINTS_SWITCH_LOCKED). */
 export const pointsSwitchLocked = () => serverEnv().POINTS_SWITCH_LOCKED === "1";

@@ -6,7 +6,7 @@ import { unsubscribeSecret } from "@/lib/env.server";
 import { createAdminClient, createClient } from "@/lib/supabase/server";
 import { notifyWithContent } from "@/modules/notifications/service";
 import { unsubscribeToken, verifyUnsubscribeToken } from "./links";
-import { emailableMembers, getCampaign, getSegment } from "./queries";
+import { emailableMembers, eventNewsMembers, getCampaign, getSegment } from "./queries";
 import { campaignFormSchema, readyToSend, segmentFormSchema, withFooter } from "./schema";
 
 const unsubscribeLink = (customerId: string) =>
@@ -97,7 +97,7 @@ export async function sendTestCampaign(id: string) {
     throw new UserError("Write the subject and email first.");
   const result = await notifyWithContent(
     "campaign",
-    { subject: `[Test] ${c.subject}`, body: withFooter(c.body) },
+    { subject: `[Test] ${c.subject}`, body: withFooter(c.body, c.audience) },
     {
       to: staff.email,
       vars: {
@@ -128,15 +128,23 @@ export async function sendCampaign(
   if (c.status === "draft") {
     const problem = readyToSend(c);
     if (problem) throw new UserError(problem);
-    const segment = await getSegment(c.segmentId!);
-    if (!segment) throw new UserError("Its segment was deleted — choose another.");
-    const audience = await emailableMembers(segment.rules);
-    if (!audience.length) throw new UserError("Nobody in this segment can be emailed.");
+    let audienceName = "Event news subscribers";
+    let audience: { customerId: string; email: string | null }[];
+    if (c.audience === "event_news") {
+      audience = await eventNewsMembers();
+      if (!audience.length) throw new UserError("Nobody has asked for event news yet.");
+    } else {
+      const segment = await getSegment(c.segmentId!);
+      if (!segment) throw new UserError("Its segment was deleted — choose another.");
+      audienceName = segment.name;
+      audience = await emailableMembers(segment.rules);
+      if (!audience.length) throw new UserError("Nobody in this segment can be emailed.");
+    }
 
     // Claim the draft (a second click finds it no longer a draft).
     const { data: claimed } = await admin
       .from("campaigns")
-      .update({ status: "sending", segment_name: segment.name, sent_by: staff.userId })
+      .update({ status: "sending", segment_name: audienceName, sent_by: staff.userId })
       .eq("id", id)
       .eq("status", "draft")
       .select("id")
@@ -152,18 +160,20 @@ export async function sendCampaign(
 
   const { data: pending, error } = await admin
     .from("campaign_recipients")
-    .select("id, customer_id, email, customers(name, unsubscribed_at)")
+    .select("id, customer_id, email, customers(name, unsubscribed_at, event_news)")
     .eq("campaign_id", id)
     .eq("status", "pending")
     .order("id");
   if (error) throw new Error(error.message);
 
-  const content = { subject: c.subject, body: withFooter(c.body) };
+  const content = { subject: c.subject, body: withFooter(c.body, c.audience) };
   const tally = { sent: 0, failed: 0, skipped: 0 };
   for (const r of pending) {
     const now = new Date().toISOString();
     // Unsubscribed since sending started.
-    if (!r.customer_id || r.customers?.unsubscribed_at) {
+    const optedOut =
+      c.audience === "event_news" ? !r.customers?.event_news : r.customers?.unsubscribed_at;
+    if (!r.customer_id || optedOut) {
       await admin
         .from("campaign_recipients")
         .update({ status: "skipped", error: "Unsubscribed" })

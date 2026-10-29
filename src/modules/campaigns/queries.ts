@@ -1,8 +1,8 @@
 import "server-only";
 import { isUuid } from "@/lib/ids";
 import { assertPermission } from "@/lib/auth/session";
-import { createClient } from "@/lib/supabase/server";
-import type { SegmentRules } from "./schema";
+import { createAdminClient, createClient } from "@/lib/supabase/server";
+import type { CampaignAudience, SegmentRules } from "./schema";
 
 export type Segment = {
   id: string;
@@ -112,6 +112,8 @@ export type Campaign = {
   body: string;
   segmentId: string | null;
   segmentName: string | null;
+  audience: CampaignAudience;
+  eventId: string | null;
   status: "draft" | "sending" | "sent";
   sentAt: string | null;
   updatedAt: string;
@@ -127,6 +129,8 @@ type CampaignRow = {
   body: string;
   segment_id: string | null;
   segment_name: string | null;
+  audience: string;
+  event_id: string | null;
   status: "draft" | "sending" | "sent";
   sent_at: string | null;
   updated_at: string;
@@ -140,6 +144,8 @@ const toCampaign = (r: CampaignRow): Campaign => ({
   body: r.body,
   segmentId: r.segment_id,
   segmentName: r.segment_name,
+  audience: r.audience === "event_news" ? "event_news" : "segment",
+  eventId: r.event_id,
   status: r.status,
   sentAt: r.sent_at,
   updatedAt: r.updated_at,
@@ -150,7 +156,7 @@ const toCampaign = (r: CampaignRow): Campaign => ({
 });
 
 const CAMPAIGN_COLUMNS =
-  "id, name, subject, body, segment_id, segment_name, status, sent_at, updated_at, campaign_recipients(status)";
+  "id, name, subject, body, segment_id, segment_name, audience, event_id, status, sent_at, updated_at, campaign_recipients(status)";
 
 export async function listCampaigns(): Promise<Campaign[]> {
   await assertPermission("marketing.manage");
@@ -210,4 +216,23 @@ export async function destinationOptions(): Promise<{ id: string; name: string }
   const { data, error } = await supabase.from("destinations").select("id, name").order("name");
   if (error) throw new Error(error.message);
   return data;
+}
+
+/**
+ * Customers who asked for event news and can be emailed (an email, event news on). Read with the
+ * service role after the permission check: it isn't a segment rule, so segment_members can't.
+ */
+export async function eventNewsMembers(): Promise<
+  { customerId: string; email: string; name: string | null }[]
+> {
+  await assertPermission("marketing.manage");
+  const { data, error } = await createAdminClient()
+    .from("customers")
+    .select("id, email, name")
+    .eq("event_news", true)
+    .not("email", "is", null)
+    .order("created_at")
+    .limit(20_000);
+  if (error) throw new Error(error.message);
+  return data.flatMap((c) => (c.email ? [{ customerId: c.id, email: c.email, name: c.name }] : []));
 }
