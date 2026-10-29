@@ -3,6 +3,7 @@ import { connection } from "next/server";
 import { Suspense } from "react";
 import { AccountGate } from "@/components/store/account/account-gate";
 import { CartRemindersToggle } from "@/components/store/account/cart-reminders-toggle";
+import { EventNewsToggle } from "@/components/store/feedback/event-news";
 import { RewardsPanel } from "@/components/store/account/rewards-panel";
 import { AccountDetails } from "@/components/store/account/profile-forms";
 import { accountCopy as c } from "@/content/account";
@@ -11,6 +12,7 @@ import { myCartRemindersOff } from "@/modules/carts/queries";
 import { getRewardsProgramme } from "@/modules/points/queries";
 import { myRewards } from "@/modules/points/service";
 import { getCartSettings } from "@/modules/storefront/queries";
+import { myEventNews } from "@/modules/automation/service";
 
 export const metadata: Metadata = { title: c.page.title, robots: { index: false } };
 
@@ -33,10 +35,11 @@ async function Account() {
     );
   }
   const { meta, user } = account;
-  const [remindersOff, programme, rewards] = await Promise.all([
+  const [remindersOff, programme, rewards, eventNews] = await Promise.all([
     myCartRemindersOff(user.id),
     getRewardsProgramme(),
     myRewards(),
+    myEventNews(),
   ]);
   return (
     <>
@@ -62,6 +65,7 @@ async function Account() {
           />
         ) : null}
         <CartRemindersToggle on={!remindersOff} />
+        <EventNewsToggle on={eventNews} />
       </div>
     </>
   );

@@ -7,6 +7,7 @@ import { storeNav } from "@/content/site";
 import { formatPhone, waNumber } from "@/lib/phone";
 import { getContactDetails } from "@/modules/settings/queries";
 import { t } from "@/content/en";
+import { eventNewsCopy } from "@/content/feedback";
 import { SoonTag } from "./soon-tag";
 
 /** Store footer; contact channels come from Admin → Settings → Contact details (only those set). */
@@ -37,6 +38,7 @@ export async function SiteFooter() {
         <FooterColumn title={t.footer.help} className="lg:col-span-3">
           <FooterLink href="/help">{t.footer.helpCentre}</FooterLink>
           <FooterLink href="/track">{t.nav.trackOrder}</FooterLink>
+          <FooterLink href="/event-news">{eventNewsCopy.metaTitle}</FooterLink>
           <FooterLink href="/help?tab=shipping">{t.footer.policies.delivery}</FooterLink>
           <FooterLink href="/help?tab=returns">{t.footer.policies.returns}</FooterLink>
           <FooterLink href="/help?tab=privacy">{t.footer.policies.privacy}</FooterLink>

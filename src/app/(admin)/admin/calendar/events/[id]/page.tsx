@@ -11,6 +11,7 @@ import { StatusBadge, TypeLabel } from "@/components/admin/events/event-style";
 import { PageHeader } from "@/components/admin/page-header";
 import { AdminSection } from "@/components/admin/section";
 import { buttonVariants } from "@/components/ui/button";
+import { AnnounceEventButton } from "@/components/admin/events/announce-button";
 import { requirePagePermission } from "@/lib/auth/session";
 import { businessDay, eachBusinessDay, formatBusinessDate } from "@/lib/dates";
 import { formatAED } from "@/lib/money";
@@ -61,6 +62,12 @@ export default async function EventPage({
     financial: can(staff.permissions, "reports.financial.view"),
     transfer: can(staff.permissions, "inventory.transfer"),
     stock: can(staff.permissions, "inventory.view"),
+    // Public events (not private bookings) that haven't ended can be announced to event news.
+    announce:
+      can(staff.permissions, "marketing.manage") &&
+      event.status !== "cancelled" &&
+      event.type !== "private_booking" &&
+      event.end_date >= businessDay(),
   };
   const tabs = TABS.filter((t) =>
     t === "expenses" ? perms.financial : t === "stock" ? perms.stock : true,
@@ -92,14 +99,17 @@ export default async function EventPage({
           </span>
         }
         actions={
-          perms.manage ? (
-            <Link
-              href={`/admin/calendar/events/${event.id}/edit`}
-              className={buttonVariants({ variant: "outline" })}
-            >
-              <Pencil /> Edit
-            </Link>
-          ) : null
+          <>
+            {perms.announce ? <AnnounceEventButton eventId={event.id} /> : null}
+            {perms.manage ? (
+              <Link
+                href={`/admin/calendar/events/${event.id}/edit`}
+                className={buttonVariants({ variant: "outline" })}
+              >
+                <Pencil /> Edit
+              </Link>
+            ) : null}
+          </>
         }
       />
 
