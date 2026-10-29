@@ -52,6 +52,19 @@ async function loadRule() {
   return data;
 }
 
+/** Sticker progress + reward for a welcome email (0 stickers when there's no customer record yet). */
+export async function stickerFacts(customerId: string | null) {
+  const rule = await loadRule();
+  const { data } = customerId
+    ? await createAdminClient()
+        .from("loyalty_balances")
+        .select("balance")
+        .eq("customer_id", customerId)
+        .maybeSingle()
+    : { data: null };
+  return { p: progress(data?.balance ?? 0, rule.stamps_for_reward), reward: rule.reward_label };
+}
+
 /** Send one welcome email. `force` sends again even if one went out before. */
 export async function sendWelcome(customerId: string, opts: { force?: boolean } = {}) {
   await assertPermission("customers.manage");
@@ -70,11 +83,7 @@ export async function sendWelcome(customerId: string, opts: { force?: boolean } 
     throw new UserError("The welcome email was already sent to this customer.");
   }
 
-  const [rule, { data: balance }] = await Promise.all([
-    loadRule(),
-    admin.from("loyalty_balances").select("balance").eq("customer_id", c.id).maybeSingle(),
-  ]);
-  const p = progress(balance?.balance ?? 0, rule.stamps_for_reward);
+  const { p, reward } = await stickerFacts(c.id);
   const site = publicEnv.NEXT_PUBLIC_SITE_URL;
 
   const result = await notify(KEY, {
@@ -86,8 +95,8 @@ export async function sendWelcome(customerId: string, opts: { force?: boolean } 
       stamps: p.collected,
       stamps_for_reward: p.total,
       remaining: p.remaining,
-      reward: rule.reward_label,
-      stamps_line: stampsLine(p, rule.reward_label),
+      reward,
+      stamps_line: stampsLine(p, reward),
       shop_link: `${site}/shop`,
       passport_link: `${site}/passport`,
     },

@@ -37,7 +37,7 @@ export function NewCustomerDialog() {
             Search by phone first — every customer is kept once per phone number.
           </DialogDescription>
         </DialogHeader>
-        <CustomerPicker onSelect={onSelect} source="manual" autoFocus />
+        <CustomerPicker onSelect={onSelect} source="manual" welcome autoFocus />
       </DialogContent>
     </Dialog>
   );

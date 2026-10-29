@@ -29,7 +29,29 @@ describe("createCustomerSchema", () => {
       emirate: "abu_dhabi",
       marketingConsent: true,
       source: "manual",
+      pastStamps: 0,
+      sendWelcome: false,
     });
+  });
+
+  it("takes earlier-order stickers and the welcome tick-box", () => {
+    const v = createCustomerSchema.parse({
+      name: "Noor",
+      email: "noor@example.com",
+      pastStamps: "4",
+      sendWelcome: "on",
+    });
+    expect(v).toMatchObject({ pastStamps: 4, sendWelcome: true });
+    expect(
+      createCustomerSchema.parse({ name: "Noor", email: "noor@example.com", pastStamps: "" })
+        .pastStamps,
+    ).toBe(0);
+    for (const bad of ["-1", "101", "2.5", "abc"]) {
+      expect(
+        createCustomerSchema.safeParse({ name: "Noor", email: "noor@example.com", pastStamps: bad })
+          .success,
+      ).toBe(false);
+    }
   });
 
   it("treats a blank phone, emirate and source as null / defaults", () => {

@@ -103,6 +103,21 @@ export const createCustomerSchema = z
     emirate: optionalEmirate,
     marketingConsent: checkbox,
     source: z.preprocess(blankToNull, z.enum(customerSources).nullable().optional()),
+    /** Stickers from earlier orders (Instagram / WhatsApp), added as the customer is created. */
+    pastStamps: z
+      .preprocess(
+        blankToNull,
+        z.coerce
+          .number("Enter a number")
+          .int("Whole stickers only")
+          .min(0, "Can't be negative")
+          .max(100, "Up to 100")
+          .nullable()
+          .optional(),
+      )
+      .transform((v) => v ?? 0),
+    /** Email the "welcome to the website" message as soon as the customer is saved. */
+    sendWelcome: checkbox,
   })
   .transform((v) => ({ ...v, source: v.source ?? "manual" }));
 export type CreateCustomerInput = z.input<typeof createCustomerSchema>;

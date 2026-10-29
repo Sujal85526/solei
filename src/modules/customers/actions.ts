@@ -31,10 +31,14 @@ export async function createCustomerAction(
   try {
     const res = await customers.createCustomer(entries(fd));
     refresh();
-    return ok(
-      res,
-      res.existing ? "This customer already exists — selected their record." : "Customer created.",
-    );
+    const message = res.existing
+      ? "This customer already exists — selected their record."
+      : res.welcome?.sent
+        ? "Customer created — welcome email sent."
+        : res.welcome
+          ? `Customer created. Welcome email not sent: ${res.welcome.reason}`
+          : "Customer created.";
+    return ok(res, message);
   } catch (e) {
     return fail(e);
   }
