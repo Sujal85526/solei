@@ -17,18 +17,18 @@ Built on `phase-2` only (`20261024000010_giveaways.sql`, Admin → Products → 
 
 | Requirement | Status | Notes |
 |---|---|---|
-| Dedicated section for giveaways / occasion gifts | ❌ | No giveaways page, no occasion landing pages. A giveaway is a normal shop product with choices. |
-| Choose the product (perfume or all-over spray) | ⚠️ | No product-type step. You set it up by hand as separate products or as a text choice. |
-| Choose the scent | ⚠️ | Only as a hand-made "pick one" choice. Not linked to the real scents/variants or their stock. |
+| Dedicated section for giveaways / occasion gifts | ✅ `p2/giveaways` | `/giveaways` with admin-editable occasions (photo + text, Admin → Products → Occasions) filtering the giveaways; menu + footer link. |
+| Choose the product (perfume or all-over spray) | ✅ `p2/giveaways` | Step 1 of the guided order: the categories of the giveaway's real bottles. |
+| Choose the scent | ✅ `p2/giveaways` | Real variants (`giveaway_items`), with live stock; the order line is the real bottle. |
 | Choose the quantity | ✅ | Minimum per order (e.g. 20); the quantity starts at that minimum. |
-| Packaging & design options **with photos** | ⚠️ | Options exist (pick one / pick any, price change per piece). **No photos on options.** |
+| Packaging & design options **with photos** | ✅ `p2/giveaways` | Photo per option (upload in the option dialog), shown as photo tiles. |
 | Special requests / personalisation | ✅ | Text choice, e.g. names on a tag, up to 200 characters. |
 | Total price incl. customisation charges | ✅ | "AED x each · AED y"; the DB works out the price (`line_unit_price_fils`). |
 | Order and pay online | ✅ | Choices go through the bag, checkout, discount codes, the order snapshot (`order_lines.options`), the order pages and emails. |
 | Flexible: add designs, products, options later | ✅ | All admin-editable; old orders keep their snapshot. |
 
 Also:
-- ⚠️ Not at the till (POS) or on staff manual orders. Website only.
+- ✅ At the till (Giveaway button) and on staff manual orders (Add a giveaway), priced by the DB (`p2/giveaways`).
 - ⚠️ Only checked locally. No customisable product exists on the live DB (`PHASE2_MERGE.md` §4: the live
   checkout can't send choices until the merge).
 
@@ -41,9 +41,9 @@ Admin → Bookings (+ Settings for event types, packages, booths, flowers).
 
 | Requirement | Status | Notes |
 |---|---|---|
-| Clearly visible on the **homepage** (not a menu or slideshow) | ❌ | Homepage has no events section. Only the `/events` link in the menu. |
+| Clearly visible on the **homepage** (not a menu or slideshow) | ✅ `p2/giveaways` | Own band after Destinations ("Coming soon" while the bookings flag is off). |
 | Step 1 — event type (Wedding, Engagement, Graduation, Ramadan Gathering, Eid Celebration, Family Gathering, Corporate Event, Other) | ✅ | Admin-editable list. Live DB has: Wedding, Engagement, Birthday, Graduation, Ramadan, Eid, Family gathering, Corporate, Other. The names need adjusting (admin change). |
-| Step 2 — date, location, guests, name + mobile, special requirements | ⚠️ | Date, start/end time, location, emirate and guests are in step 2. **Name, mobile, email and special requests are on the last step**, not step 2. |
+| Step 2 — date, location, guests, name + mobile, special requirements | ✅ `p2/giveaways` (was ⚠️) | Date, start/end time, location, emirate and guests are in step 2. **Name, mobile, email and special requests are on the last step**, not step 2. |
 | Step 3 — packages: view, compare, select | ✅ | Name, price, inclusions, photos; compare view; "Not sure yet" option. 3 placeholder packages on the live DB. |
 | Step 4 — booth design with photos; add more later | ✅ | `booth_designs` with photos, admin-editable. 3 on the live DB. |
 | Step 5 — flowers: "No flowers" (no charge) or "Add flowers" + colour, charge added automatically | ✅ | `flower_options`: colour + surcharge on top of `settings.booking_flower_base_fils` (default AED 800). 5 colours on the live DB. |
@@ -52,7 +52,7 @@ Admin → Bookings (+ Settings for event types, packages, booths, flowers).
 | Flexible: packages and prices editable later | ✅ | All admin-editable. |
 
 Differences from the owner's flow:
-- ⚠️ The wizard has **9 steps**, not 6: event type → details → **services** → package → booth → flowers →
+- ✅ (`p2/giveaways`) Now the owner's 6 steps. Before: **9 steps**, not 6: event type → details → **services** → package → booth → flowers →
   **products of interest** → contact → summary. "Services" and "Products" were not in the owner's list.
 - ⚠️ Feature switched off on production (env var).
 
@@ -137,9 +137,9 @@ Admin → Calendar (month / week / list views), an event's page, Reports → Eve
 | Connected to sales + inventory, one dashboard | ✅ | Event ↔ POS sales ↔ event stock (allocated/sold/returned) ↔ report; dashboard shows upcoming events + booking requests. |
 
 Gaps:
-- ⚠️ No "Wedding" event type in the calendar: types are exhibition, pop-up, private booking, other. Weddings come in
+- ✅ (`p2/giveaways`) "Wedding" calendar type added. Before: no "Wedding" event type in the calendar: types are exhibition, pop-up, private booking, other. Weddings come in
   through Plan Your Event bookings and become a "private booking" calendar entry on confirmation. Add types if wanted.
-- ⚠️ Status label "Potential" vs the owner's "Upcoming" (wording only).
+- ✅ (`p2/giveaways`) The "Potential" status now reads "Upcoming".
 
 ## 7. Customer management & database (CRM) 👥
 
@@ -318,10 +318,10 @@ Gaps:
 Each item is still to be decided with the owner. Section number in brackets.
 
 **Not built**
-1. Dedicated Giveaways / occasions section on the store (§1).
-2. Photos on giveaway packaging/design options (§1).
-3. Guided giveaway flow: product type (perfume / all-over spray) → scent from the real catalog → packaging (§1).
-4. Plan Your Event section on the **homepage**, clearly visible (§2).
+1. Dedicated Giveaways / occasions section on the store (§1). ✅ `p2/giveaways`
+2. Photos on giveaway packaging/design options (§1). ✅ `p2/giveaways`
+3. Guided giveaway flow: product type (perfume / all-over spray) → scent from the real catalog → packaging (§1). ✅ `p2/giveaways`
+4. Plan Your Event section on the **homepage**, clearly visible (§2). ✅ `p2/giveaways`
 5. Fast vs slow-moving inventory report across all channels (§5). ✅ `p2/reports` (Reports → Business / Expenses).
 15. Complaints & suggestions log for customers (§7).
 16. WhatsApp marketing messages (campaigns are email only) (§7).
@@ -359,16 +359,16 @@ Each item is still to be decided with the owner. Section number in brackets.
 51. Scheduler (Vercel cron or similar) for cart reminders, birthdays, tracking (§11.5).
 
 **Built but differs / partial**
-6. Giveaway choices at the POS and on staff manual orders (§1, §3, §4).
+6. Giveaway choices at the POS and on staff manual orders (§1, §3, §4). ✅ `p2/giveaways`
 7. Giveaways only tested locally; needs a real check after the merge (§1).
-8. Booking wizard: 9 steps vs the owner's 6. Move name/mobile/requests into step 2; drop or keep "Services" and
+8. Booking wizard: 9 steps vs the owner's 6. Move name/mobile/requests into step 2; drop or keep "Services" and ✅ `p2/giveaways`
    "Products of interest" (§2).
-9. Rename event types to the owner's list (Ramadan Gathering, Eid Celebration…). Admin change, no code (§2).
+9. Rename event types to the owner's list (Ramadan Gathering, Eid Celebration…). Admin change, no code (§2). ✅ `p2/giveaways`
 10. Real packages, prices, booth photos, flower colours. Owner to provide; admin change (§2).
 11. Switch Plan Your Event on in production (`NEXT_PUBLIC_FEATURE_BOOKINGS=1`) (§2).
 12. PDF event report: on `phase-2` only, comes with the merge (§4).
 13. Low-stock alert by WhatsApp (email only today; WhatsApp provider is a stand-in) (§5).
-14. Calendar: "Wedding" event type? "Potential" → "Upcoming" label? (§6).
+14. Calendar: "Wedding" event type? "Potential" → "Upcoming" label? (§6). ✅ `p2/giveaways`
 18. Automatic New / Returning / VIP / Inactive labels on customer profiles + list; VIP tiers exist on `phase-2`
     but are off by default (§7).
 19. Segments + email campaigns are on `phase-2` only, so they come with the merge (§7).

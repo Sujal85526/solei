@@ -45,3 +45,18 @@ alter table public.coupons drop column once_per_customer;
 `create_web_order`, `coupon_evaluate` and `cart_sync` are redefined with the same signatures; orders from `main`
 (no options) work unchanged for products without choices. Don't add choices or a minimum to a product on the
 shared DB until the merge — `main`'s checkout can't send choices, so such a product would be refused there.
+
+## 5. Giveaways & occasions, Plan your event (migrations `20261030020001`–`…012`, branch `p2/giveaways`)
+- Apply them **before** deploying the phase-2 code that uses them: the storefront product query now reads
+  `product_options.image_url`, and the giveaways pages, till and New order read `giveaway_occasions` /
+  `giveaway_items` — against a DB without them those pages fail.
+- Main-safe: new tables/columns have defaults; `create_web_order`, `coupon_evaluate`, `cart_sync`,
+  `pos_complete_sale`, `create_manual_order`, `submit_booking`, `product_option_group_save` keep their
+  signatures, and lines without `options` / `giveaway_id` behave as before (main's POS and manual orders were
+  not re-run end-to-end; the existing SQL tests pass on a local replay). `event_type` gains `wedding`; main
+  doesn't list it, and main's calendar has no icon for it (`typeIcon`), so **don't save a calendar event as
+  Wedding on the shared DB until the merge** — the live calendar could fail to render it.
+- Event types are renamed on the shared DB by `…010` (Ramadan → Ramadan Gathering, etc.; Birthday switched off) —
+  the live site shows the new names at once, which is what the owner asked for.
+- Don't mark a product "Sell this as a giveaway" on the shared DB until the merge: main's checkout can't send
+  `giveaway_id` (giveaway products have no variants of their own, so main simply never shows them).

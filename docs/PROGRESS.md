@@ -39,6 +39,8 @@ after a `db:reset`).
 | 6 | Giveaways customiser | ✅ built (`20261024000010_giveaways.sql`) |
 | 7 | WhatsApp API · courier API · staff attendance · PDF reports (mock providers) | ✅ built (`20261024000011_operations.sql`) |
 | 8 | Business reports: sales, channels, products, P&L + expenses, customers, movers, PDF everywhere | ✅ built (`20261030010001/2_business_*.sql`) |
+| 9 | Giveaways & occasions: page, guided order, option photos, till + manual orders | ✅ built (`20261030020001–3_giveaway*.sql`) |
+| 10 | Plan your event: homepage band, 6-step wizard, owner's event types, calendar wedding + "Upcoming" | ✅ built (`20261030020010–12`) |
 
 **1 — Promotions:** Admin → Promotions (`/admin/promotions`): % off / AED off / free delivery, minimum
 order, start/end dates, total uses, uses per customer, category + product scope, pause/delete. Checkout
@@ -164,6 +166,22 @@ is approved, `phase-2` is merged into `main`.
   by Phase 2 code, so they can't change the live site and stay editable.
 - No customisable (giveaway) product exists on the hosted DB: an active one would also show on the live shop,
   whose checkout can't send choices (`PHASE2_MERGE.md` §4). Verified locally only.
+
+**9 — Giveaways & occasions (2026-10-30):** `/giveaways` (menu + footer "Giveaways & occasions"): occasion photo
+tiles (Admin → Products → Occasions) filter the giveaways. A giveaway is a product with "Sell this as a giveaway"
+(Admin → Products → a product → Giveaway): occasions + the real bottles it offers (any perfume/spray variant, own
+or giveaway price). `/giveaways/<slug>` is the guided order: product type (the bottles' categories) → scent (real
+stock) → each packaging/design choice (photo tiles) → quantity (from the minimum) → personalisation, with the live
+total. Options can have photos (option dialog upload), shown as tiles on any product page too. The till has a
+"Giveaway" button and Admin → Orders → New order an "Add a giveaway" button (same picker). Prices and choices are
+checked by the database on every channel and snapshotted on the order line. Tests: `giveaways/flow.test.ts`,
+`giveaways/schema.test.ts`, pos/manual schema tests, SQL `190_giveaway_items_test.sql` (22 checks, local PG16
+replay; existing SQL tests unchanged). Not looked at in a browser (the tables aren't on the hosted DB yet).
+
+**10 — Plan your event (2026-10-30):** homepage band after Destinations (`plan-your-event.tsx`, "Coming soon" while
+the bookings flag is off); wizard in the owner's 6 steps (contact details moved into step 2, services and
+products of interest no longer asked); event types renamed to the owner's list by migration; calendar "Wedding"
+type and the "Potential" status shown as "Upcoming".
 
 **Shared hosted DB (2026-10-24):** the user allowed using the hosted DB, which also serves the live site
 (`main`). Phase 2 migrations were made main-safe (kept `coupons.once_per_customer`, no manager grants) and

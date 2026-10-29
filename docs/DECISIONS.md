@@ -487,6 +487,42 @@ Open client questions are built as configurable defaults. Each row: what we chos
   download (one renderer for every report); standard Helvetica, so non-Latin characters print as "?" until a
   brand font is embedded (Arabic is out of scope for Phase 2).
 
+## Phase 2 — giveaways & occasions, Plan your event (branch `p2/giveaways`, 2026-10-30)
+- **P2-50 — A giveaway offers real bottles:** a giveaway is a product with `is_giveaway`; the bottles customers
+  choose are `giveaway_items` (a variant of an ordinary perfume or spray, optionally at its own giveaway price).
+  An order line is the real variant plus `order_lines.giveaway_product_id`, so stock, cost and product reports
+  count the real bottle; the giveaway's option groups (packaging, personalisation) are its choices. The older
+  P2-18 setup (choices on an ordinary product) keeps working.
+- **P2-51 — Product type = the bottle's category:** the guided order's step 1 lists the categories of the
+  giveaway's bottles (Perfume, All over spray …) and is skipped when there is only one; no free-text types.
+- **P2-52 — Pricing on every channel:** `line_unit_price_fils` / `line_options_check` gained a third argument
+  (the giveaway); the 2-argument versions delegate with null. `create_web_order`, `coupon_evaluate`,
+  `cart_sync`, `pos_complete_sale` and `create_manual_order` read `giveaway_id` + `options` per line, snapshot
+  the choices (first entry `Giveaway: <name>`, so every order page and email shows it) and check the minimum
+  per giveaway across its bottles (`order_min_qty_shortfalls`). Staff manual orders take giveaway lines at the
+  database price (no price override on them).
+- **P2-53 — Quantities:** giveaway lines go up to 1000 pieces (bag, saved bag, till, manual orders); ordinary
+  lines stay at 99.
+- **P2-54 — Occasions:** `giveaway_occasions` (name, short text, photo, order, shown) under Admin → Products →
+  Occasions, linked to giveaways through `product_occasions`; `/giveaways?occasion=wedding` filters. Seeded:
+  Wedding, Graduation, Ramadan, Eid, Other occasions (with site photos until the owner uploads real ones).
+- **P2-55 — Photos on options:** `product_options.image_url` / `storage_path`, uploaded from the option dialog to
+  the `products` bucket (`<product>/options/…`). A group with any photo shows as photo tiles (product page and
+  guided order); otherwise as chips.
+- **P2-56 — Plan your event on the homepage:** its own band after Destinations (photo, short pitch, link to
+  /events). The copy lives in `eventsCopy.home` (the homepage copy is a dictionary, not the DB). While
+  `NEXT_PUBLIC_FEATURE_BOOKINGS` is off the band says "Coming soon" and links to the shop instead.
+- **P2-57 — Six-step booking wizard:** occasion → event details (date, times, venue, emirate, guests + name,
+  mobile, email, special requests, consent) → package → booth → flowers → summary. Customers no longer pick
+  services or products of interest; the columns stay and submit sends them empty. `submit_booking` accepts an
+  empty service list and still refuses unknown or inactive ones.
+- **P2-58 — The owner's event type list by migration:** only seeded names are renamed (case-insensitive), so admin
+  edits survive; Birthday is switched off, not deleted (bookings may reference it); missing names are added and
+  the owner's order is set. Re-running it changes nothing.
+- **P2-59 — Calendar:** a `wedding` event type (added before `other`, in a migration of its own — safe for main).
+  Confirmed bookings still become `private_booking`. The `potential` status is labelled "Upcoming" in the UI;
+  the enum value is unchanged.
+
 ## Payments: N-Genius (2026-10-26)
 - **T101 — Network International N-Genius replaces Ziina** (client is dropping Ziina). `NgeniusProvider`
   (`src/providers/payment/ngenius.ts`) uses the hosted payment page only (no card data, no PCI scope):
