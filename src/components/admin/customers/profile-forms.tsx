@@ -22,6 +22,7 @@ import { useActionToast } from "@/hooks/use-action-toast";
 import { useFormAction } from "@/hooks/use-form-action";
 import { formatPhone, waNumber } from "@/lib/phone";
 import {
+  deleteCustomerAction,
   recordConsentAction,
   recordOptOutAction,
   updateContactAction,
@@ -262,6 +263,22 @@ export function OptOutButton({ id }: { id: string }) {
       action={() => recordOptOutAction(id)}
     >
       Record opt-out
+    </ConfirmButton>
+  );
+}
+
+export function DeleteCustomerButton({ id, name }: { id: string; name: string }) {
+  return (
+    <ConfirmButton
+      size="sm"
+      title={`Delete ${name}?`}
+      description="This removes the customer, their Passport stickers and their website login, and can't be undone. Their past orders stay in your records, but are no longer linked to them."
+      confirmLabel="Delete customer"
+      destructive
+      variant="outline"
+      action={() => deleteCustomerAction(id)}
+    >
+      Delete customer
     </ConfirmButton>
   );
 }

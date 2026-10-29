@@ -1,7 +1,7 @@
 import "server-only";
 import { UserError } from "@/lib/action-result";
 import { assertPermission } from "@/lib/auth/session";
-import { createClient } from "@/lib/supabase/server";
+import { createAdminClient, createClient } from "@/lib/supabase/server";
 import { adjustStamps } from "@/modules/loyalty/service";
 import { searchCustomerOptions, toOption, type CustomerOption } from "./queries";
 import {
@@ -188,6 +188,40 @@ export async function recordConsent(input: unknown) {
     })
     .eq("id", v.id);
   if (error) dbError(error);
+}
+
+/**
+ * Wipe a customer: the record, their Passport stickers and their website login (so the same email
+ * can sign up again). Orders, bookings and reviews stay for the books, just no longer linked to
+ * anyone (the foreign keys set them to null). A staff login is never removed.
+ */
+export async function deleteCustomer(id: unknown) {
+  await assertPermission("customers.manage");
+  const customerId = optOutSchema.parse({ id }).id;
+  const supabase = await createClient();
+  const { data: customer, error: readError } = await supabase
+    .from("customers")
+    .select("id, auth_user_id")
+    .eq("id", customerId)
+    .maybeSingle();
+  if (readError) dbError(readError);
+  if (!customer) throw new UserError("Customer not found.");
+
+  const { error } = await supabase.from("customers").delete().eq("id", customerId);
+  if (error) dbError(error);
+
+  if (customer.auth_user_id) {
+    const admin = createAdminClient();
+    const { data: staff } = await admin
+      .from("staff_profiles")
+      .select("user_id")
+      .eq("user_id", customer.auth_user_id)
+      .maybeSingle();
+    if (!staff) {
+      const { error: authError } = await admin.auth.admin.deleteUser(customer.auth_user_id);
+      if (authError) console.error("customer login not removed", customerId, authError);
+    }
+  }
 }
 
 /** Opt-out: consent off on every channel, with the time it was recorded. */

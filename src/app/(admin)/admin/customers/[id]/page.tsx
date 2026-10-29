@@ -12,6 +12,7 @@ import {
 import { PassportPanel } from "@/components/admin/customers/passport-panel";
 import { SendWelcomeButton } from "@/components/admin/customers/welcome-email";
 import {
+  DeleteCustomerButton,
   EditContactDialog,
   NotesForm,
   OptOutButton,
@@ -267,6 +268,15 @@ export default async function CustomerPage({ params }: PageProps<"/admin/custome
               ) : null}
             </div>
           </AdminSection>
+
+          {canManage ? (
+            <AdminSection
+              title="Delete customer"
+              description="Removes this customer, their stickers and their login. Orders stay in your records."
+            >
+              <DeleteCustomerButton id={c.id} name={title} />
+            </AdminSection>
+          ) : null}
 
           {/* Streams in on its own so the customer details don't wait for the passport. */}
           <Suspense fallback={<Skeleton className="h-64 rounded-xl" />}>

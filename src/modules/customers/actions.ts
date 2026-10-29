@@ -1,6 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { redirect } from "next/navigation";
 import { fail, ok, type ActionResult } from "@/lib/action-result";
 import type { CustomerOption } from "./queries";
 import * as customers from "./service";
@@ -82,6 +83,17 @@ export async function recordOptOutAction(id: string): Promise<ActionResult> {
   } catch (e) {
     return fail(e);
   }
+}
+
+/** Delete a customer for good, then back to the customers list. */
+export async function deleteCustomerAction(id: string): Promise<ActionResult> {
+  try {
+    await customers.deleteCustomer(id);
+  } catch (e) {
+    return fail(e);
+  }
+  refresh();
+  redirect("/admin/customers");
 }
 
 /** Send (or, with `force`, re-send) the welcome-to-the-website email to one customer. */
