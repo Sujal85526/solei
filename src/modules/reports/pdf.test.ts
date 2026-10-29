@@ -1,6 +1,6 @@
 import { PDFDocument } from "pdf-lib";
 import { describe, expect, it } from "vitest";
-import { columnWidths, pdfCellText, workbookToPdf } from "./pdf";
+import { pdfCellText, workbookToPdf } from "./pdf";
 import type { WorkbookModel } from "./tables";
 
 describe("pdfCellText", () => {
@@ -13,20 +13,7 @@ describe("pdfCellText", () => {
     expect(pdfCellText("2026-10-24", "date")).toBe("24 Oct 2026");
     expect(pdfCellText(null, "aed")).toBe("");
     expect(pdfCellText("Capri", "text")).toBe("Capri");
-  });
-});
-
-describe("columnWidths", () => {
-  it("fills the width in proportion", () => {
-    const w = columnWidths(
-      [
-        { header: "Product", format: "text", width: 30 },
-        { header: "Units", format: "int" },
-      ],
-      420,
-    );
-    expect(w[0]! + w[1]!).toBeCloseTo(420);
-    expect(w[0]!).toBeGreaterThan(w[1]!);
+    expect(pdfCellText(123456, "aed", true)).toBe("1,234.56");
   });
 });
 

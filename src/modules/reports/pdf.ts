@@ -21,12 +21,23 @@ const PAGE_H = 595.28;
 const MARGIN = 36;
 const CONTENT_W = PAGE_W - MARGIN * 2;
 const BODY = 8;
+const MIN_BODY = 5.5;
 const ROW_H = 14;
+const CELL_PAD = 6;
+/** A text column never claims more than this when sizing (long names are cut with "…"). */
+const MAX_TEXT_W = 150;
+/** Text columns up to this wide are never squeezed. */
+const SHORT_TEXT_W = 52;
+/** Tables at least this wide print amounts without the "AED" prefix. */
+const WIDE_TABLE = 10;
 
 export const PDF_TYPE = "application/pdf";
 
-/** A cell as it reads on paper: AED amounts, 12.5%, 24 Oct 2026, 1,234. */
-export function pdfCellText(value: Cell, format: CellFormat): string {
+/**
+ * A cell as it reads on paper: AED amounts, 12.5%, 24 Oct 2026, 1,234. `plainAed` drops the
+ * "AED" prefix (wide tables say it once, in the header).
+ */
+export function pdfCellText(value: Cell, format: CellFormat, plainAed = false): string {
   if (value === null || value === "") return "";
   if (typeof value === "string") {
     return format === "date" && /^\d{4}-\d{2}-\d{2}$/.test(value)
@@ -35,7 +46,12 @@ export function pdfCellText(value: Cell, format: CellFormat): string {
   }
   switch (format) {
     case "aed":
-      return formatAED(value, { alwaysShowFils: true });
+      return plainAed
+        ? (value / 100).toLocaleString("en-US", {
+            minimumFractionDigits: 2,
+            maximumFractionDigits: 2,
+          })
+        : formatAED(value, { alwaysShowFils: true });
     case "pct":
       return `${(value / 100).toFixed(1)}%`;
     case "dec":
@@ -45,13 +61,6 @@ export function pdfCellText(value: Cell, format: CellFormat): string {
     default:
       return String(value);
   }
-}
-
-/** Column widths in points: proportional to the workbook widths, scaled to the page. */
-export function columnWidths(columns: Column[], total = CONTENT_W): number[] {
-  const want = columns.map((c) => Math.max(c.width ?? 12, Math.min(c.header.length + 2, 18)));
-  const sum = want.reduce((s, w) => s + w, 0);
-  return want.map((w) => (w / sum) * total);
 }
 
 class Writer {
@@ -161,7 +170,12 @@ class Writer {
         this.rule(MARGIN, labelW + valueW);
       }
     } else {
-      const widths = columnWidths(block.columns);
+      const { widths, size, plainAed } = this.layout(block);
+      const headers = block.columns.map((c) => c.header);
+      if (plainAed && block.columns.some((c) => c.format === "aed")) {
+        this.text("Amounts in AED", MARGIN, { size: 7, color: GOLD_INK });
+        this.y -= 11;
+      }
       const header = () => {
         this.page.drawRectangle({
           x: MARGIN,
@@ -170,13 +184,7 @@ class Writer {
           height: ROW_H,
           color: PINK,
         });
-        this.cells(
-          block.columns,
-          block.columns.map((c) => c.header),
-          widths,
-          this.bold,
-          BURGUNDY,
-        );
+        this.cells(block.columns, headers, widths, this.bold, BURGUNDY, size);
         this.y -= ROW_H;
       };
       header();
@@ -184,10 +192,11 @@ class Writer {
         if (this.room(ROW_H, section)) header();
         this.cells(
           block.columns,
-          block.columns.map((c, i) => pdfCellText(values[i] ?? null, c.format)),
+          block.columns.map((c, i) => pdfCellText(values[i] ?? null, c.format, plainAed)),
           widths,
           this.font,
           INK,
+          size,
         );
         this.rule(MARGIN, CONTENT_W);
       }
@@ -205,15 +214,52 @@ class Writer {
         });
         this.cells(
           block.columns,
-          block.columns.map((c, i) => pdfCellText(block.totals![i] ?? null, c.format)),
+          block.columns.map((c, i) => pdfCellText(block.totals![i] ?? null, c.format, plainAed)),
           widths,
           this.bold,
           INK,
+          size,
         );
         this.y -= ROW_H;
       }
     }
     this.y -= 14;
+  }
+
+  /**
+   * Column widths from what the cells hold (header and every value, measured). A table that
+   * fits is spread over the page; one that doesn't gets a smaller font (down to MIN_BODY), its
+   * numbers keep their full width and the text columns share what is left (cut with "…").
+   */
+  private layout(block: Extract<Block, { kind: "table" }>) {
+    const plainAed = block.columns.length >= WIDE_TABLE;
+    const rows = block.totals ? [...block.rows, block.totals] : block.rows;
+    const natural = block.columns.map((c, i) => {
+      let w = this.bold.widthOfTextAtSize(this.clean(c.header), BODY);
+      for (const row of rows) {
+        const t = this.clean(pdfCellText(row[i] ?? null, c.format, plainAed));
+        w = Math.max(w, this.font.widthOfTextAtSize(t, BODY));
+      }
+      return c.format === "text" ? Math.min(w, MAX_TEXT_W) : w;
+    });
+    const total = natural.reduce((t, w) => t + w + CELL_PAD, 0) || 1;
+    const size = total <= CONTENT_W ? BODY : Math.max(MIN_BODY, (BODY * CONTENT_W) / total);
+    const need = natural.map((w) => (w * size) / BODY + CELL_PAD);
+    const sum = need.reduce((t, w) => t + w, 0);
+    if (sum <= CONTENT_W) {
+      return { widths: need.map((w) => (w * CONTENT_W) / sum), size, plainAed };
+    }
+    // Short text (order numbers, statuses) keeps its width too; only long text is cut.
+    const squeezable = (i: number) =>
+      block.columns[i]!.format === "text" && need[i]! > SHORT_TEXT_W;
+    const fixed = need.reduce((t, w, i) => t + (squeezable(i) ? 0 : w), 0);
+    const longNeed = sum - fixed;
+    const left = CONTENT_W - fixed;
+    const widths =
+      left > longNeed * 0.25
+        ? need.map((w, i) => (squeezable(i) ? (w * left) / longNeed : w))
+        : need.map((w) => (w * CONTENT_W) / sum);
+    return { widths, size, plainAed };
   }
 
   private cells(
@@ -222,11 +268,13 @@ class Writer {
     widths: number[],
     font: PDFFont,
     color: ReturnType<typeof rgb>,
+    size = BODY,
   ) {
     let x = MARGIN;
     columns.forEach((col, i) => {
       this.text(texts[i] ?? "", x + 3, {
         font,
+        size,
         color,
         width: widths[i]! - 6,
         right: col.format !== "text" && col.format !== "date",
