@@ -211,6 +211,12 @@ export async function deleteImage(imageId: string) {
 export async function saveOptionGroup(input: unknown): Promise<string> {
   await assertPermission("catalog.manage");
   const v = optionGroupFormSchema.parse(input);
+  for (const o of v.options) {
+    if (o.storagePath && !o.storagePath.startsWith(`${v.productId}/options/`))
+      throw new UserError("A photo doesn't match this product.");
+    if (o.imageUrl && !/^(https:\/\/|\/)/.test(o.imageUrl))
+      throw new UserError("Photos must be uploaded here.");
+  }
   const supabase = await createClient();
   const { data, error } = await supabase.rpc("product_option_group_save", {
     p: {
@@ -225,6 +231,8 @@ export async function saveOptionGroup(input: unknown): Promise<string> {
         label: o.label,
         price_delta_fils: o.priceDelta,
         active: o.active,
+        image_url: o.imageUrl ?? null,
+        storage_path: o.storagePath ?? null,
       })),
     },
   });

@@ -3,6 +3,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ArrowLeft, ExternalLink } from "lucide-react";
 import { ConfirmButton } from "@/components/admin/confirm-button";
+import { GiveawayEditor } from "@/components/admin/catalog/giveaway-editor";
 import { ImageManager } from "@/components/admin/catalog/image-manager";
 import { OptionsEditor } from "@/components/admin/catalog/options-editor";
 import { ProductForm } from "@/components/admin/catalog/product-form";
@@ -15,6 +16,11 @@ import { requirePagePermission } from "@/lib/auth/session";
 import { can } from "@/lib/permissions";
 import { setProductActiveAction } from "@/modules/catalog/actions";
 import {
+  getGiveawaySettings,
+  listBottles,
+  listOccasionsAdmin,
+} from "@/modules/giveaways/admin-queries";
+import {
   getProduct,
   listCategories,
   listDestinations,
@@ -26,12 +32,16 @@ export const metadata: Metadata = { title: "Product" };
 export default async function ProductPage({ params }: PageProps<"/admin/products/[id]">) {
   const staff = await requirePagePermission("catalog.view");
   const { id } = await params;
-  const [product, categories, destinations, stock] = await Promise.all([
-    getProduct(id),
-    listCategories(),
-    listDestinations(),
-    onHandByVariant(),
-  ]);
+  const [product, categories, destinations, stock, giveaway, occasions, bottles] =
+    await Promise.all([
+      getProduct(id),
+      listCategories(),
+      listDestinations(),
+      onHandByVariant(),
+      getGiveawaySettings(id),
+      listOccasionsAdmin(),
+      listBottles(),
+    ]);
   if (!product) notFound();
   const canManage = can(staff.permissions, "catalog.manage");
   const canSeeCost = can(staff.permissions, "reports.financial.view");
@@ -56,7 +66,9 @@ export default async function ProductPage({ params }: PageProps<"/admin/products
         actions={
           <>
             <Link
-              href={`/products/${product.slug}`}
+              href={
+                giveaway.isGiveaway ? `/giveaways/${product.slug}` : `/products/${product.slug}`
+              }
               target="_blank"
               className={buttonVariants({ variant: "outline" })}
             >
@@ -79,6 +91,20 @@ export default async function ProductPage({ params }: PageProps<"/admin/products
           </>
         }
       />
+      <AdminSection
+        title="Giveaway"
+        description="Weddings, graduations, Ramadan, Eid… Offer real bottles with packaging and personalisation."
+      >
+        <GiveawayEditor
+          productId={product.id}
+          settings={giveaway}
+          occasions={occasions}
+          bottles={bottles.filter(
+            (b) => !product.product_variants.some((v) => v.id === b.variantId),
+          )}
+          canManage={canManage}
+        />
+      </AdminSection>
       <AdminSection title="Sizes & prices" description="Each size is a separate stock unit.">
         {canManage ? (
           <VariantsEditor

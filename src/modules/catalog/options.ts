@@ -200,6 +200,9 @@ export const optionGroupFormSchema = z
               return fils;
             }),
           active: z.boolean().default(true),
+          /** Photo (packaging, design) uploaded to the products bucket. */
+          imageUrl: z.string().trim().max(500).nullish(),
+          storagePath: z.string().trim().max(300).nullish(),
         }),
       )
       .max(30),

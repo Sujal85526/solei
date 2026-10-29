@@ -46,7 +46,7 @@ export async function getProduct(id: string) {
   const { data } = await supabase
     .from("products")
     .select(
-      "*, product_variants(*, variant_costs(cost_fils)), product_images(id, url, alt, sort, storage_path), product_option_groups(id, name, kind, required, max_length, sort, product_options(id, label, price_delta_fils, active, sort))",
+      "*, product_variants(*, variant_costs(cost_fils)), product_images(id, url, alt, sort, storage_path), product_option_groups(id, name, kind, required, max_length, sort, product_options(id, label, price_delta_fils, active, sort, image_url, storage_path))",
     )
     .eq("id", id)
     .maybeSingle();

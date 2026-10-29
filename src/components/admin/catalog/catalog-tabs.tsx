@@ -7,6 +7,7 @@ export function CatalogTabs() {
         { href: "/admin/products", label: "Products" },
         { href: "/admin/products/categories", label: "Categories" },
         { href: "/admin/products/destinations", label: "Destinations" },
+        { href: "/admin/products/occasions", label: "Occasions" },
       ]}
     />
   );

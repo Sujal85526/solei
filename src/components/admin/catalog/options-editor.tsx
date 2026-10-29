@@ -2,7 +2,7 @@
 
 import { useState, useTransition } from "react";
 import { toast } from "sonner";
-import { Pencil, Plus, Trash2 } from "lucide-react";
+import { ImagePlus, Loader2, Pencil, Plus, Trash2, X } from "lucide-react";
 import { ConfirmButton } from "@/components/admin/confirm-button";
 import { Field } from "@/components/admin/field";
 import { Badge } from "@/components/ui/badge";
@@ -25,6 +25,7 @@ import {
   setMinOrderQtyAction,
 } from "@/modules/catalog/actions";
 import { deltaText, type OptionGroupKind } from "@/modules/catalog/options";
+import { uploadCatalogPhoto } from "./upload-photo";
 
 export type OptionGroupRow = {
   id: string;
@@ -32,7 +33,14 @@ export type OptionGroupRow = {
   kind: OptionGroupKind;
   required: boolean;
   max_length: number;
-  product_options: { id: string; label: string; price_delta_fils: number; active: boolean }[];
+  product_options: {
+    id: string;
+    label: string;
+    price_delta_fils: number;
+    active: boolean;
+    image_url: string | null;
+    storage_path: string | null;
+  }[];
 };
 
 const KIND_LABELS: Record<OptionGroupKind, string> = {
@@ -107,7 +115,7 @@ export function OptionsEditor({
                     : g.product_options
                         .map(
                           (o) =>
-                            `${o.label}${o.price_delta_fils ? ` ${deltaText(o.price_delta_fils)}` : ""}${o.active ? "" : " (hidden)"}`,
+                            `${o.label}${o.price_delta_fils ? ` ${deltaText(o.price_delta_fils)}` : ""}${o.image_url ? " (photo)" : ""}${o.active ? "" : " (hidden)"}`,
                         )
                         .join(" · ")}
                 </p>
@@ -156,7 +164,15 @@ export function OptionsEditor({
   );
 }
 
-type OptionDraft = { key: number; id?: string; label: string; priceDelta: string; active: boolean };
+type OptionDraft = {
+  key: number;
+  id?: string;
+  label: string;
+  priceDelta: string;
+  active: boolean;
+  imageUrl?: string | null;
+  storagePath?: string | null;
+};
 
 function GroupDialog({
   productId,
@@ -178,10 +194,25 @@ function GroupDialog({
       label: o.label,
       priceDelta: o.price_delta_fils ? String(o.price_delta_fils / 100) : "",
       active: o.active,
+      imageUrl: o.image_url,
+      storagePath: o.storage_path,
     })) ?? [{ key: 0, label: "", priceDelta: "", active: true }],
   );
   const [error, setError] = useState<string | null>(null);
   const [pending, start] = useTransition();
+  const [uploading, setUploading] = useState<number | null>(null);
+
+  async function uploadPhoto(key: number, file: File | undefined) {
+    if (!file) return;
+    setUploading(key);
+    const res = await uploadCatalogPhoto(file, `${productId}/options`);
+    setUploading(null);
+    if ("error" in res) toast.error(res.error);
+    else
+      setOptions((prev) =>
+        prev.map((o) => (o.key === key ? { ...o, imageUrl: res.url, storagePath: res.path } : o)),
+      );
+  }
   const nextKey = () => Math.max(0, ...options.map((o) => o.key)) + 1;
   const update = (key: number, patch: Partial<OptionDraft>) =>
     setOptions(options.map((o) => (o.key === key ? { ...o, ...patch } : o)));
@@ -204,6 +235,8 @@ function GroupDialog({
                 label: o.label,
                 priceDelta: o.priceDelta,
                 active: o.active,
+                imageUrl: o.imageUrl,
+                storagePath: o.storagePath,
               })),
       });
       if (res.ok) {
@@ -221,7 +254,8 @@ function GroupDialog({
         <DialogHeader>
           <DialogTitle>{group ? `Edit “${group.name}”` : "Add a choice"}</DialogTitle>
           <DialogDescription>
-            Price changes are per piece and can be negative (e.g. a smaller box).
+            Price changes are per piece and can be negative (e.g. a smaller box). Add a photo to
+            show the options as pictures (packaging, designs).
           </DialogDescription>
         </DialogHeader>
         <div className="grid gap-4 sm:grid-cols-2">
@@ -273,8 +307,40 @@ function GroupDialog({
               {options.map((o) => (
                 <div
                   key={o.key}
-                  className="grid grid-cols-[1fr_6.5rem_auto_auto] items-center gap-2"
+                  className="grid grid-cols-[auto_1fr_6.5rem_auto_auto] items-center gap-2"
                 >
+                  {o.imageUrl ? (
+                    <span className="relative size-10 shrink-0 overflow-hidden rounded border">
+                      {/* eslint-disable-next-line @next/next/no-img-element -- admin preview */}
+                      <img src={o.imageUrl} alt="" className="size-full object-cover" />
+                      <button
+                        type="button"
+                        aria-label={`Remove the photo of ${o.label || "this option"}`}
+                        onClick={() => update(o.key, { imageUrl: null, storagePath: null })}
+                        className="bg-background/80 absolute end-0 top-0 rounded-bl"
+                      >
+                        <X className="size-3.5" />
+                      </button>
+                    </span>
+                  ) : (
+                    <label
+                      className="hover:bg-muted flex size-10 shrink-0 cursor-pointer items-center justify-center rounded border border-dashed"
+                      aria-label={`Add a photo of ${o.label || "this option"}`}
+                    >
+                      {uploading === o.key ? (
+                        <Loader2 className="size-4 animate-spin" />
+                      ) : (
+                        <ImagePlus className="text-muted-foreground size-4" />
+                      )}
+                      <input
+                        type="file"
+                        accept="image/jpeg,image/png,image/webp,image/avif"
+                        className="sr-only"
+                        disabled={uploading !== null}
+                        onChange={(e) => void uploadPhoto(o.key, e.target.files?.[0])}
+                      />
+                    </label>
+                  )}
                   <Input
                     aria-label="Option"
                     value={o.label}
@@ -336,7 +402,7 @@ function GroupDialog({
           </p>
         ) : null}
         <DialogFooter>
-          <Button size="lg" onClick={save} disabled={pending}>
+          <Button size="lg" onClick={save} disabled={pending || uploading !== null}>
             {pending ? "Saving…" : "Save"}
           </Button>
         </DialogFooter>
