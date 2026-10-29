@@ -17,6 +17,10 @@ select r.id, p.key from public.roles r
 on conflict do nothing;
 ```
 (or tick them in Admin → Staff → Roles → Manager.)
+Business reports (`p2/reports`) add **`expenses.manage`** (add/edit business expenses): grant it the same way
+if managers should keep the expenses list (it's a financial permission; they also need `reports.financial.view`).
+Apply `20261030010001_business_expenses.sql` and `20261030010002_business_report.sql` before deploying, or the
+Business report page errors (the dashboard profit KPI just hides itself).
 
 ## 2. Drop the old coupon flag
 `coupons.once_per_customer` stays while `main` writes it; `coupon_evaluate` treats it as a limit of 1

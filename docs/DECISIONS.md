@@ -506,3 +506,34 @@ Open client questions are built as configurable defaults. Each row: what we chos
   total on the button, a short returns summary taken from the owner-edited Help returns topic (an
   "## At checkout" section if the owner adds one, else the first sentence of the policy), the refund method,
   and links to the full Terms and Returns policy.
+
+## Phase 2 — business reports (branch `p2/reports`, 2026-10-30)
+- **P2-40 — One business report, event-report rules:** Admin → Reports → Business (`/admin/reports/business`) reads
+  `business_report_data(from, to, detail)` (security definer, `reports.view`, ≤ 366 days) and rolls it up in
+  `src/modules/reports/business.ts` with the event-report helpers: counted orders = not cancelled and not an unpaid
+  website checkout; business day = POS `event_day` else `placed_at` in Asia/Dubai; refunds belong to the order (and
+  its day); profit ex VAT. COGS = the line's cost snapshot, else today's variant cost (the event report shows a
+  missing snapshot as 0). Every cost/profit figure is null in the database without `reports.financial.view`.
+- **P2-41 — What the business P&L takes off:** net revenue − COGS − event participation fees (unless waived) −
+  event expenses − business expenses. An event counts in the range it **starts** in (fee + all its expenses, so
+  the figure matches its own event report); a business expense on the day it was spent. "Estimated" everywhere.
+- **P2-42 — Business expenses:** new `business_expenses` (day, category, amount fils, note) with an owner-editable
+  `business_expense_categories` list (seeded Rent, Salaries, Marketing, Packaging, Utilities, Other; rename, add,
+  hide — a hidden category stays on old expenses). Read = `reports.financial.view`; write also needs the new
+  `expenses.manage` (Reports group, a financial permission; manager grant waits for the merge). Audited by trigger.
+- **P2-43 — Ranges and comparison:** presets Today / This week (from Monday) / This month / Last month / This
+  year, or custom from–to; default this month. Compared with the same number of days just before. The chart
+  buckets by day up to 31 days, by week (Monday) up to 92, by month beyond; each bucket sits beside the same
+  position in the previous period. A separate month-by-month chart shows the year of the range's end beside
+  the year before (growth and seasons).
+- **P2-44 — Customers, movers, inventory value:** "new" = first counted order ever falls in the range,
+  "returning" = bought before; repeat rate = share of the range's customers with more than one counted order in
+  total; top spenders by revenue in the range (period figures, not the profile labels). Movers = every active or
+  stocked variant: units sold in the range on all channels, units/day, days of stock (on hand ÷ rate, "—" when
+  nothing sold), last sale ever, "no sale in N days" with N = 30/60/90/180 picked on the page. Stock and its value
+  use on hand at **every** location (events included) × unit cost; negative stock counts as 0.
+- **P2-45 — Dashboard profit and PDFs:** the dashboard shows "This month · est. profit" (same P&L, month so far)
+  only with `reports.financial.view`; if the report can't be read (e.g. a preview on a DB without the migration)
+  the KPI is left out instead of breaking the dashboard. Every Excel download now has a PDF beside it (exports,
+  promotions report, business report); PDF tables size their columns from the content, shrink the font for wide
+  tables and print amounts without "AED" there (one "Amounts in AED" note).

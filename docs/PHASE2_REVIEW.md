@@ -112,11 +112,11 @@ page). Stock = sum of `stock_movements` (never a typed number), per variant per 
 | Remaining event stock back into the main inventory | ✅ | Event report "Stock": allocated → sold → returned to main stock (transfer back). |
 | Low-stock alerts | ✅ | Per-variant threshold (or default 5, Settings); "Low stock" list + dashboard card; owner email `owner_low_stock` when a product drops to its alert level. |
 | Stock adjustments: add new stock, damaged, corrections | ✅ | Receive, Damage, Correction +/− (reason required); all in Movements with who/when. |
-| Inventory reports: fast vs slow movers | ⚠️ | Only "Top products this month" (dashboard) and per-event best sellers. **No slow-movers / sell-through / days-of-stock report** across all channels. |
+| Inventory reports: fast vs slow movers | ✅ `p2/reports` | Reports → Business (`p2/reports`): fastest / slowest movers on all channels, units/day, days of stock, last sale, "no sale in 30/60/90/180 days", stock value. |
 | Simple from phone / iPad | ✅ | Admin responsive; e2e on iPhone/iPad. |
 
 Gaps:
-- ⚠️ No fast/slow-moving inventory report (see above).
+- ✅ Fast/slow movers: Reports → Business → Stock (`p2/reports`).
 - ⚠️ Low-stock alert is email only. WhatsApp to the owner isn't built (WhatsApp provider is a stand-in on `phase-2`).
 
 ## 6. Event calendar & participation management 📅
@@ -155,7 +155,7 @@ Segments, campaigns and VIP tiers are on **`phase-2`** (`20261024000007`, `…00
 | 5. Segmentation: new, returning, VIP, inactive | ⚠️ `phase-2` | Admin → Campaigns → Segments: saved rules (min/max spent, min orders, bought in last X days, **not bought in X days** = inactive, destinations, Passport, emirate, consent). These are **custom filters**, not fixed new/returning/VIP/inactive labels on each profile. |
 | 6. Feedback: reviews, complaints, suggestions | ⚠️ | Product reviews ✅ (`main`, owner approves). **Complaints / suggestions: not built.** Only a free-text "notes" field on the customer. |
 | 7. Marketing: promos, new products, offers via WhatsApp or email, only to opted-in customers | ⚠️ `phase-2` | Email campaigns ✅: segment → campaign, only to customers with email consent, unsubscribe link in every email. **WhatsApp campaigns: not built.** Consent is stored per channel (email/WhatsApp) since Phase 1. |
-| 8. Analytics: new vs returning customers, purchasing trends | ❌ | No customer report. Dashboard has revenue by channel + top products only. |
+| 8. Analytics: new vs returning customers, purchasing trends | ✅ `p2/reports` | Reports → Business (`p2/reports`) → Customers: new / returning, repeat rate, top spenders, new vs returning over time. |
 | 9. Search by name or mobile | ✅ `main` | Matches local formats ("050 123 4567" finds +971…), name or email. |
 | 10. Data privacy: secure, authorised users only | ✅ `main` | RLS on every table, role permissions (customers.view etc.), audit log, consent + unsubscribe timestamps. |
 | ★ Connected to sales: history updates automatically | ✅ `main` | Any order linked to the customer shows up immediately (attach a customer to an order from the admin too). |
@@ -164,7 +164,7 @@ Gaps:
 - ⚠️ VIP badge / automatic new · returning · VIP · inactive labels on profiles and in the customer list.
 - ❌ Complaints & suggestions log.
 - ❌ WhatsApp marketing messages.
-- ❌ Customer analytics report (new vs returning, trends).
+- ✅ Customer analytics: Reports → Business → Customers (`p2/reports`).
 
 ## 8. Reports, analytics & business performance dashboard 📈
 
@@ -175,20 +175,20 @@ There is **no business-wide reports page**: Admin → Reports today = events (+ 
 
 | Requirement | Status | Notes |
 |---|---|---|
-| 1. Sales overview by day, week, month, year | ⚠️ | Dashboard: Today / This week / This month revenue + orders, each vs the same days of the previous period. **No year, no chosen-period view, no chart over time.** |
-| 2. Revenue by online, POS, Soft POS, payment links | ⚠️ | Dashboard "Revenue by channel" (website, POS, WhatsApp, direct, payment link, booking), **this month only**. Soft POS is a payment *method*: split shown per event, not business-wide. |
-| 3. Product performance: perfumes, sprays, dukhoon, other | ⚠️ | Dashboard "Top products" (this month, units); per-event best sellers + category split. **No all-channel product/category report for a chosen period.** |
+| 1. Sales overview by day, week, month, year | ✅ `p2/reports` | Reports → Business: any range, chart by day/week/month vs the previous period. Before: Dashboard: Today / This week / This month revenue + orders, each vs the same days of the previous period. **No year, no chosen-period view, no chart over time.** |
+| 2. Revenue by online, POS, Soft POS, payment links | ✅ `p2/reports` | Reports → Business: revenue by channel + by payment method (Soft POS, cash, card…) for any range. Before: Dashboard "Revenue by channel" (website, POS, WhatsApp, direct, payment link, booking), **this month only**. Soft POS is a payment *method*: split shown per event, not business-wide. |
+| 3. Product performance: perfumes, sprays, dukhoon, other | ✅ `p2/reports` | Reports → Business: categories, best sellers, every product/size, all channels. Before: Dashboard "Top products" (this month, units); per-event best sellers + category split. **No all-channel product/category report for a chosen period.** |
 | 4. Event performance: compare exhibitions, weddings, events | ✅ | Reports → Events → Compare (revenue, units, profit, margins). Weddings from bookings show as deposits/orders, not as POS events. |
-| 5. P&L: revenue, expenses, product cost, net profit | ⚠️ | **Per event** ✅ (revenue, COGS from `cost_fils`, expenses + fee, net profit). **No business-wide P&L** (and no place for non-event expenses like rent, marketing, salaries). |
-| 6. Inventory reports: stock levels, low stock, inventory value | ⚠️ | Stock levels ✅, low stock ✅, stock export ✅. **Inventory value (units × cost) not shown.** |
-| 7. Customer analytics: new, returning, VIP, trends | ❌ | Same gap as §7 (#17). |
-| 8. Sales trends charts: growth, seasonal demand | ❌ | Only "revenue by day" inside an event report. No month-by-month / year chart. |
-| 9. Payment reports by method: cash, card, Soft POS, links | ⚠️ | Per event ✅ (chart + table). Business-wide: **Payments export (Excel/CSV) only**, no on-screen report. |
-| 10. Order reports: total, completed, cancelled, average order value | ⚠️ | Orders list filters + "Today's orders"; average order per event. **No order report** with completed / cancelled counts and AOV for a period. |
-| 11. Custom date filters | ⚠️ | Exports, orders list, promotions report have from–to; event report by day. **No general report with a date picker.** |
-| 12. Export Excel + PDF | ⚠️ | Excel/CSV ✅ (exports + event reports). **PDF only for event reports, on `phase-2`.** |
-| 13. Dashboard summary: revenue, orders, estimated profit, best sellers, upcoming events | ⚠️ | Revenue ✅, orders ✅, top products ✅, upcoming events ✅, outstanding, low stock, booking requests. **Estimated profit not on the dashboard.** |
-| 14. Compare months, events, categories | ⚠️ | Events ✅. Months: only "vs the same days last period" on the dashboard. Categories: only inside one event. |
+| 5. P&L: revenue, expenses, product cost, net profit | ✅ `p2/reports` | Reports → Business → P&L + Reports → Expenses (rent, salaries…). Before: **Per event** ✅ (revenue, COGS from `cost_fils`, expenses + fee, net profit). **No business-wide P&L** (and no place for non-event expenses like rent, marketing, salaries). |
+| 6. Inventory reports: stock levels, low stock, inventory value | ✅ `p2/reports` | Stock value on Inventory + in the business report. Before: Stock levels ✅, low stock ✅, stock export ✅. **Inventory value (units × cost) not shown.** |
+| 7. Customer analytics: new, returning, VIP, trends | ✅ `p2/reports` | Reports → Business → Customers. Before: Same gap as §7 (#17). |
+| 8. Sales trends charts: growth, seasonal demand | ✅ `p2/reports` | Sales over time vs previous period + year month by month vs last year. Before: Only "revenue by day" inside an event report. No month-by-month / year chart. |
+| 9. Payment reports by method: cash, card, Soft POS, links | ✅ `p2/reports` | Reports → Business → Payment methods. Before: Per event ✅ (chart + table). Business-wide: **Payments export (Excel/CSV) only**, no on-screen report. |
+| 10. Order reports: total, completed, cancelled, average order value | ✅ `p2/reports` | Reports → Business → Orders. Before: Orders list filters + "Today's orders"; average order per event. **No order report** with completed / cancelled counts and AOV for a period. |
+| 11. Custom date filters | ✅ `p2/reports` | Presets + custom range on Reports → Business. Before: Exports, orders list, promotions report have from–to; event report by day. **No general report with a date picker.** |
+| 12. Export Excel + PDF | ✅ `p2/reports` | PDF beside every Excel: business report, exports, promotions, events. Before: Excel/CSV ✅ (exports + event reports). **PDF only for event reports, on `phase-2`.** |
+| 13. Dashboard summary: revenue, orders, estimated profit, best sellers, upcoming events | ✅ `p2/reports` | "This month · est. profit" KPI (financial only). Before: Revenue ✅, orders ✅, top products ✅, upcoming events ✅, outstanding, low stock, booking requests. **Estimated profit not on the dashboard.** |
+| 14. Compare months, events, categories | ✅ `p2/reports` | Months (year vs last year), categories (business report), events (compare). Before: Events ✅. Months: only "vs the same days last period" on the dashboard. Categories: only inside one event. |
 | ★ Connected to sales, inventory, CRM, events; no double entry | ✅ | Everything reads the same orders / payments / stock movements / customers / events. Nothing is typed twice. |
 | ★ Clean dashboard with charts | ⚠️ | Charts exist (channel bars, revenue by day, payment methods, category split), but only for this month / per event. |
 
@@ -322,20 +322,20 @@ Each item is still to be decided with the owner. Section number in brackets.
 2. Photos on giveaway packaging/design options (§1).
 3. Guided giveaway flow: product type (perfume / all-over spray) → scent from the real catalog → packaging (§1).
 4. Plan Your Event section on the **homepage**, clearly visible (§2).
-5. Fast vs slow-moving inventory report across all channels (§5).
+5. Fast vs slow-moving inventory report across all channels (§5). ✅ `p2/reports` (Reports → Business / Expenses).
 15. Complaints & suggestions log for customers (§7).
 16. WhatsApp marketing messages (campaigns are email only) (§7).
-17. Customer analytics report: new vs returning customers, purchasing trends (§7, §8.7).
-20. Business-wide Reports page with a date range (day / week / month / year / custom) (§8.1, §8.11).
-21. Sales trend charts over time: growth, month-by-month, seasonal (§8.8).
-22. Revenue by channel + by payment method (incl. Soft POS) for any period, business-wide (§8.2, §8.9).
-23. Product & category performance for any period, all channels (perfume / spray / dukhoon…) (§8.3, §8.14).
-24. Order report: total, completed, cancelled, average order value (§8.10).
-25. Business-wide Profit & Loss + a general (non-event) expenses list (rent, marketing, salaries…) (§8.5).
-26. Inventory value (units × cost) (§8.6).
-27. Estimated profit on the dashboard (§8.13).
-28. Compare months and categories (events compare already exists) (§8.14).
-29. PDF export for all reports (PDF exists only for event reports, on `phase-2`) (§8.12).
+17. Customer analytics report: new vs returning customers, purchasing trends (§7, §8.7). ✅ `p2/reports` (Reports → Business / Expenses).
+20. Business-wide Reports page with a date range (day / week / month / year / custom) (§8.1, §8.11). ✅ `p2/reports` (Reports → Business / Expenses).
+21. Sales trend charts over time: growth, month-by-month, seasonal (§8.8). ✅ `p2/reports` (Reports → Business / Expenses).
+22. Revenue by channel + by payment method (incl. Soft POS) for any period, business-wide (§8.2, §8.9). ✅ `p2/reports` (Reports → Business / Expenses).
+23. Product & category performance for any period, all channels (perfume / spray / dukhoon…) (§8.3, §8.14). ✅ `p2/reports` (Reports → Business / Expenses).
+24. Order report: total, completed, cancelled, average order value (§8.10). ✅ `p2/reports` (Reports → Business / Expenses).
+25. Business-wide Profit & Loss + a general (non-event) expenses list (rent, marketing, salaries…) (§8.5). ✅ `p2/reports` (Reports → Business / Expenses).
+26. Inventory value (units × cost) (§8.6). ✅ `p2/reports` (Reports → Business / Expenses).
+27. Estimated profit on the dashboard (§8.13). ✅ `p2/reports` (Reports → Business / Expenses).
+28. Compare months and categories (events compare already exists) (§8.14). ✅ `p2/reports` (Reports → Business / Expenses).
+29. PDF export for all reports (PDF exists only for event reports, on `phase-2`) (§8.12). ✅ `p2/reports` (Reports → Business / Expenses).
 30. Sales per staff member: report + filter (orders already store `staff_id`) (§9.8).
 31. Staff performance report: attendance + events worked + sales per person (§9.11).
 32. Planned shifts / rota for staff (§9.7).

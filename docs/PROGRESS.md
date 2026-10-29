@@ -38,6 +38,7 @@ after a `db:reset`).
 | 5 | Points & VIP tiers + birthday offer | ✅ built, **off by default** (`20261024000008/9_points*.sql`) |
 | 6 | Giveaways customiser | ✅ built (`20261024000010_giveaways.sql`) |
 | 7 | WhatsApp API · courier API · staff attendance · PDF reports (mock providers) | ✅ built (`20261024000011_operations.sql`) |
+| 8 | Business reports: sales, channels, products, P&L + expenses, customers, movers, PDF everywhere | ✅ built (`20261030010001/2_business_*.sql`) |
 
 **1 — Promotions:** Admin → Promotions (`/admin/promotions`): % off / AED off / free delivery, minimum
 order, start/end dates, total uses, uses per customer, category + product scope, pause/delete. Checkout
@@ -125,6 +126,19 @@ minimum. Not built: choices at the till (POS) and on staff manual orders. Tests:
 Not built: a real WhatsApp/courier integration (needs the accounts), courier for event/POS orders, payroll.
 Tests: `providers/courier/mock.test.ts`, `notifications/whatsapp-notifier.test.ts`, `attendance/attendance.test.ts`,
 `reports/pdf.test.ts`, pgTAP `180_operations_test.sql`, e2e `e2e/operations.spec.ts` + `e2e/event-reports.spec.ts`.
+
+**8 — Business reports (branch `p2/reports`):** Admin → Reports gets tabs **Business · Events & promotions ·
+Expenses**. Business (`/admin/reports/business`): date presets (today / week / month / last month / year / custom),
+KPIs vs the previous equal period, sales over time (day/week/month) beside the previous period, revenue by channel,
+payment methods, orders by status (completed / cancelled / awaiting payment, AOV), categories + best sellers + every
+product, P&L (financial: COGS, event fees + expenses, business expenses, est. net profit), customers (new /
+returning / repeat rate / top spenders / trend), fast & slow movers + "no sale in N days" + inventory value, and the
+year month by month beside last year; Excel / PDF / CSV of the whole report. Expenses (`/admin/reports/expenses`,
+financial; editing needs `expenses.manage`): month view, add / edit / delete, categories (rename / add / hide).
+Inventory page: stock value card + value column (financial). Dashboard: est. profit this month (financial).
+PDF beside Excel for the exports panel and the promotions report. Decisions P2-40…45. Tests:
+`reports/business.test.ts`, `reports/range.test.ts`, `reports/pdf.test.ts`, SQL `190_business_report_test.sql` (25).
+e2e not written (needs a test Supabase).
 
 **Preview deployment (2026-10-24):** migrations `20261024000001`–`…009` applied to the hosted DB (after the
 main-compatibility check; production checked afterwards). `phase-2` pushed; Vercel preview at the stable branch URL
