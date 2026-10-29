@@ -14,6 +14,10 @@ import {
   Split,
   X,
 } from "lucide-react";
+import {
+  GiveawayPicker,
+  type StaffGiveawayLine,
+} from "@/components/admin/giveaways/giveaway-picker";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
@@ -23,6 +27,7 @@ import { cn } from "@/lib/utils";
 import { checkGiftCardAtTillAction } from "@/modules/gift-cards/actions";
 import { giftCardApplies, giftCardRefusalMessage, maskGiftCode } from "@/modules/gift-cards/schema";
 import { daySummaryAction } from "@/modules/pos/actions";
+import type { StoreGiveaway } from "@/modules/giveaways/types";
 import type { DaySummary, PosEvent, PosProduct } from "@/modules/pos/queries";
 import { queue, send, type QueuedSale } from "@/modules/pos/queue";
 import {
@@ -47,6 +52,7 @@ export function PosScreen({
   products: initialProducts,
   summary: initialSummary,
   giftCards,
+  giveaways = [],
 }: {
   events: PosEvent[];
   eventId: string;
@@ -54,11 +60,15 @@ export function PosScreen({
   summary: DaySummary;
   /** The owner lets the till take gift cards (Admin → Gift cards → Settings). */
   giftCards: boolean;
+  /** Giveaways staff can sell with their choices (Products → a product → Giveaway). */
+  giveaways?: StoreGiveaway[];
 }) {
   const router = useRouter();
   const [products, setProducts] = useState(initialProducts);
   const [summary, setSummary] = useState(initialSummary);
   const [cart, setCart] = useState<CartLine[]>([]);
+  const [giveawayLines, setGiveawayLines] = useState<StaffGiveawayLine[]>([]);
+  const [giveawayOpen, setGiveawayOpen] = useState(false);
   const [category, setCategory] = useState<string>("all");
   const [cartOpen, setCartOpen] = useState(false);
   const [payOpen, setPayOpen] = useState(false);
@@ -95,8 +105,11 @@ export function PosScreen({
   const lines = cart
     .map((l) => ({ ...l, product: byId.get(l.variantId)! }))
     .filter((l) => l.product);
-  const total = cartTotal(lines.map((l) => ({ priceFils: l.product.priceFils, qty: l.qty })));
-  const items = lines.reduce((s, l) => s + l.qty, 0);
+  const total = cartTotal([
+    ...lines.map((l) => ({ priceFils: l.product.priceFils, qty: l.qty })),
+    ...giveawayLines.map((l) => ({ priceFils: l.unitFils, qty: l.qty })),
+  ]);
+  const items = lines.reduce((s, l) => s + l.qty, 0) + giveawayLines.reduce((s, l) => s + l.qty, 0);
   const qtyOf = (id: string) => cart.find((l) => l.variantId === id)?.qty ?? 0;
 
   const refreshQueue = useCallback(async () => {
@@ -166,7 +179,7 @@ export function PosScreen({
   }
 
   async function complete(payments: SalePayment[]) {
-    if (!lines.length || busy) return;
+    if (!items || busy) return;
     setBusy(true);
     const sale: QueuedSale = {
       clientUuid: crypto.randomUUID(),
@@ -174,7 +187,15 @@ export function PosScreen({
       soldAt: new Date().toISOString(),
       customerPhone: phone.trim() || undefined,
       customerEmail: email.trim() || undefined,
-      lines: lines.map((l) => ({ variantId: l.variantId, qty: l.qty })),
+      lines: [
+        ...lines.map((l) => ({ variantId: l.variantId, qty: l.qty })),
+        ...giveawayLines.map((l) => ({
+          variantId: l.variantId,
+          qty: l.qty,
+          options: l.options,
+          giveawayId: l.giveawayId,
+        })),
+      ],
       payments,
       totalFils: total,
       attempts: 0,
@@ -184,7 +205,9 @@ export function PosScreen({
     // Optimistic stock at this event.
     setProducts((prev) =>
       prev.map((p) => {
-        const q = sale.lines.find((l) => l.variantId === p.variantId)?.qty ?? 0;
+        const q = sale.lines
+          .filter((l) => l.variantId === p.variantId)
+          .reduce((s, l) => s + l.qty, 0);
         return q ? { ...p, stock: p.stock - q } : p;
       }),
     );
@@ -201,6 +224,7 @@ export function PosScreen({
     }
     await refreshQueue();
     setCart([]);
+    setGiveawayLines([]);
     setPhone("");
     setEmail("");
     setSplit(null);
@@ -221,7 +245,7 @@ export function PosScreen({
   const event = events.find((e) => e.id === eventId);
 
   return (
-    <div className={cn("flex flex-col gap-4", lines.length ? "pb-60 lg:pb-44" : "pb-40 lg:pb-28")}>
+    <div className={cn("flex flex-col gap-4", items ? "pb-60 lg:pb-44" : "pb-40 lg:pb-28")}>
       {/* Top bar: event, sync, today */}
       <div className="flex flex-wrap items-center gap-2">
         <NativeSelect
@@ -329,7 +353,29 @@ export function PosScreen({
             {c === "all" ? "All" : c}
           </button>
         ))}
+        {giveaways.length ? (
+          <button
+            type="button"
+            onClick={() => setGiveawayOpen(true)}
+            className="bg-card h-10 shrink-0 rounded-full border border-dashed px-4 text-sm"
+          >
+            <Gift className="me-1.5 inline size-4" /> Giveaway
+          </button>
+        ) : null}
       </div>
+      <GiveawayPicker
+        giveaways={giveaways}
+        stockOf={(id) => byId.get(id)?.stock ?? 0}
+        open={giveawayOpen}
+        onOpenChange={setGiveawayOpen}
+        onAdd={(line) =>
+          setGiveawayLines((prev) =>
+            prev.some((l) => l.key === line.key)
+              ? prev.map((l) => (l.key === line.key ? { ...l, qty: l.qty + line.qty } : l))
+              : [...prev, line],
+          )
+        }
+      />
 
       {/* Product tiles */}
       <ul className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
@@ -399,7 +445,7 @@ export function PosScreen({
       {/* Sticky cart bar */}
       <div className="bg-card/95 fixed inset-x-0 bottom-16 z-20 border-t p-3 backdrop-blur lg:start-64 lg:bottom-0">
         {/* The order, always in view: fix a mis-tap with − / + without opening anything. */}
-        {lines.length ? (
+        {items ? (
           <ul aria-label="Order" className="mx-auto mb-3 flex max-w-5xl gap-2 overflow-x-auto pb-1">
             {lines.map((l) => (
               <li
@@ -430,8 +476,34 @@ export function PosScreen({
                 </Button>
               </li>
             ))}
+            {giveawayLines.map((l) => (
+              <li
+                key={l.key}
+                className="bg-background flex shrink-0 items-center gap-1 rounded-full border py-1 ps-4 pe-1"
+              >
+                <span className="me-1 text-sm font-medium">
+                  {l.qty} × {l.title}
+                </span>
+                <Button
+                  size="icon"
+                  variant="ghost"
+                  className="rounded-full"
+                  aria-label={`Remove ${l.title}`}
+                  onClick={() => setGiveawayLines((prev) => prev.filter((x) => x.key !== l.key))}
+                >
+                  <X />
+                </Button>
+              </li>
+            ))}
             <li className="flex shrink-0 items-center">
-              <Button variant="ghost" className="h-11 rounded-full" onClick={() => setCart([])}>
+              <Button
+                variant="ghost"
+                className="h-11 rounded-full"
+                onClick={() => {
+                  setCart([]);
+                  setGiveawayLines([]);
+                }}
+              >
                 <X /> Clear all
               </Button>
             </li>
@@ -506,8 +578,37 @@ export function PosScreen({
                 </Button>
               </li>
             ))}
+            {giveawayLines.map((l) => (
+              <li key={l.key} className="flex items-center gap-3 py-3">
+                <span className="min-w-0 flex-1">
+                  <span className="block font-medium">
+                    {l.qty} × {l.title}
+                  </span>
+                  {l.detail ? (
+                    <span className="text-muted-foreground block text-xs">{l.detail}</span>
+                  ) : null}
+                  <span className="numeric text-muted-foreground text-sm">
+                    {formatAED(l.unitFils * l.qty)}
+                  </span>
+                </span>
+                <Button
+                  size="icon-lg"
+                  variant="outline"
+                  aria-label={`Remove ${l.title}`}
+                  onClick={() => setGiveawayLines((prev) => prev.filter((x) => x.key !== l.key))}
+                >
+                  <X />
+                </Button>
+              </li>
+            ))}
           </ul>
-          <Button variant="ghost" onClick={() => setCart([])}>
+          <Button
+            variant="ghost"
+            onClick={() => {
+              setCart([]);
+              setGiveawayLines([]);
+            }}
+          >
             <X /> Clear cart
           </Button>
         </DialogContent>

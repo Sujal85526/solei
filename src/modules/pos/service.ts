@@ -1,6 +1,7 @@
 import "server-only";
 import { normalizePhone } from "@/lib/phone";
 import { createClient } from "@/lib/supabase/server";
+import { toDbOptions } from "@/modules/catalog/options";
 import { onOrderPaid } from "@/modules/orders/events";
 import { posSaleSchema } from "./schema";
 
@@ -37,7 +38,12 @@ export async function completeSale(input: unknown): Promise<CompleteSaleResult> 
         customer_phone: phone ?? null,
         customer_email: v.customerEmail ?? null,
         customer_name: v.customerName ?? null,
-        lines: v.lines.map((l) => ({ variant_id: l.variantId, qty: l.qty })),
+        lines: v.lines.map((l) => ({
+          variant_id: l.variantId,
+          qty: l.qty,
+          options: toDbOptions(l.options),
+          giveaway_id: l.giveawayId,
+        })),
         payments: v.payments.map((p) => ({
           method: p.method,
           amount_fils: p.amountFils,

@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { lineOptionsSchema } from "@/modules/catalog/options";
 
 export const POS_METHODS = ["cash", "card_terminal", "soft_pos", "bank_transfer"] as const;
 export type PosMethod = (typeof POS_METHODS)[number];
@@ -28,7 +29,16 @@ export const posSaleSchema = z.object({
     .pipe(z.email("Enter a valid email").optional()),
   customerName: z.string().trim().max(80).optional(),
   lines: z
-    .array(z.object({ variantId: z.uuid(), qty: z.number().int().min(1).max(99) }))
+    .array(
+      z.object({
+        variantId: z.uuid(),
+        // Giveaway lines come in hundreds; the database checks their minimum.
+        qty: z.number().int().min(1).max(1000),
+        /** Giveaways: the chosen options and the giveaway (priced by the database). */
+        options: lineOptionsSchema.optional(),
+        giveawayId: z.uuid().optional(),
+      }),
+    )
     .min(1)
     .max(50),
   payments: z

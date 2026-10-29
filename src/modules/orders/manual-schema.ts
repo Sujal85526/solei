@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { Constants } from "@/lib/database.types";
+import { lineOptionsSchema } from "@/modules/catalog/options";
 import { MANUAL_PAYMENT_METHODS } from "./status";
 
 export const manualLineSchema = z.object({
@@ -27,7 +28,19 @@ export const manualOrderSchema = z
     deliveryEmirate: z.enum(Constants.public.Enums.emirate).optional(),
     deliveryFeeFils: z.coerce.number().int().min(0).default(0),
     notes: z.string().trim().max(500).optional().default(""),
-    lines: z.array(manualLineSchema).min(1, "Add at least one product").max(50),
+    lines: z.array(manualLineSchema).max(50),
+    /** Giveaways: bottle + choices; the database prices them (no price changes here). */
+    giveawayLines: z
+      .array(
+        z.object({
+          variantId: z.uuid(),
+          qty: z.coerce.number().int().min(1).max(1000),
+          options: lineOptionsSchema.optional(),
+          giveawayId: z.uuid(),
+        }),
+      )
+      .max(20)
+      .default([]),
     payment: z.object({
       mode: z.enum(["later", "full", "partial"]),
       method: z.enum(MANUAL_PAYMENT_METHODS).default("cash"),
@@ -36,6 +49,9 @@ export const manualOrderSchema = z
     }),
   })
   .superRefine((v, ctx) => {
+    if (v.lines.length + v.giveawayLines.length === 0) {
+      ctx.addIssue({ code: "custom", path: ["lines"], message: "Add at least one product" });
+    }
     v.lines.forEach((l, i) => {
       if (l.unitPriceFils !== l.listPriceFils && l.overrideReason.length < 3) {
         ctx.addIssue({

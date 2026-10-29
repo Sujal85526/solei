@@ -15,6 +15,13 @@ describe("manual order schema", () => {
   it("accepts a simple order", () => {
     expect(manualOrderSchema.safeParse(base).success).toBe(true);
   });
+  it("accepts a giveaway-only order and refuses an empty one", () => {
+    const giveawayLines = [
+      { variantId: u, qty: 150, giveawayId: u, options: [{ groupId: u, optionIds: [u] }] },
+    ];
+    expect(manualOrderSchema.safeParse({ ...base, lines: [], giveawayLines }).success).toBe(true);
+    expect(manualOrderSchema.safeParse({ ...base, lines: [] }).success).toBe(false);
+  });
   it("requires a reason for price overrides", () => {
     const r = manualOrderSchema.safeParse({
       ...base,

@@ -5,6 +5,7 @@ import { assertPermission } from "@/lib/auth/session";
 import { formatAED } from "@/lib/money";
 import { can } from "@/lib/permissions";
 import { createAdminClient, createClient } from "@/lib/supabase/server";
+import { toDbOptions } from "@/modules/catalog/options";
 import { billingFromOrder } from "@/modules/checkout/billing";
 import { orderUrl } from "@/modules/checkout/service";
 import { notify } from "@/modules/notifications/service";
@@ -43,12 +44,20 @@ export async function createManualOrder(input: unknown) {
         delivery_emirate: v.fulfilment === "delivery" ? v.deliveryEmirate : null,
         delivery_fee_fils: v.fulfilment === "delivery" ? v.deliveryFeeFils : 0,
         notes: v.notes,
-        lines: v.lines.map((l) => ({
-          variant_id: l.variantId,
-          qty: l.qty,
-          unit_price_fils: l.unitPriceFils,
-          override_reason: l.overrideReason,
-        })),
+        lines: [
+          ...v.lines.map((l) => ({
+            variant_id: l.variantId,
+            qty: l.qty,
+            unit_price_fils: l.unitPriceFils,
+            override_reason: l.overrideReason,
+          })),
+          ...v.giveawayLines.map((l) => ({
+            variant_id: l.variantId,
+            qty: l.qty,
+            options: toDbOptions(l.options),
+            giveaway_id: l.giveawayId,
+          })),
+        ],
       },
     })
     .single();

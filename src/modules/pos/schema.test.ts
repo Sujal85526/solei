@@ -26,6 +26,13 @@ describe("pos", () => {
     };
     expect(posSaleSchema.safeParse(sale).success).toBe(true);
     expect(posSaleSchema.safeParse({ ...sale, payments: [] }).success).toBe(false);
+    // Giveaway lines carry their choices and go up to 1000 pieces.
+    expect(
+      posSaleSchema.safeParse({
+        ...sale,
+        lines: [{ variantId: u, qty: 200, giveawayId: u, options: [{ groupId: u, text: "Sara" }] }],
+      }).success,
+    ).toBe(true);
     expect(
       posSaleSchema.safeParse({ ...sale, payments: [{ method: "online_card", amountFils: 1 }] })
         .success,

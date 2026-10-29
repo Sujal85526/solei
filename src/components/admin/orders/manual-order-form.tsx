@@ -2,10 +2,14 @@
 
 import { useRouter } from "next/navigation";
 import { useMemo, useRef, useState, useTransition } from "react";
-import { Minus, Plus, Trash2, UserRound, X } from "lucide-react";
+import { Gift, Minus, Plus, Trash2, UserRound, X } from "lucide-react";
 import { toast } from "sonner";
 import { CustomerPicker, type CustomerOption } from "@/components/admin/customers/customer-picker";
 import { Field } from "@/components/admin/field";
+import {
+  GiveawayPicker,
+  type StaffGiveawayLine,
+} from "@/components/admin/giveaways/giveaway-picker";
 import { AdminSection } from "@/components/admin/section";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -15,6 +19,7 @@ import { aedToFils, formatAED } from "@/lib/money";
 import { formatPhone } from "@/lib/phone";
 import { cn } from "@/lib/utils";
 import { createManualOrderAction } from "@/modules/orders/manual-actions";
+import type { StoreGiveaway } from "@/modules/giveaways/types";
 import type { SellableVariant } from "@/modules/orders/manual-queries";
 import { priceCart } from "@/modules/orders/pricing";
 import { MANUAL_PAYMENT_METHODS, PAYMENT_METHOD_LABELS } from "@/modules/orders/status";
@@ -69,8 +74,11 @@ export function ManualOrderForm({
   pricesIncludeVat,
   canOverride,
   canRecordPayment,
+  giveaways = [],
 }: {
   variants: SellableVariant[];
+  /** Giveaways staff can add with their choices (priced by the database). */
+  giveaways?: StoreGiveaway[];
   zones: Zone[];
   vatRateBp: number;
   pricesIncludeVat: boolean;
@@ -82,6 +90,8 @@ export function ManualOrderForm({
   const [channel, setChannel] = useState<"whatsapp" | "direct">("whatsapp");
   const [customer, setCustomer] = useState<CustomerOption | null>(null);
   const [lines, setLines] = useState<Line[]>([]);
+  const [giveawayLines, setGiveawayLines] = useState<StaffGiveawayLine[]>([]);
+  const [giveawayOpen, setGiveawayOpen] = useState(false);
   const [picker, setPicker] = useState("");
   const [fulfilment, setFulfilment] = useState<"handed_over" | "pickup" | "delivery">(
     "handed_over",
@@ -125,7 +135,10 @@ export function ManualOrderForm({
   });
   const feeFils = fulfilment === "delivery" ? Math.max(0, Math.round(Number(fee || 0) * 100)) : 0;
   const pricing = priceCart({
-    lines: pricedLines.map((l) => ({ unitPriceFils: l.unitFils, qty: l.qty })),
+    lines: [
+      ...pricedLines.map((l) => ({ unitPriceFils: l.unitFils, qty: l.qty })),
+      ...giveawayLines.map((l) => ({ unitPriceFils: l.unitFils, qty: l.qty })),
+    ],
     vatRateBp,
     pricesIncludeVat,
     deliveryFeeFils: fulfilment === "delivery" ? feeFils : 0,
@@ -136,7 +149,7 @@ export function ManualOrderForm({
   function submit() {
     const errs: Record<string, string> = {};
     if (!customer) errs.customer = "Choose or create the customer";
-    if (!pricedLines.length) errs.lines = "Add at least one product";
+    if (!pricedLines.length && !giveawayLines.length) errs.lines = "Add at least one product";
     pricedLines.forEach((l) => {
       if (l.changed && l.reason.trim().length < 3)
         errs[`reason-${l.variantId}`] = "Say why the price changed";
@@ -166,6 +179,13 @@ export function ManualOrderForm({
           unitPriceFils: l.unitFils,
           listPriceFils: l.variant.priceFils,
           overrideReason: l.reason,
+        })),
+        // Giveaways: at the giveaway's price with the chosen options (the database checks both).
+        giveawayLines: giveawayLines.map((l) => ({
+          variantId: l.variantId,
+          qty: l.qty,
+          options: l.options,
+          giveawayId: l.giveawayId,
         })),
         payment: {
           mode: canRecordPayment ? payMode : "later",
@@ -242,6 +262,24 @@ export function ManualOrderForm({
               </option>
             ))}
           </NativeSelect>
+          {giveaways.length ? (
+            <Button variant="outline" className="mt-3" onClick={() => setGiveawayOpen(true)}>
+              <Gift /> Add a giveaway
+            </Button>
+          ) : null}
+          <GiveawayPicker
+            giveaways={giveaways}
+            stockOf={(id) => byId.get(id)?.onHand ?? 0}
+            open={giveawayOpen}
+            onOpenChange={setGiveawayOpen}
+            onAdd={(line) =>
+              setGiveawayLines((prev) =>
+                prev.some((l) => l.key === line.key)
+                  ? prev.map((l) => (l.key === line.key ? { ...l, qty: l.qty + line.qty } : l))
+                  : [...prev, line],
+              )
+            }
+          />
           {errors.lines ? <p className="text-destructive mt-2 text-sm">{errors.lines}</p> : null}
           <ul className="mt-4 flex flex-col gap-3">
             {pricedLines.map((l) => (
@@ -326,6 +364,29 @@ export function ManualOrderForm({
                     />
                   </Field>
                 ) : null}
+              </li>
+            ))}
+            {giveawayLines.map((l) => (
+              <li
+                key={l.key}
+                className="flex items-start justify-between gap-3 rounded-lg border p-3"
+              >
+                <div className="min-w-0">
+                  <p className="font-medium">{l.title}</p>
+                  {l.detail ? <p className="text-muted-foreground text-xs">{l.detail}</p> : null}
+                  <p className="numeric mt-1 text-sm">
+                    {l.qty} × {formatAED(l.unitFils)} ={" "}
+                    <span className="font-medium">{formatAED(l.unitFils * l.qty)}</span>
+                  </p>
+                </div>
+                <Button
+                  variant="ghost"
+                  size="icon-sm"
+                  aria-label={`Remove ${l.title}`}
+                  onClick={() => setGiveawayLines((prev) => prev.filter((x) => x.key !== l.key))}
+                >
+                  <Trash2 />
+                </Button>
               </li>
             ))}
           </ul>

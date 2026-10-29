@@ -6,6 +6,7 @@ import { PageHeader } from "@/components/admin/page-header";
 import { requirePagePermission } from "@/lib/auth/session";
 import { can } from "@/lib/permissions";
 import { createClient } from "@/lib/supabase/server";
+import { listGiveaways } from "@/modules/giveaways/queries";
 import { deliveryZones, sellableVariants } from "@/modules/orders/manual-queries";
 
 export const metadata: Metadata = { title: "New order" };
@@ -13,10 +14,11 @@ export const metadata: Metadata = { title: "New order" };
 export default async function NewOrderPage() {
   const staff = await requirePagePermission("orders.create");
   const supabase = await createClient();
-  const [variants, zones, settings] = await Promise.all([
+  const [variants, zones, settings, giveaways] = await Promise.all([
     sellableVariants(),
     deliveryZones(),
     supabase.from("settings").select("vat_rate_bp, prices_include_vat").single(),
+    listGiveaways(),
   ]);
   return (
     <>
@@ -37,6 +39,7 @@ export default async function NewOrderPage() {
         pricesIncludeVat={settings.data?.prices_include_vat ?? true}
         canOverride={can(staff.permissions, "orders.price_override")}
         canRecordPayment={can(staff.permissions, "payments.record")}
+        giveaways={giveaways}
       />
     </>
   );

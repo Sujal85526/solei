@@ -4,6 +4,7 @@ import { PosScreen } from "@/components/admin/pos/pos-screen";
 import { buttonVariants } from "@/components/ui/button";
 import { requirePagePermission } from "@/lib/auth/session";
 import { getGiftCardSettings } from "@/modules/gift-cards/queries";
+import { listGiveaways } from "@/modules/giveaways/queries";
 import { daySummary, posEvents, posProducts } from "@/modules/pos/queries";
 
 export const metadata: Metadata = { title: "POS" };
@@ -15,7 +16,11 @@ export default async function PosPage({ searchParams }: PageProps<"/admin/pos">)
   // With ?event= the tiles and day summary start alongside the event list (one round trip).
   const early = requested ? Promise.all([posProducts(requested), daySummary(requested)]) : null;
   early?.catch(() => {}); // unused when the event id is unknown — don't surface its error
-  const [events, giftSettings] = await Promise.all([posEvents(), getGiftCardSettings()]);
+  const [events, giftSettings, giveaways] = await Promise.all([
+    posEvents(),
+    getGiftCardSettings(),
+    listGiveaways(),
+  ]);
   const event = events.find((e) => e.id === requested) ?? events[0];
   if (!event) {
     return (
@@ -44,6 +49,7 @@ export default async function PosPage({ searchParams }: PageProps<"/admin/pos">)
         products={products}
         summary={summary}
         giftCards={giftSettings.atPos}
+        giveaways={giveaways}
       />
     </>
   );
