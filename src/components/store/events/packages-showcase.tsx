@@ -6,7 +6,7 @@ import { Check } from "lucide-react";
 import { eventsCopy as c } from "@/content/events";
 import { formatAED } from "@/lib/money";
 import { draftStore } from "@/modules/bookings/draft-store";
-import { WIZARD_STEPS } from "@/modules/bookings/schema";
+import { validateStep, WIZARD_STEPS } from "@/modules/bookings/schema";
 import type { BookingConfig } from "@/modules/bookings/types";
 import { PackageCompare } from "./package-compare";
 
@@ -21,7 +21,7 @@ export function PackagesShowcase({ packages }: { packages: BookingConfig["packag
     draftStore.update({ packageId: id });
     const { draft } = draftStore.get();
     // Jump straight to the package step when the earlier steps are already answered.
-    if (draft.eventTypeId && draft.eventDate && draft.serviceTypeIds.length) {
+    if (validateStep(0, draft) === null && validateStep(1, draft) === null) {
       draftStore.setStep(PACKAGE_STEP);
     }
     document.getElementById("plan")?.scrollIntoView({ behavior: "smooth", block: "start" });

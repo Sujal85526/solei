@@ -16,6 +16,17 @@ export const eventsCopy = {
     lede: "Styled perfume booths and guest giveaways for weddings and celebrations — opening for bookings soon.",
     cta: "Shop the collection",
   },
+  /** The homepage band (own section, not in the menu or a slideshow). */
+  home: {
+    eyebrow: "Plan your event",
+    title: ["Your celebration,", "in scent."],
+    lede: "Weddings, engagements, graduations, Ramadan and Eid gatherings — a styled Solei perfume booth, fresh florals in your colours and giveaways your guests take home. Tell us about your day in six short steps and we'll send a personal quotation.",
+    cta: "Plan your event",
+    soonLede:
+      "Styled perfume booths, florals and guest giveaways for weddings and celebrations — opening for bookings soon.",
+    soonCta: "Shop the collection",
+    imageAlt: "A Solei perfume booth dressed with fresh flowers at a celebration",
+  },
   hero: {
     eyebrow: "Private events",
     title: "Plan your",
@@ -41,7 +52,7 @@ export const eventsCopy = {
     eyebrow: "Plan your event",
     title: "Tell us about",
     titleItalic: "your day.",
-    lede: "Nine short steps. Your answers are saved on this device, so you can come back any time.",
+    lede: "Six short steps. Your answers are saved on this device, so you can come back any time.",
     stepOf: (n: number, total: number) => `Step ${n} of ${total}`,
     next: "Continue",
     back: "Back",
@@ -53,10 +64,9 @@ export const eventsCopy = {
     restored: "We restored your saved answers.",
     steps: {
       type: { title: "What are you celebrating?", hint: "Choose the occasion." },
-      details: { title: "When and where?", hint: "Date, times, venue and guests." },
-      services: {
-        title: "How should Solei be part of it?",
-        hint: "Choose one or more services.",
+      details: {
+        title: "Your event",
+        hint: "Date, times, venue and guests — and how we can reach you.",
       },
       package: {
         title: "Choose a package",
@@ -80,12 +90,6 @@ export const eventsCopy = {
         colour: "Flower colour",
         surcharge: (price: string) => `+ ${price}`,
         included: "Included",
-      },
-      products: {
-        title: "Products for your guests",
-        hint: "Roughly how many would you like? Leave 0 for none.",
-        each: (price: string) => `From ${price} each`,
-        quoted: "Priced in your quotation",
       },
       contact: { title: "Your details", hint: "So we can send your quotation." },
       summary: { title: "Your request", hint: "Check everything, then send it to us." },
@@ -114,11 +118,9 @@ export const eventsCopy = {
       when: "When",
       where: "Where",
       guests: "Guests",
-      services: "Services",
       package: "Package",
       booth: "Booth",
       flowers: "Flowers",
-      products: "Products",
       contact: "Contact",
       requests: "Special requests",
       none: "—",

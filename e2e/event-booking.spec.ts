@@ -44,16 +44,18 @@ test.describe("event booking", () => {
     await pick(page, "Wedding");
     await next(page);
 
-    await expect(page.getByRole("heading", { name: "When and where?" })).toBeFocused();
+    await expect(page.getByRole("heading", { name: "Your event" })).toBeFocused();
     await page.getByLabel("Event date").fill(eventDate(project));
     await page.getByLabel("Number of guests").fill("120");
     await page.getByLabel("Start time").fill("18:00");
     await page.getByLabel("End time").fill("23:30");
     await page.getByLabel("Venue or area").fill("Emirates Palace");
     await page.getByLabel("Emirate").selectOption("abu_dhabi");
-    await next(page);
-
-    await page.getByRole("checkbox", { name: /Perfume display booth/ }).check({ force: true });
+    // Name, mobile and email are part of the event details (the owner's step 2).
+    await page.getByLabel("Full name").fill("Mariam E2E");
+    await page.getByLabel("Mobile number").fill(phoneFor(project));
+    await page.getByRole("textbox", { name: /^Email/ }).fill(email);
+    await page.getByRole("checkbox", { name: /Solei may contact me/ }).check();
     await next(page);
 
     await pick(page, /^The Signature package/);
@@ -69,21 +71,12 @@ test.describe("event booking", () => {
     await expect(page.getByRole("radio", { name: /^Burgundy/ })).toBeChecked();
     await next(page);
 
-    await page.getByLabel("Perfumes").fill("10");
-    await next(page);
-
     // Draft survives a reload.
     await page.reload();
-    await expect(page.getByRole("heading", { name: "Your details" })).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Your request" })).toBeVisible();
 
-    await page.getByLabel("Full name").fill("Mariam E2E");
-    await page.getByLabel("Mobile number").fill(phoneFor(project));
-    await page.getByRole("textbox", { name: /^Email/ }).fill(email);
-    await page.getByRole("checkbox", { name: /Solei may contact me/ }).check();
-    await next(page);
-
-    // Signature 6,500 + flowers (800 base + 150 burgundy) + 10 perfumes × 280.
-    await expect(page.getByTestId("estimate-total")).toContainText("AED 10,250");
+    // Signature 6,500 + flowers (800 base + 150 burgundy).
+    await expect(page.getByTestId("estimate-total")).toContainText("AED 7,450");
     await page.getByRole("button", { name: "Send my request" }).click();
     await expect(page.getByRole("heading", { name: "Thank you." })).toBeVisible({
       timeout: 20_000,
@@ -96,14 +89,14 @@ test.describe("event booking", () => {
       .select("id, status, estimated_total_fils")
       .eq("ref", ref)
       .single();
-    expect(booking).toMatchObject({ status: "requested", estimated_total_fils: 1_025_000 });
+    expect(booking).toMatchObject({ status: "requested", estimated_total_fils: 745_000 });
 
     // ─── Admin: inbox → quote ─────────────────────────────────────────────────────────────
     await signInAsOwner(page);
     await page.goto("/admin/bookings");
     await page.getByRole("link", { name: new RegExp(ref) }).click();
     await expect(page.getByRole("heading", { level: 1, name: new RegExp(ref) })).toBeVisible();
-    await expect(page.getByTestId("quote-builder-total")).toHaveText("AED 10,250");
+    await expect(page.getByTestId("quote-builder-total")).toHaveText("AED 7,450");
     await page.getByRole("button", { name: "Send quotation" }).click();
     // The sent quote's accept link is listed under the quotation (the "sent" notice can be
     // replaced by the page refresh that follows).
@@ -113,10 +106,10 @@ test.describe("event booking", () => {
 
     // ─── Customer: accept + pay the deposit ───────────────────────────────────────────────
     await page.goto(new URL(link).pathname);
-    await expect(page.getByTestId("quote-total")).toHaveText("AED 10,250");
+    await expect(page.getByTestId("quote-total")).toHaveText("AED 7,450");
     await page.getByRole("button", { name: "Accept quotation" }).click();
     await expect(page.getByText("Quotation accepted.")).toBeVisible();
-    await page.getByRole("button", { name: /Pay deposit · AED 5,125/ }).click();
+    await page.getByRole("button", { name: /Pay deposit · AED 3,725/ }).click();
     await expect(page.getByText("Test payment · no real card")).toBeVisible();
     await page.getByRole("button", { name: "Pay with test card" }).click();
     await expect(page.getByText("Your booking is confirmed.")).toBeVisible({ timeout: 30_000 });

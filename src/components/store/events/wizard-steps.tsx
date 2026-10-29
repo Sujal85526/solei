@@ -208,35 +208,6 @@ export function DetailsStep({ draft, errors, update }: StepProps) {
   );
 }
 
-export function ServicesStep({ draft, errors, update, config }: StepProps) {
-  const toggle = (id: string) =>
-    update({
-      serviceTypeIds: draft.serviceTypeIds.includes(id)
-        ? draft.serviceTypeIds.filter((s) => s !== id)
-        : [...draft.serviceTypeIds, id],
-    });
-  return (
-    <div data-field="serviceTypeIds">
-      <div className="grid gap-3 md:grid-cols-3">
-        {config.services.map((s, i) => (
-          <Choice
-            key={s.id}
-            type="checkbox"
-            name="serviceTypeIds"
-            first={i === 0}
-            checked={draft.serviceTypeIds.includes(s.id)}
-            onChange={() => toggle(s.id)}
-            title={s.name}
-            hint={s.description}
-            describedBy={errors.serviceTypeIds ? "serviceTypeIds-error" : undefined}
-          />
-        ))}
-      </div>
-      <GroupError id="serviceTypeIds" error={errors.serviceTypeIds} />
-    </div>
-  );
-}
-
 function Photo({ src, alt }: { src?: string; alt: string }) {
   if (!src) return null;
   return (
@@ -392,43 +363,6 @@ export function FlowersStep({ draft, errors, update, config }: StepProps) {
   );
 }
 
-export function ProductsStep({ draft, errors, update, config }: StepProps) {
-  const s = w.steps.products;
-  return (
-    <div className="grid gap-5 sm:grid-cols-3">
-      {config.products.map((p) => {
-        const id = `products.${p.category}`;
-        return (
-          <Field
-            key={p.category}
-            label={p.name}
-            htmlFor={id}
-            error={errors[id]}
-            hint={p.fromPriceFils === null ? s.quoted : s.each(formatAED(p.fromPriceFils))}
-          >
-            <Input
-              id={id}
-              name={id}
-              type="number"
-              inputMode="numeric"
-              min={0}
-              max={10000}
-              placeholder="0"
-              value={draft.products[p.category] ?? ""}
-              aria-invalid={errors[id] ? true : undefined}
-              aria-describedby={errors[id] ? `${id}-error` : `${id}-hint`}
-              onChange={(e) =>
-                update({ products: { ...draft.products, [p.category]: e.target.value } })
-              }
-              className={inputCls}
-            />
-          </Field>
-        );
-      })}
-    </div>
-  );
-}
-
 export function ContactStep({ draft, errors, update }: StepProps) {
   const f = w.fields;
   const aria = (id: keyof BookingDraft) => ({
@@ -512,6 +446,22 @@ export function ContactStep({ draft, errors, update }: StepProps) {
           />
           {f.marketing}
         </label>
+      </div>
+    </div>
+  );
+}
+
+/** Step 2 (the owner's flow): the event, then who we send the quotation to. */
+export function EventDetailsStep(props: StepProps) {
+  return (
+    <div className="flex flex-col gap-10">
+      <DetailsStep {...props} />
+      <div className="border-pink/15 flex flex-col gap-5 border-t pt-8">
+        <div>
+          <h4 className="font-display text-pink text-2xl">{w.steps.contact.title}</h4>
+          <p className="text-pearl-muted mt-1 text-sm">{w.steps.contact.hint}</p>
+        </div>
+        <ContactStep {...props} />
       </div>
     </div>
   );

@@ -48,9 +48,15 @@ const complete: BookingDraft = {
 };
 
 describe("wizard steps", () => {
-  it("has nine steps ending with the summary", () => {
-    expect(WIZARD_STEPS).toHaveLength(9);
-    expect(WIZARD_STEPS.at(-1)?.id).toBe("summary");
+  it("has the owner's six steps ending with the summary", () => {
+    expect(WIZARD_STEPS.map((s) => s.id)).toEqual([
+      "type",
+      "details",
+      "package",
+      "booth",
+      "flowers",
+      "summary",
+    ]);
   });
 
   it("an empty draft fails on the first step", () => {
@@ -83,10 +89,10 @@ describe("wizard steps", () => {
     });
   });
 
-  it("needs at least one service", () => {
-    expect(validateStep(step("services"), { ...complete, serviceTypeIds: [] })).toEqual({
-      serviceTypeIds: "Choose at least one service",
-    });
+  it("services and products are no longer asked", () => {
+    expect(firstInvalidStep({ ...complete, serviceTypeIds: [], products: { perfume: "-1" } })).toBe(
+      -1,
+    );
   });
 
   it("package and booth are optional", () => {
@@ -103,18 +109,9 @@ describe("wizard steps", () => {
     ).toBeNull();
   });
 
-  it("product quantities are whole numbers up to 10,000", () => {
-    expect(validateStep(step("products"), { ...complete, products: { perfume: "-1" } })).toEqual({
-      "products.perfume": "Enter 0 or more",
-    });
+  it("event details include the contact: UAE phone, email and consent", () => {
     expect(
-      validateStep(step("products"), { ...complete, products: { perfume: "10001" } }),
-    ).not.toBeNull();
-  });
-
-  it("contact: UAE phone, email and consent", () => {
-    expect(
-      validateStep(step("contact"), { ...complete, phone: "12", email: "x", consent: false }),
+      validateStep(step("details"), { ...complete, phone: "12", email: "x", consent: false }),
     ).toMatchObject({
       phone: expect.any(String),
       email: "Enter a valid email",
@@ -137,8 +134,9 @@ describe("bookingRequestSchema", () => {
       email: "mariam@example.com",
     });
     expect(p.guests).toBe(150);
-    expect(p.products_interest).toEqual([{ category: "perfume", qty: 10 }]);
-    expect(p.service_type_ids).toEqual([ID, ID2]);
+    // No longer asked: sent empty (the columns stay for staff).
+    expect(p.products_interest).toEqual([]);
+    expect(p.service_type_ids).toEqual([]);
     expect(p.booth_design_id).toBeNull();
     expect(p.flower_option_id).toBe(ID2);
     expect(p.end_time).toBe("01:00");

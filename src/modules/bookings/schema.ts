@@ -28,6 +28,7 @@ export type BookingDraft = {
   location: string;
   emirate: string;
   guests: string;
+  /** No longer asked in the customer wizard (kept so older saved drafts still parse). */
   serviceTypeIds: string[];
   /** "" = not sure yet — Solei suggests one in the quotation. */
   packageId: string;
@@ -35,7 +36,7 @@ export type BookingDraft = {
   boothDesignId: string;
   flowers: boolean;
   flowerOptionId: string;
-  /** category slug → quantity input. */
+  /** category slug → quantity input. No longer asked in the customer wizard (older drafts). */
   products: Record<string, string>;
   name: string;
   phone: string;
@@ -93,10 +94,6 @@ export const detailsStep = z
     message: "The end time must differ from the start",
   });
 
-export const servicesStep = z.object({
-  serviceTypeIds: z.array(z.guid()).min(1, "Choose at least one service").max(20),
-});
-
 export const packageStep = z.object({ packageId: optionalId });
 export const boothStep = z.object({ boothDesignId: optionalId });
 
@@ -148,15 +145,19 @@ export const contactStep = z.object({
   marketingConsent: z.boolean().default(false),
 });
 
+/** Step 2: the event and who to contact (the owner's flow asks for both together). */
+export const eventDetailsStep = detailsStep.and(contactStep);
+
+/**
+ * The owner's six steps. Services and products of interest are no longer asked (the columns stay;
+ * staff can still use them, and submit sends them empty).
+ */
 export const WIZARD_STEPS = [
   { id: "type", title: "Occasion", schema: eventTypeStep },
-  { id: "details", title: "Date & place", schema: detailsStep },
-  { id: "services", title: "Services", schema: servicesStep },
+  { id: "details", title: "Event details", schema: eventDetailsStep },
   { id: "package", title: "Package", schema: packageStep },
   { id: "booth", title: "Booth", schema: boothStep },
   { id: "flowers", title: "Flowers", schema: flowersStep },
-  { id: "products", title: "Products", schema: productsStep },
-  { id: "contact", title: "Your details", schema: contactStep },
   { id: "summary", title: "Summary", schema: null },
 ] as const;
 
@@ -186,20 +187,18 @@ export const bookingRequestSchema = z
   .object({ clientUuid: z.uuid() })
   .and(eventTypeStep)
   .and(detailsStep)
-  .and(servicesStep)
   .and(packageStep)
   .and(boothStep)
   .and(flowersStep)
-  .and(productsStep)
   .and(contactStep);
 
 export type BookingRequest = z.output<typeof bookingRequestSchema>;
 
-/** Estimate preview input (no contact details needed). */
+/** Estimate preview input (no contact details needed). Products default to none. */
 export const estimatePreviewSchema = z
   .object({ packageId: optionalId })
   .and(flowersStep)
-  .and(productsStep);
+  .and(productsStep.partial().transform((v) => ({ products: v.products ?? [] })));
 
 /** Payload for `submit_booking` (snake_case, as the RPC expects). */
 export function toSubmitPayload(v: BookingRequest) {
@@ -212,12 +211,12 @@ export function toSubmitPayload(v: BookingRequest) {
     location: v.location,
     emirate: v.emirate,
     guests: v.guests,
-    service_type_ids: [...new Set(v.serviceTypeIds)],
+    service_type_ids: [],
     package_id: v.packageId,
     booth_design_id: v.boothDesignId,
     flowers: v.flowers,
     flower_option_id: v.flowerOptionId,
-    products_interest: v.products,
+    products_interest: [],
     special_requests: v.specialRequests,
     contact: { name: v.name, phone: v.phone, email: v.email },
     consent: v.consent,

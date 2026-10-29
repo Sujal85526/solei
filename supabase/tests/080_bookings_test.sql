@@ -6,7 +6,7 @@ select plan(40);
 update public.booking_packages set active = false where name = 'Grand Destination';
 
 select tests.login_anon();
-select is((select count(*)::int from public.booking_event_types), 9, 'anon reads the 9 launch event types');
+select is((select count(*)::int from public.booking_event_types), 8, 'anon reads the owner''s 8 active event types (Birthday is off)');
 select is((select count(*)::int from public.booking_packages), 2, 'anon only sees active packages');
 select throws_ok($$ insert into public.booking_event_types (name) values ('Hack') $$, '42501', null,
   'anon cannot write config');
@@ -68,8 +68,8 @@ select throws_ok(
   'P0001', 'choose a date in the future', 'past dates are refused');
 select throws_ok(
   format($$ select public.submit_booking(%L::jsonb) $$,
-    jsonb_set(jsonb_set(:'req'::jsonb, '{client_uuid}', '"44444444-4444-4444-8444-444444444444"'), '{service_type_ids}', '[]')),
-  'P0001', 'choose at least one service', 'a service is required');
+    jsonb_set(jsonb_set(:'req'::jsonb, '{client_uuid}', '"44444444-4444-4444-8444-444444444444"'), '{service_type_ids}', '["00000000-0000-4000-9000-00000000dead"]')),
+  'P0001', 'a service you chose is no longer available', 'an unknown service is refused (services are optional)');
 select tests.logout();
 
 select is((select status::text from public.bookings where id = :'sub_booking_id'), 'requested', 'new bookings are requested');

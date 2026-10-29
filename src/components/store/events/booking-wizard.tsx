@@ -20,36 +20,23 @@ import {
 import type { BookingConfig, Estimate } from "@/modules/bookings/types";
 import {
   BoothStep,
-  ContactStep,
-  DetailsStep,
+  EventDetailsStep,
   EventTypeStep,
   FlowersStep,
   PackageStep,
-  ProductsStep,
-  ServicesStep,
   type StepProps,
 } from "./wizard-steps";
 
 const w = c.wizard;
 const TOTAL = WIZARD_STEPS.length;
-const STEP_VIEWS = [
-  EventTypeStep,
-  DetailsStep,
-  ServicesStep,
-  PackageStep,
-  BoothStep,
-  FlowersStep,
-  ProductsStep,
-  ContactStep,
-] as const;
+const STEP_VIEWS = [EventTypeStep, EventDetailsStep, PackageStep, BoothStep, FlowersStep] as const;
 const PACKAGE_STEP = WIZARD_STEPS.findIndex((s) => s.id === "package");
 
-const productsOf = (d: BookingDraft) =>
-  Object.entries(d.products)
-    .map(([category, v]) => ({ category, qty: Number(v) || 0 }))
-    .filter((p) => p.qty > 0);
-
-/** The 9-step "Plan your event" wizard. Draft saved locally; estimate and submit are server-side. */
+/**
+ * The owner's 6-step "Plan your event" wizard: occasion → event details (with name, mobile, email
+ * and special requests) → package → booth → flowers → summary. Draft saved locally; estimate and
+ * submit are server-side.
+ */
 export function BookingWizard({ config }: { config: BookingConfig }) {
   const state = useDraft();
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -72,12 +59,7 @@ export function BookingWizard({ config }: { config: BookingConfig }) {
   }, [step, done]);
 
   // Summary: ask the server for the authoritative estimate.
-  const previewKey = JSON.stringify([
-    draft.packageId,
-    draft.flowers,
-    draft.flowerOptionId,
-    draft.products,
-  ]);
+  const previewKey = JSON.stringify([draft.packageId, draft.flowers, draft.flowerOptionId]);
   useEffect(() => {
     if (stepId !== "summary") return;
     startPreview(async () => {
@@ -85,7 +67,6 @@ export function BookingWizard({ config }: { config: BookingConfig }) {
         packageId: draft.packageId,
         flowers: draft.flowers,
         flowerOptionId: draft.flowerOptionId,
-        products: draft.products,
       });
       setEstimate(r.ok ? r.data : null);
       if (!r.ok) setFormError(r.error);
@@ -100,7 +81,7 @@ export function BookingWizard({ config }: { config: BookingConfig }) {
           packageId: draft.packageId,
           flowers: draft.flowers,
           flowerOptionId: draft.flowerOptionId,
-          productsInterest: productsOf(draft),
+          productsInterest: [],
         },
         config,
       ),
@@ -116,8 +97,6 @@ export function BookingWizard({ config }: { config: BookingConfig }) {
     if (Object.keys(errors).length) {
       const next = { ...errors };
       for (const k of Object.keys(patch)) delete next[k];
-      if (patch.products)
-        for (const k of Object.keys(next)) if (k.startsWith("products.")) delete next[k];
       setErrors(next);
     }
   };
@@ -242,7 +221,7 @@ export function BookingWizard({ config }: { config: BookingConfig }) {
             </button>
           ) : null}
         </div>
-        <ol className="mt-4 grid grid-cols-9 gap-1" aria-label="Progress">
+        <ol className="mt-4 grid grid-cols-6 gap-1" aria-label="Progress">
           {WIZARD_STEPS.map((s, i) => (
             <li key={s.id}>
               {i < step ? (
@@ -378,12 +357,6 @@ function Summary({
     list.find((x) => x.id === id)?.name;
   const stepOf = (id: string) => WIZARD_STEPS.findIndex((x) => x.id === id);
   const flower = config.flowers.find((f) => f.id === draft.flowerOptionId);
-  const products = productsOf(draft)
-    .map(
-      (p) =>
-        `${config.products.find((x) => x.category === p.category)?.name ?? p.category} × ${p.qty}`,
-    )
-    .join(", ");
 
   const rows: [string, string, string][] = [
     [s.occasion, name(config.eventTypes, draft.eventTypeId) ?? s.none, "type"],
@@ -400,24 +373,15 @@ function Summary({
       "details",
     ],
     [s.guests, draft.guests || s.none, "details"],
-    [
-      s.services,
-      draft.serviceTypeIds
-        .map((id) => name(config.services, id))
-        .filter(Boolean)
-        .join(", ") || s.none,
-      "services",
-    ],
     [s.package, name(config.packages, draft.packageId) ?? w.steps.package.undecided, "package"],
     [s.booth, name(config.booths, draft.boothDesignId) ?? w.steps.booth.none, "booth"],
     [s.flowers, draft.flowers && flower ? flower.name : w.steps.flowers.none, "flowers"],
-    [s.products, products || s.none, "products"],
     [
       s.contact,
       [draft.name, draft.phone, draft.email].filter(Boolean).join(" · ") || s.none,
-      "contact",
+      "details",
     ],
-    [s.requests, draft.specialRequests || s.none, "contact"],
+    [s.requests, draft.specialRequests || s.none, "details"],
   ];
 
   return (
