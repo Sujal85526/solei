@@ -1,9 +1,11 @@
 import Link from "next/link";
+import { Suspense } from "react";
 import { Logo } from "@/components/brand";
 import { t } from "@/content/en";
 import { cn } from "@/lib/utils";
 import { storeNav } from "@/content/site";
 import { AccountMenu } from "./account/account-menu";
+import { AnnouncementBar } from "./announcement-bar";
 import { CartButton } from "./cart/cart-button";
 import { HeaderShell } from "./header-shell";
 import { SiteMenu } from "./site-menu";
@@ -23,6 +25,9 @@ export function SiteHeader() {
       >
         {t.nav.skipToContent}
       </a>
+      <Suspense fallback={null}>
+        <AnnouncementBar />
+      </Suspense>
       <div className="mx-auto grid h-14 max-w-[96rem] grid-cols-[1fr_auto_1fr] items-center gap-6 px-4 sm:h-16 sm:px-8 lg:px-14">
         <div className="flex items-center">
           {/* Phones: the menu sits on the empty left; wide screens show the nav links here. */}
