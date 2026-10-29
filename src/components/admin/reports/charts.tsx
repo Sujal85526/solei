@@ -1,6 +1,16 @@
 "use client";
 
-import { Bar, BarChart, CartesianGrid, Cell, LabelList, Tooltip, XAxis, YAxis } from "recharts";
+import {
+  Bar,
+  BarChart,
+  CartesianGrid,
+  Cell,
+  LabelList,
+  Legend,
+  Tooltip,
+  XAxis,
+  YAxis,
+} from "recharts";
 import { formatAED } from "@/lib/money";
 
 /**
@@ -172,6 +182,118 @@ export function BarList({
             formatter={(v) => nbsp(fmt(Number(v), format))}
           />
         </Bar>
+      </BarChart>
+    </figure>
+  );
+}
+
+export type CompareDatum = {
+  label: string;
+  /** fils for "aed", plain number otherwise */
+  value: number;
+  /** The same position in the period compared with. */
+  previous: number;
+};
+
+function CompareTooltip({
+  active,
+  payload,
+  format,
+  names,
+}: {
+  active?: boolean;
+  payload?: ReadonlyArray<{ payload?: unknown }>;
+  format: Format;
+  names: [string, string];
+}) {
+  if (!active || !payload?.length) return null;
+  const d = payload[0].payload as CompareDatum;
+  return (
+    <div className="bg-popover text-popover-foreground rounded-md border px-3 py-2 text-xs shadow-md">
+      <p className="font-medium">{d.label}</p>
+      <p className="numeric mt-0.5 text-sm font-semibold">
+        {names[0]}: {fmt(d.value, format)}
+      </p>
+      <p className="text-muted-foreground numeric mt-0.5">
+        {names[1]}: {fmt(d.previous, format)}
+      </p>
+    </div>
+  );
+}
+
+/**
+ * Columns for a period beside the period compared with (same measure, one axis): this period in
+ * burgundy, the other in a light tint of it, legend on top. Long series drop the value labels.
+ */
+export function CompareColumnChart({
+  data,
+  format,
+  label,
+  names,
+  height = 240,
+}: {
+  data: CompareDatum[];
+  format: Format;
+  label: string;
+  /** Legend names: [this period, compared period] */
+  names: [string, string];
+  height?: number;
+}) {
+  const dense = data.length > 14;
+  return (
+    <figure role="img" aria-label={label} className="m-0 w-full">
+      <BarChart
+        responsive
+        data={data}
+        style={{ width: "100%", height }}
+        margin={{ top: 8, right: 4, bottom: 0, left: 0 }}
+        barCategoryGap={dense ? "18%" : "24%"}
+        barGap={1}
+      >
+        <CartesianGrid vertical={false} stroke={GRID} />
+        <XAxis
+          dataKey="label"
+          tickLine={false}
+          axisLine={false}
+          tick={{ fill: INK, fontSize: 11 }}
+          interval="preserveStartEnd"
+          minTickGap={8}
+        />
+        <YAxis
+          width={64}
+          tickLine={false}
+          axisLine={false}
+          tick={{ fill: INK, fontSize: 11 }}
+          tickFormatter={(v: number) => tick(v, format)}
+        />
+        <Legend
+          verticalAlign="top"
+          align="right"
+          iconType="square"
+          iconSize={10}
+          wrapperStyle={{ fontSize: 12, paddingBottom: 8 }}
+        />
+        <Tooltip
+          cursor={{ fill: "color-mix(in oklab, var(--brand-pink) 40%, transparent)" }}
+          content={(p) => <CompareTooltip {...p} format={format} names={names} />}
+        />
+        <Bar
+          dataKey="previous"
+          name={names[1]}
+          fill={BAR}
+          fillOpacity={0.28}
+          radius={[4, 4, 0, 0]}
+          maxBarSize={28}
+          isAnimationActive={false}
+        />
+        <Bar
+          dataKey="value"
+          name={names[0]}
+          fill={BAR}
+          radius={[4, 4, 0, 0]}
+          maxBarSize={28}
+          isAnimationActive={false}
+        />
       </BarChart>
     </figure>
   );
