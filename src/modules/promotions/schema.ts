@@ -16,6 +16,14 @@ export const OFFER_KIND_LABELS: Record<OfferKind, string> = {
   buy_x_get_y: "Buy X get Y",
 };
 
+/** Report types: codes and the automatic offers. */
+export const PROMOTION_KIND_LABELS: Record<"code" | OfferKind, string> = {
+  code: "Code",
+  sale: "Sale price",
+  bundle: "Bundle",
+  buy_x_get_y: "Buy X get Y",
+};
+
 export type Channel = "website" | "pos";
 export const CHANNEL_LABELS: Record<Channel, string> = { website: "Website", pos: "Event till" };
 

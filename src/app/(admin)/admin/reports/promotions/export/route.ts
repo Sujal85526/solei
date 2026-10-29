@@ -1,6 +1,6 @@
 import type { NextRequest } from "next/server";
 import { assertPermission, PermissionError } from "@/lib/auth/session";
-import { promotionReport } from "@/modules/coupons/queries";
+import { promotionPerformance } from "@/modules/promotions/queries";
 import { parseRange } from "@/modules/exports/params";
 import { parseFormat, reportDownload } from "@/modules/reports/download";
 import { promotionsTable, promotionsWorkbook } from "@/modules/reports/promotions-export";
@@ -15,7 +15,7 @@ export async function GET(request: NextRequest) {
   }
   const sp = request.nextUrl.searchParams;
   const range = parseRange(sp);
-  const rows = await promotionReport(range.from, range.to);
+  const rows = await promotionPerformance(range.from, range.to);
   return reportDownload(
     parseFormat(sp.get("format")),
     `solei-promotions-${range.from}-to-${range.to}`,

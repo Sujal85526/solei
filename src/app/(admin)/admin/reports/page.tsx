@@ -8,7 +8,7 @@ import { AdminSection } from "@/components/admin/section";
 import { requirePagePermission } from "@/lib/auth/session";
 import { businessDay } from "@/lib/dates";
 import { can } from "@/lib/permissions";
-import { promotionReport } from "@/modules/coupons/queries";
+import { promotionPerformance } from "@/modules/promotions/queries";
 import { reportEventOptions } from "@/modules/reports/queries";
 
 export const metadata: Metadata = { title: "Reports" };
@@ -26,7 +26,7 @@ export default async function ReportsPage({ searchParams }: PageProps<"/admin/re
   if (from > to) [from, to] = [to, from];
   const [options, promotions] = await Promise.all([
     reportEventOptions(),
-    promotionReport(from, to),
+    promotionPerformance(from, to),
   ]);
   const financial = can(staff.permissions, "reports.financial.view");
 
