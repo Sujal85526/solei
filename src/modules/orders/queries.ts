@@ -1,7 +1,8 @@
 import "server-only";
 import { businessDay, businessDayRange } from "@/lib/dates";
 import { must } from "@/lib/supabase/must";
-import { createClient } from "@/lib/supabase/server";
+import { assertPermission } from "@/lib/auth/session";
+import { createAdminClient, createClient } from "@/lib/supabase/server";
 import { searchNeedles, type OrderFilters } from "./schema";
 
 export const ORDERS_PAGE_SIZE = 25;
@@ -24,6 +25,7 @@ export async function listOrders(filters: OrderFilters) {
   else if (!filters.status && !filters.q) q = q.neq("status", "pending_payment");
   if (filters.payment) q = q.eq("payment_status", filters.payment);
   if (filters.event) q = q.eq("event_id", filters.event);
+  if (filters.staff) q = q.eq("staff_id", filters.staff);
   if (filters.from) q = q.gte("placed_at", businessDayRange(filters.from).start.toISOString());
   if (filters.to) q = q.lt("placed_at", businessDayRange(filters.to).end.toISOString());
   if (filters.q) {
@@ -66,6 +68,20 @@ export async function eventOptions() {
     .order("start_date", { ascending: false })
     .limit(100);
   return data ?? [];
+}
+
+/**
+ * Staff names for the "Made by" filter (staff_profiles is readable with staff.manage only, so the
+ * names are read with the service role after the orders.view check).
+ */
+export async function staffOptions(): Promise<{ id: string; name: string }[]> {
+  await assertPermission("orders.view");
+  const { data } = await createAdminClient()
+    .from("staff_profiles")
+    .select("user_id, full_name, active")
+    .order("active", { ascending: false })
+    .order("full_name");
+  return (data ?? []).map((s) => ({ id: s.user_id, name: s.full_name }));
 }
 
 /** Everything the order detail page shows. Line costs come back empty without financial access (RLS). */

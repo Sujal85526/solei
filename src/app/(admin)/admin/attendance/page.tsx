@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { AttendanceNav } from "@/components/admin/attendance/attendance-nav";
 import { DeleteShiftButton, ShiftDialog } from "@/components/admin/attendance/shift-dialog";
 import { PageHeader } from "@/components/admin/page-header";
 import { AdminSection, StatCard } from "@/components/admin/section";
@@ -8,6 +9,7 @@ import { Input } from "@/components/ui/input";
 import { NativeSelect } from "@/components/ui/native-select";
 import { requirePagePermission } from "@/lib/auth/session";
 import { businessDay, formatBusinessDate } from "@/lib/dates";
+import { can } from "@/lib/permissions";
 import { eventsBetween, listShifts, staffPeople } from "@/modules/attendance/queries";
 import { hoursText, shiftMinutes, totalsByUser } from "@/modules/attendance/schema";
 
@@ -21,7 +23,7 @@ const time = (iso: string) => formatBusinessDate(iso, { hour: "2-digit", minute:
  * and the means to add or correct a shift.
  */
 export default async function AttendancePage({ searchParams }: PageProps<"/admin/attendance">) {
-  await requirePagePermission("dashboard.view");
+  const staff = await requirePagePermission("dashboard.view");
   const sp = await searchParams;
   const today = businessDay();
   const pick = (v: unknown) => (typeof v === "string" && DAY.test(v) ? v : null);
@@ -47,6 +49,7 @@ export default async function AttendancePage({ searchParams }: PageProps<"/admin
         }
         actions={all ? <ShiftDialog people={people} events={events} /> : null}
       />
+      <AttendanceNav canReport={can(staff.permissions, "reports.view")} />
       <form method="get" className="mb-5 flex flex-wrap items-end gap-3" aria-label="Period">
         <label className="flex flex-col gap-1.5 text-sm">
           From

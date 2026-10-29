@@ -112,6 +112,8 @@ export const orderFiltersSchema = z.object({
     .optional()
     .catch(undefined),
   event: z.uuid().optional().catch(undefined),
+  /** Made by this staff member (POS / manual orders). */
+  staff: z.uuid().optional().catch(undefined),
   page: z.coerce.number().int().min(1).max(10_000).optional().catch(undefined),
 });
 export type OrderFilters = z.infer<typeof orderFiltersSchema>;

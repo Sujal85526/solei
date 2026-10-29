@@ -11,7 +11,13 @@ import { NativeSelect } from "@/components/ui/native-select";
 import { requirePagePermission } from "@/lib/auth/session";
 import { formatAED } from "@/lib/money";
 import { can } from "@/lib/permissions";
-import { ORDERS_PAGE_SIZE, eventOptions, listOrders, orderStats } from "@/modules/orders/queries";
+import {
+  ORDERS_PAGE_SIZE,
+  eventOptions,
+  listOrders,
+  orderStats,
+  staffOptions,
+} from "@/modules/orders/queries";
 import { orderFiltersSchema } from "@/modules/orders/schema";
 import {
   CHANNEL_LABELS,
@@ -29,10 +35,11 @@ export default async function OrdersPage({ searchParams }: PageProps<"/admin/ord
   const filters = orderFiltersSchema.parse(
     Object.fromEntries(Object.entries(sp).map(([k, v]) => [k, first(v)])),
   );
-  const [{ rows, total, page }, stats, events] = await Promise.all([
+  const [{ rows, total, page }, stats, events, sellers] = await Promise.all([
     listOrders(filters),
     orderStats(),
     eventOptions(),
+    staffOptions(),
   ]);
   const pages = Math.max(1, Math.ceil(total / ORDERS_PAGE_SIZE));
   const filtered = Object.entries(filters).some(([k, v]) => k !== "page" && v);
@@ -122,6 +129,14 @@ export default async function OrdersPage({ searchParams }: PageProps<"/admin/ord
           {events.map((e) => (
             <option key={e.id} value={e.id}>
               {e.name}
+            </option>
+          ))}
+        </NativeSelect>
+        <NativeSelect name="staff" defaultValue={filters.staff ?? ""} aria-label="Made by">
+          <option value="">Made by anyone</option>
+          {sellers.map((s) => (
+            <option key={s.id} value={s.id}>
+              {s.name}
             </option>
           ))}
         </NativeSelect>
