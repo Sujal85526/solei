@@ -120,7 +120,7 @@ export type CouponCheck =
  */
 export async function checkCoupon(
   code: string,
-  lines: { variantId: string; qty: number; options?: LineOptions }[],
+  lines: { variantId: string; qty: number; options?: LineOptions; giveawayId?: string }[],
   email: string | null,
 ): Promise<CouponCheck> {
   const { data, error } = await createAdminClient().rpc("coupon_evaluate", {
@@ -129,6 +129,7 @@ export async function checkCoupon(
       variant_id: l.variantId,
       qty: l.qty,
       options: toDbOptions(l.options),
+      giveaway_id: l.giveawayId,
     })),
     // null = not signed in yet: the once-per-customer rule is checked again when ordering.
     p_email: email as string,

@@ -9,6 +9,7 @@ import { toDbOptions } from "@/modules/catalog/options";
 import { checkCoupon } from "@/modules/coupons/queries";
 import { normaliseCode, refusalMessage } from "@/modules/coupons/schema";
 import { checkGiftCard } from "@/modules/gift-cards/queries";
+import { fetchGiveaways } from "@/modules/giveaways/queries";
 import {
   giftCardApplies,
   giftCardRefusalMessage,
@@ -52,12 +53,21 @@ export async function placeOrder(
   });
   const name = fullName(v);
   const ids = [...new Set(v.lines.map((l) => l.variantId))];
-  const [products, availability, settings] = await Promise.all([
+  const giveawayIds = [...new Set(v.lines.flatMap((l) => (l.giveawayId ? [l.giveawayId] : [])))];
+  const [products, availability, settings, giveaways] = await Promise.all([
     fetchProductsForVariants(ids),
     fetchAvailability(ids),
     getCartSettings(),
+    fetchGiveaways(giveawayIds),
   ]);
-  let cart = resolveCart({ lines: v.lines, emirate: v.emirate }, products, availability, settings);
+  let cart = resolveCart(
+    { lines: v.lines, emirate: v.emirate },
+    products,
+    availability,
+    settings,
+    null,
+    giveaways,
+  );
 
   const problems = cart.lines.filter((l) => l.status !== "ok");
   if (problems.length) {
@@ -73,11 +83,14 @@ export async function placeOrder(
   if (code) {
     const check = await checkCoupon(code, cart.lines, v.email);
     if (!check.ok) throw new UserError(refusalMessage(check.reason, check.minOrderFils));
-    cart = resolveCart({ lines: v.lines, emirate: v.emirate }, products, availability, settings, {
-      code: check.code,
-      discountFils: check.discountFils,
-      freeDelivery: check.freeDelivery,
-    });
+    cart = resolveCart(
+      { lines: v.lines, emirate: v.emirate },
+      products,
+      availability,
+      settings,
+      { code: check.code, discountFils: check.discountFils, freeDelivery: check.freeDelivery },
+      giveaways,
+    );
   }
 
   const pricing = cart.pricing;
@@ -120,6 +133,7 @@ export async function placeOrder(
           qty: l.qty,
           unit_price_fils: l.unitPriceFils,
           options: toDbOptions(l.options),
+          giveaway_id: l.giveawayId ?? null,
         })),
         subtotal_fils: pricing.subtotalFils,
         coupon_code: code || null,

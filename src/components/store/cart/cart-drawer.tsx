@@ -11,7 +11,7 @@ import { cn } from "@/lib/utils";
 import type { CartDetailLine } from "@/modules/cart/details";
 import { keyOf } from "@/modules/cart/logic";
 import { cartDrawer, useCartDrawerOpen } from "@/modules/cart/drawer";
-import { MAX_LINE_QTY } from "@/modules/cart/schema";
+import { maxLineQty } from "@/modules/cart/schema";
 import { cart } from "@/modules/cart/store";
 import { useCartDetails } from "@/modules/cart/use-cart-details";
 import { freeDeliveryProgress } from "@/modules/orders/pricing";
@@ -188,7 +188,7 @@ function DrawerLine({ qty, detail }: { qty: number; detail: CartDetailLine | und
     );
   }
   const p = detail.product;
-  const max = Math.max(1, Math.min(MAX_LINE_QTY, detail.available));
+  const max = Math.max(1, Math.min(maxLineQty(detail), detail.available));
   return (
     <div className="flex gap-4 py-5" data-testid="drawer-line">
       <Link

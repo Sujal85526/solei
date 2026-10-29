@@ -48,8 +48,10 @@ export const savedLinesSchema = z
   .array(
     z.object({
       variantId: z.uuid(),
-      qty: z.number().int().min(1).max(99),
+      // Giveaway lines go up to 1000 pieces (the database keeps 1..1000).
+      qty: z.number().int().min(1).max(1000),
       options: lineOptionsSchema.optional(),
+      giveawayId: z.uuid().optional(),
     }),
   )
   .max(50);

@@ -26,7 +26,7 @@ export function RestoreCart() {
       if (!res.ok) return setMessage(res.error);
       if (!res.data.length) return setMessage(c.alreadyBought);
       cart.clear();
-      for (const l of res.data) cart.add(l.variantId, l.qty, l.options);
+      for (const l of res.data) cart.add(l.variantId, l.qty, l.options, l.giveawayId);
       router.replace("/checkout");
     });
   }, [params, router]);

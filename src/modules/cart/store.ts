@@ -78,8 +78,8 @@ export const getServerSnapshot = (): CartState | null => null;
 
 export const cart = {
   get: read,
-  add: (variantId: string, qty = 1, options?: LineOptions) =>
-    write(addLine(read(), variantId, qty, options)),
+  add: (variantId: string, qty = 1, options?: LineOptions, giveawayId?: string) =>
+    write(addLine(read(), variantId, qty, options, giveawayId)),
   /** By line key (the variant id for ordinary lines). */
   setQty: (key: string, qty: number) => write(setQty(read(), key, qty)),
   remove: (key: string) => write(removeLine(read(), key)),

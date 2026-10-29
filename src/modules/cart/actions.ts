@@ -5,6 +5,7 @@ import { currentAccount } from "@/modules/account/service";
 import { checkCoupon } from "@/modules/coupons/queries";
 import { normaliseCode, refusalMessage } from "@/modules/coupons/schema";
 import { checkGiftCardForCustomer } from "@/modules/gift-cards/service";
+import { fetchGiveaways } from "@/modules/giveaways/queries";
 import { giftCardApplies, giftCardRefusalMessage } from "@/modules/gift-cards/schema";
 import { pointsForCheckout } from "@/modules/points/service";
 import { fetchAvailability, getCartSettings, listProducts } from "@/modules/storefront/queries";
@@ -22,13 +23,17 @@ export async function getCartDetails(input: unknown): Promise<CartDetails> {
   const parsed = cartDetailsInputSchema.parse(input);
   const ids = [...new Set(parsed.lines.map((l) => l.variantId))];
   const wanted = new Set(ids);
-  const [catalogue, availability, settings] = await Promise.all([
+  const giveawayIds = [
+    ...new Set(parsed.lines.flatMap((l) => (l.giveawayId ? [l.giveawayId] : []))),
+  ];
+  const [catalogue, availability, settings, giveaways] = await Promise.all([
     listProducts(),
     fetchAvailability(ids),
     getCartSettings(),
+    fetchGiveaways(giveawayIds),
   ]);
   const products = catalogue.filter((p) => p.variants.some((v) => wanted.has(v.id)));
-  let details = resolveCart(parsed, products, availability, settings);
+  let details = resolveCart(parsed, products, availability, settings, null, giveaways);
   const code = parsed.coupon ? normaliseCode(parsed.coupon) : "";
   if (code) {
     const account = await currentAccount();
@@ -41,7 +46,7 @@ export async function getCartDetails(input: unknown): Promise<CartDetails> {
           freeDelivery: check.freeDelivery,
         }
       : { code, error: refusalMessage(check.reason, check.minOrderFils) };
-    details = resolveCart(parsed, products, availability, settings, coupon);
+    details = resolveCart(parsed, products, availability, settings, coupon, giveaways);
   }
   // Points come off first, then a gift card covers what it can of the rest.
   let dueFils = details.pricing.totalFils;

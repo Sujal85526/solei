@@ -8,7 +8,6 @@ import { formatAED } from "@/lib/money";
 import { cn } from "@/lib/utils";
 import {
   cleanChoices,
-  deltaText,
   optionsProblem,
   unitPriceWithOptions,
   type LineOptions,
@@ -20,6 +19,7 @@ import { MAX_LINE_QTY as MAX_QTY } from "@/modules/cart/schema";
 import { cart, useCart } from "@/modules/cart/store";
 import type { Availability, StoreVariant } from "@/modules/storefront/types";
 import { QtyStepper } from "@/components/store/cart/qty-stepper";
+import { OptionChoices } from "./option-choices";
 
 /**
  * Size choice (when there is more than one), "Add to cart" (adds and opens the cart
@@ -129,65 +129,12 @@ export function PurchasePanel({
       ) : null}
 
       {optionGroups.map((g) => (
-        <fieldset key={g.id} className="mb-3 flex flex-col gap-2.5">
-          <legend className="eyebrow text-primary/60 mb-2.5 text-[0.6rem]">
-            {g.name}
-            {g.required ? null : <span className="normal-case"> · {t.product.optional}</span>}
-          </legend>
-          {g.kind === "text" ? (
-            <div className="flex flex-col gap-1">
-              <input
-                aria-label={g.name}
-                maxLength={g.maxLength}
-                value={choice(g.id)?.text ?? ""}
-                onChange={(e) => setChoice(g.id, { text: e.target.value })}
-                className="border-primary/25 focus:border-primary h-11 border bg-white/70 px-3 text-sm outline-none"
-              />
-              <span className="text-primary/50 self-end text-[0.65rem]">
-                {(choice(g.id)?.text ?? "").length}/{g.maxLength}
-              </span>
-            </div>
-          ) : (
-            <div className="flex flex-wrap gap-2">
-              {g.options.map((o) => {
-                const on = choice(g.id)?.optionIds?.includes(o.id) ?? false;
-                return (
-                  <label
-                    key={o.id}
-                    className={cn(
-                      "has-[:focus-visible]:ring-primary/30 cursor-pointer border px-3.5 py-2 text-xs transition-colors has-[:focus-visible]:ring-2",
-                      on
-                        ? "border-primary bg-primary text-primary-foreground"
-                        : "border-primary/25 text-primary hover:border-primary",
-                    )}
-                  >
-                    <input
-                      type={g.kind === "single" ? "radio" : "checkbox"}
-                      name={`option-${g.id}`}
-                      checked={on}
-                      onChange={() => {
-                        const current = choice(g.id)?.optionIds ?? [];
-                        setChoice(g.id, {
-                          optionIds:
-                            g.kind === "single"
-                              ? [o.id]
-                              : on
-                                ? current.filter((x) => x !== o.id)
-                                : [...current, o.id],
-                        });
-                      }}
-                      className="sr-only"
-                    />
-                    {o.label}
-                    {o.priceDeltaFils ? (
-                      <span className="numeric opacity-70"> {deltaText(o.priceDeltaFils)}</span>
-                    ) : null}
-                  </label>
-                );
-              })}
-            </div>
-          )}
-        </fieldset>
+        <OptionChoices
+          key={g.id}
+          group={g}
+          value={choice(g.id)}
+          onChange={(next) => setChoice(g.id, next)}
+        />
       ))}
 
       {customised ? (

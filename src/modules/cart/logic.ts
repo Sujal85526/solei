@@ -2,8 +2,8 @@ import { lineKey, type LineOptions } from "@/modules/catalog/options";
 import {
   cartLineSchema,
   emirateSchema,
-  MAX_LINE_QTY,
   MAX_LINES,
+  maxLineQty,
   type CartLine,
   type Emirate,
 } from "./schema";
@@ -21,44 +21,51 @@ export type CartState = {
 
 export const EMPTY_CART: CartState = Object.freeze({ lines: [], emirate: null }) as CartState;
 
-const clampQty = (qty: number) => Math.max(0, Math.min(MAX_LINE_QTY, Math.trunc(qty)));
+const clampQty = (qty: number, max: number) => Math.max(0, Math.min(max, Math.trunc(qty)));
 
-/** A line's identity: the variant, plus its options for customised products. */
-export const keyOf = (line: Pick<CartLine, "variantId" | "options">) =>
-  lineKey(line.variantId, line.options);
+/** A line's identity: the variant, plus its options (and giveaway) for customised products. */
+export const keyOf = (line: Pick<CartLine, "variantId" | "options" | "giveawayId">) =>
+  lineKey(line.variantId, line.options, line.giveawayId);
 
 /**
- * Add `qty` units of a variant (with its chosen options, for giveaways), merging with the same
- * line if it's already in the cart.
+ * Add `qty` units of a variant (with its chosen options and giveaway, for giveaways), merging with
+ * the same line if it's already in the cart.
  */
 export function addLine(
   state: CartState,
   variantId: string,
   qty = 1,
   options?: LineOptions,
+  giveawayId?: string,
 ): CartState {
   if (qty <= 0) return state;
   const opts = options?.length ? options : undefined;
-  const key = lineKey(variantId, opts);
+  const key = lineKey(variantId, opts, giveawayId);
   const existing = state.lines.find((l) => keyOf(l) === key);
   if (existing) return setQty(state, key, existing.qty + qty);
   if (state.lines.length >= MAX_LINES) return state;
-  const next = clampQty(qty);
+  const next = clampQty(qty, maxLineQty({ giveawayId }));
   if (!next) return state;
   return {
     ...state,
     lines: [
       ...state.lines,
-      opts ? { variantId, qty: next, options: opts } : { variantId, qty: next },
+      {
+        variantId,
+        qty: next,
+        ...(opts ? { options: opts } : {}),
+        ...(giveawayId ? { giveawayId } : {}),
+      },
     ],
   };
 }
 
 /** Set a line's quantity (by its key — the variant id for ordinary lines); 0 removes it. */
 export function setQty(state: CartState, key: string, qty: number): CartState {
-  const next = clampQty(qty);
+  const line = state.lines.find((l) => keyOf(l) === key);
+  const next = clampQty(qty, line ? maxLineQty(line) : 0);
   if (next === 0) return removeLine(state, key);
-  if (!state.lines.some((l) => keyOf(l) === key)) return state;
+  if (!line) return state;
   return {
     ...state,
     lines: state.lines.map((l) => (keyOf(l) === key ? { ...l, qty: next } : l)),
@@ -120,7 +127,13 @@ export function parseCart(raw: string | null): CartState {
     for (const item of obj.lines) {
       const line = cartLineSchema.safeParse(item);
       if (line.success)
-        state = addLine(state, line.data.variantId, line.data.qty, line.data.options);
+        state = addLine(
+          state,
+          line.data.variantId,
+          line.data.qty,
+          line.data.options,
+          line.data.giveawayId,
+        );
     }
   }
   return state;

@@ -27,7 +27,7 @@ export function CartSync() {
     if (state.lines.length) return;
     mySavedCartAction()
       .then((lines) => {
-        for (const l of lines) cart.add(l.variantId, l.qty, l.options);
+        for (const l of lines) cart.add(l.variantId, l.qty, l.options, l.giveawayId);
       })
       .catch(() => {});
   }, [signedIn, state]);
@@ -43,6 +43,7 @@ export function CartSync() {
       variantId: l.variantId,
       qty: l.qty,
       ...(l.options ? { options: l.options } : {}),
+      ...(l.giveawayId ? { giveawayId: l.giveawayId } : {}),
     }));
     const id = window.setTimeout(() => {
       last.current = key;

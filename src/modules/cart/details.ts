@@ -13,6 +13,7 @@ import {
   unitPriceWithOptions,
   type LineOptions,
 } from "@/modules/catalog/options";
+import type { StoreGiveaway } from "@/modules/giveaways/types";
 import { keyOf } from "./logic";
 import type { CartDetailsInput, Emirate } from "./schema";
 
@@ -37,6 +38,8 @@ export type CartDetailLine = {
   variantId: string;
   /** Giveaways: the choices, and the same in words ("Ribbon: Gold · Name on the tag: Sara"). */
   options?: LineOptions;
+  /** The giveaway the bottle is bought through (its name leads `optionsText`). */
+  giveawayId?: string;
   optionsText: string;
   /** Fewest pieces of this product per order (1 for ordinary products). */
   minQty: number;
@@ -106,6 +109,7 @@ export function resolveCart(
   availability: Availability,
   settings: CartSettings,
   coupon: CartCoupon | null = null,
+  giveaways: StoreGiveaway[] = [],
 ): CartDetails {
   const byVariant = new Map(
     products.flatMap((p) => p.variants.map((v) => [v.id, { product: p, variant: v }] as const)),
@@ -114,13 +118,18 @@ export function resolveCart(
   // Stock is per variant: lines of the same variant (different options) share it.
   const used = new Map<string, number>();
   const lines = input.lines.map((line): CartDetailLine => {
-    const match = byVariant.get(line.variantId);
+    const found = byVariant.get(line.variantId);
     const key = keyOf(line);
+    // A giveaway line: the real bottle, priced and customised by the giveaway that offers it.
+    const giveaway = line.giveawayId ? giveaways.find((g) => g.id === line.giveawayId) : undefined;
+    const item = giveaway?.items.find((i) => i.variantId === line.variantId);
+    const match = line.giveawayId && !item ? undefined : found;
     if (!match) {
       return {
         key,
         variantId: line.variantId,
         options: line.options,
+        giveawayId: line.giveawayId,
         optionsText: "",
         minQty: 1,
         requestedQty: line.qty,
@@ -135,8 +144,9 @@ export function resolveCart(
       };
     }
     const { product, variant } = match;
+    const groups = giveaway ? giveaway.optionGroups : product.optionGroups;
     // Options the product no longer offers (or changed): the line can't be bought as it is.
-    const optionsOk = optionsProblem(product.optionGroups, line.options) === null;
+    const optionsOk = optionsProblem(groups, line.options) === null;
     const available = optionsOk
       ? Math.max(0, (availability[variant.id] ?? 0) - (used.get(variant.id) ?? 0))
       : 0;
@@ -150,16 +160,20 @@ export function resolveCart(
           ? "clamped"
           : "ok";
     const unitPriceFils = unitPriceWithOptions(
-      variant.priceFils,
-      product.optionGroups,
+      item ? item.priceFils : variant.priceFils,
+      groups,
       line.options,
     );
+    const optionsText = describeChoices(groups, line.options);
     return {
       key,
       variantId: line.variantId,
       options: line.options,
-      optionsText: describeChoices(product.optionGroups, line.options),
-      minQty: product.minOrderQty,
+      giveawayId: line.giveawayId,
+      optionsText: giveaway
+        ? [giveaway.name, optionsText].filter(Boolean).join(" · ")
+        : optionsText,
+      minQty: giveaway ? giveaway.minOrderQty : product.minOrderQty,
       requestedQty: line.qty,
       qty,
       available,

@@ -16,6 +16,7 @@ export const en = {
     collections: "Collection",
     shop: "Shop",
     events: "Plan your event",
+    giveaways: "Giveaways & occasions",
     passport: "Solei Passport",
     giftCards: "Gift cards",
     contact: "Contact us",

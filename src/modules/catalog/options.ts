@@ -10,7 +10,13 @@ import { formatAED, type Fils } from "@/lib/money";
 
 export type OptionGroupKind = "single" | "multi" | "text";
 
-export type ProductOption = { id: string; label: string; priceDeltaFils: Fils };
+export type ProductOption = {
+  id: string;
+  label: string;
+  priceDeltaFils: Fils;
+  /** Photo of the choice (packaging, design), shown as a tile. */
+  imageUrl?: string | null;
+};
 
 export type OptionGroup = {
   id: string;
@@ -96,14 +102,16 @@ export function cleanChoices(groups: OptionGroup[], choices: LineOptions | undef
 
 /**
  * Cart line identity: the variant alone, or the variant plus the chosen options (so two tags with
- * different names are two lines). Lines without options keep the plain variant id.
+ * different names are two lines) and the giveaway it was bought through. Lines without options
+ * keep the plain variant id.
  */
-export function lineKey(variantId: string, options?: LineOptions): string {
-  if (!options?.length) return variantId;
+export function lineKey(variantId: string, options?: LineOptions, giveawayId?: string): string {
+  const base = giveawayId ? `${variantId}@${giveawayId}` : variantId;
+  if (!options?.length) return base;
   const parts = [...options]
     .sort((a, b) => a.groupId.localeCompare(b.groupId))
     .map((o) => `${o.groupId}:${[...(o.optionIds ?? [])].sort().join(",")}:${o.text ?? ""}`);
-  return `${variantId}|${parts.join(";")}`;
+  return `${base}|${parts.join(";")}`;
 }
 
 /** "Ribbon: Gold (+AED 5) · Name on the tag: Sara & Omar" */

@@ -14,6 +14,7 @@ import {
   unitPriceWithOptions,
   type LineOptions,
 } from "@/modules/catalog/options";
+import { fetchGiveaways } from "@/modules/giveaways/queries";
 import { formatOrderLines } from "@/modules/orders/format";
 import { fetchProductsForVariants } from "@/modules/storefront/queries";
 import { cartToken, verifyCartToken, type CartLinkPurpose } from "./links";
@@ -24,12 +25,14 @@ type StoredLine = {
   variant_id: string;
   qty: number;
   options?: { group_id: string; option_ids?: string[]; text?: string | null }[];
+  giveaway_id?: string;
 };
-type SavedLine = { variantId: string; qty: number; options?: LineOptions };
+type SavedLine = { variantId: string; qty: number; options?: LineOptions; giveawayId?: string };
 const fromStored = (l: StoredLine): SavedLine => ({
   variantId: l.variant_id,
   qty: l.qty,
   ...(l.options?.length ? { options: fromDbOptions(l.options) } : {}),
+  ...(l.giveaway_id ? { giveawayId: l.giveaway_id } : {}),
 });
 
 export const cartLink = (cartId: string, purpose: CartLinkPurpose) =>
@@ -49,6 +52,7 @@ export async function syncMyCart(input: unknown): Promise<void> {
       variant_id: l.variantId,
       qty: l.qty,
       options: toDbOptions(l.options),
+      giveaway_id: l.giveawayId,
     })),
   });
   if (error) throw new Error(`cart_sync failed: ${error.message}`);
@@ -123,7 +127,17 @@ export async function sendDueCartReminders(): Promise<{ sent: number; skipped: n
   const variantIds = [
     ...new Set(due.flatMap((c) => (c.lines as StoredLine[]).map((l) => l.variant_id))),
   ];
-  const products = await fetchProductsForVariants(variantIds);
+  const giveawayIds = [
+    ...new Set(
+      due.flatMap((c) =>
+        (c.lines as StoredLine[]).flatMap((l) => (l.giveaway_id ? [l.giveaway_id] : [])),
+      ),
+    ),
+  ];
+  const [products, giveaways] = await Promise.all([
+    fetchProductsForVariants(variantIds),
+    fetchGiveaways(giveawayIds),
+  ]);
   const byVariant = new Map(
     products.flatMap((p) => p.variants.map((v) => [v.id, { product: p, variant: v }] as const)),
   );
@@ -134,21 +148,27 @@ export async function sendDueCartReminders(): Promise<{ sent: number; skipped: n
     const lines = (cart.lines as StoredLine[]).flatMap((l) => {
       const m = byVariant.get(l.variant_id);
       if (!m) return [];
+      // A giveaway line: the giveaway's price for the bottle and its own choices.
+      const giveaway = l.giveaway_id ? giveaways.find((g) => g.id === l.giveaway_id) : undefined;
+      const item = giveaway?.items.find((i) => i.variantId === l.variant_id);
+      if (l.giveaway_id && !item) return [];
+      const groups = giveaway ? giveaway.optionGroups : m.product.optionGroups;
       return [
         {
           product_name: m.product.name,
           variant_label:
             [
               m.product.variants.length > 1 ? m.variant.label : "",
-              describeChoices(m.product.optionGroups, fromDbOptions(l.options)),
+              giveaway?.name ?? "",
+              describeChoices(groups, fromDbOptions(l.options)),
             ]
               .filter(Boolean)
               .join(" · ") || null,
           qty: l.qty,
           line_total_fils:
             unitPriceWithOptions(
-              m.variant.priceFils,
-              m.product.optionGroups,
+              item ? item.priceFils : m.variant.priceFils,
+              groups,
               fromDbOptions(l.options),
             ) * l.qty,
         },

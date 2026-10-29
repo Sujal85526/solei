@@ -36,7 +36,7 @@ const productSelect = `
   product_variants (id, label, size_ml, sku, price_fils, active, sort),
   min_order_qty,
   product_option_groups (id, name, kind, required, max_length, sort,
-    product_options (id, label, price_delta_fils, active, sort))
+    product_options (id, label, price_delta_fils, active, sort, image_url))
 ` as const;
 
 function productQuery() {
@@ -97,7 +97,12 @@ function toStoreProducts(rows: ProductRow[]): StoreProduct[] {
             options: [...g.product_options]
               .filter((o) => o.active)
               .sort((a, b) => a.sort - b.sort)
-              .map((o) => ({ id: o.id, label: o.label, priceDeltaFils: o.price_delta_fils })),
+              .map((o) => ({
+                id: o.id,
+                label: o.label,
+                priceDeltaFils: o.price_delta_fils,
+                imageUrl: o.image_url,
+              })),
           })),
         minOrderQty: p.min_order_qty ?? 1,
       },

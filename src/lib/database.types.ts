@@ -1480,6 +1480,94 @@ export type Database = {
           },
         ]
       }
+      giveaway_items: {
+        Row: {
+          active: boolean
+          created_at: string
+          id: string
+          price_fils: number | null
+          product_id: string
+          sort: number
+          updated_at: string
+          variant_id: string
+        }
+        Insert: {
+          active?: boolean
+          created_at?: string
+          id?: string
+          price_fils?: number | null
+          product_id: string
+          sort?: number
+          updated_at?: string
+          variant_id: string
+        }
+        Update: {
+          active?: boolean
+          created_at?: string
+          id?: string
+          price_fils?: number | null
+          product_id?: string
+          sort?: number
+          updated_at?: string
+          variant_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "giveaway_items_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "giveaway_items_variant_id_fkey"
+            columns: ["variant_id"]
+            isOneToOne: false
+            referencedRelation: "product_variants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      giveaway_occasions: {
+        Row: {
+          active: boolean
+          blurb: string | null
+          created_at: string
+          id: string
+          image_url: string | null
+          name: string
+          slug: string
+          sort: number
+          storage_path: string | null
+          updated_at: string
+        }
+        Insert: {
+          active?: boolean
+          blurb?: string | null
+          created_at?: string
+          id?: string
+          image_url?: string | null
+          name: string
+          slug: string
+          sort?: number
+          storage_path?: string | null
+          updated_at?: string
+        }
+        Update: {
+          active?: boolean
+          blurb?: string | null
+          created_at?: string
+          id?: string
+          image_url?: string | null
+          name?: string
+          slug?: string
+          sort?: number
+          storage_path?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+        ]
+      }
       help_topics: {
         Row: {
           body: string
@@ -2075,6 +2163,7 @@ export type Database = {
           created_at: string
           destination_id: string | null
           discount_fils: number
+          giveaway_product_id: string | null
           id: string
           is_reward: boolean
           line_total_fils: number
@@ -2094,6 +2183,7 @@ export type Database = {
           created_at?: string
           destination_id?: string | null
           discount_fils?: number
+          giveaway_product_id?: string | null
           id?: string
           is_reward?: boolean
           line_total_fils: number
@@ -2113,6 +2203,7 @@ export type Database = {
           created_at?: string
           destination_id?: string | null
           discount_fils?: number
+          giveaway_product_id?: string | null
           id?: string
           is_reward?: boolean
           line_total_fils?: number
@@ -2128,6 +2219,13 @@ export type Database = {
           variant_label?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "order_lines_giveaway_product_id_fkey"
+            columns: ["giveaway_product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "order_lines_category_id_fkey"
             columns: ["category_id"]
@@ -2806,6 +2904,36 @@ export type Database = {
           },
         ]
       }
+      product_occasions: {
+        Row: {
+          occasion_id: string
+          product_id: string
+        }
+        Insert: {
+          occasion_id: string
+          product_id: string
+        }
+        Update: {
+          occasion_id?: string
+          product_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "product_occasions_occasion_id_fkey"
+            columns: ["occasion_id"]
+            isOneToOne: false
+            referencedRelation: "giveaway_occasions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "product_occasions_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       product_option_groups: {
         Row: {
           created_at: string
@@ -2856,9 +2984,11 @@ export type Database = {
           created_at: string
           group_id: string
           id: string
+          image_url: string | null
           label: string
           price_delta_fils: number
           sort: number
+          storage_path: string | null
           updated_at: string
         }
         Insert: {
@@ -2866,9 +2996,11 @@ export type Database = {
           created_at?: string
           group_id: string
           id?: string
+          image_url?: string | null
           label: string
           price_delta_fils?: number
           sort?: number
+          storage_path?: string | null
           updated_at?: string
         }
         Update: {
@@ -2876,9 +3008,11 @@ export type Database = {
           created_at?: string
           group_id?: string
           id?: string
+          image_url?: string | null
           label?: string
           price_delta_fils?: number
           sort?: number
+          storage_path?: string | null
           updated_at?: string
         }
         Relationships: [
@@ -3047,6 +3181,7 @@ export type Database = {
           destination_id: string | null
           featured: boolean
           id: string
+          is_giveaway: boolean
           min_order_qty: number
           name: string
           notes_base: string[]
@@ -3064,6 +3199,7 @@ export type Database = {
           destination_id?: string | null
           featured?: boolean
           id?: string
+          is_giveaway?: boolean
           min_order_qty?: number
           name: string
           notes_base?: string[]
@@ -3081,6 +3217,7 @@ export type Database = {
           destination_id?: string | null
           featured?: boolean
           id?: string
+          is_giveaway?: boolean
           min_order_qty?: number
           name?: string
           notes_base?: string[]
@@ -4007,18 +4144,23 @@ export type Database = {
         Args: { p_order_id: string }
         Returns: number
       }
+      giveaway_save: { Args: { p: Json }; Returns: undefined }
       has_permission: { Args: { p_key: string }; Returns: boolean }
       is_own_customer: { Args: { p_customer_id: string }; Returns: boolean }
       is_own_order: { Args: { p_order_id: string }; Returns: boolean }
       is_staff: { Args: never; Returns: boolean }
-      line_options_check: {
-        Args: { p_options: Json; p_variant: string }
-        Returns: Json
-      }
-      line_unit_price_fils: {
-        Args: { p_options: Json; p_variant: string }
-        Returns: number
-      }
+      line_options_check:
+        | { Args: { p_options: Json; p_variant: string }; Returns: Json }
+        | {
+            Args: { p_giveaway: string; p_options: Json; p_variant: string }
+            Returns: Json
+          }
+      line_unit_price_fils:
+        | { Args: { p_options: Json; p_variant: string }; Returns: number }
+        | {
+            Args: { p_giveaway: string; p_options: Json; p_variant: string }
+            Returns: number
+          }
       link_customer_account: {
         Args: never
         Returns: string
@@ -4160,6 +4302,14 @@ export type Database = {
         Returns: string
       }
       order_cash_paid: { Args: { p_order_id: string }; Returns: number }
+      order_min_qty_shortfalls: {
+        Args: { p_order: string }
+        Returns: {
+          min_order_qty: number
+          name: string
+          qty: number
+        }[]
+      }
       order_status_allowed: {
         Args: {
           p_from: Database["public"]["Enums"]["order_status"]
@@ -4479,7 +4629,7 @@ export type Database = {
         | "marketing"
         | "other"
       event_status: "potential" | "confirmed" | "completed" | "cancelled"
-      event_type: "exhibition" | "popup" | "private_booking" | "other"
+      event_type: "exhibition" | "popup" | "private_booking" | "wedding" | "other"
       fee_payment_status:
         "unpaid" | "partially_paid" | "paid" | "waived" | "not_applicable"
       fulfilment_status:
@@ -4723,7 +4873,7 @@ export const Constants = {
         "other",
       ],
       event_status: ["potential", "confirmed", "completed", "cancelled"],
-      event_type: ["exhibition", "popup", "private_booking", "other"],
+      event_type: ["exhibition", "popup", "private_booking", "wedding", "other"],
       fee_payment_status: [
         "unpaid",
         "partially_paid",
