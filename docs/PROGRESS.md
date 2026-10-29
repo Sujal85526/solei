@@ -215,6 +215,23 @@ migrations. Pushed with the user's OK on 2026-10-24 (see "Preview deployment"). 
 - Verified: SQL tests `supabase/tests/210_crm_staff_test.sql` (31 checks) on a throwaway native Postgres with all
   migrations, unit tests, typecheck, lint, build. Not run: e2e and the pages against a DB with these migrations.
 
+### Phase 2 — promotions & loyalty, part 2 (`p2/promotions`, 2026-10-30)
+- **One pricing engine** (`promo_price`, migrations `20261030030001`–`…005`): sale prices, bundles, buy X get Y
+  (automatic or as a code), several combinable codes, VIP-only / personal codes, codes at the till and per event,
+  early access, points rewards, birthday code; order of application in DECISIONS P2-61.
+- **Admin:** Promotions → Codes · Offers · Banners; the code form gains buy X get Y, works on website / till,
+  event, combinable, VIP tiers / segment. Loyalty → Points & tiers gains the rewards catalogue and the birthday
+  reward choice. Products gain a launch date + early-access tiers. Reports → Promotions is per promotion
+  (codes with their event, offers), screen and Excel/PDF/CSV.
+- **Shop:** was/now prices on cards and product pages, announcement bar, homepage banners, the order summary
+  shows sale prices, offers, several codes and a rewards picker. **Till:** codes, offers, points and rewards
+  (priced by `pos_quote`; offline = catalogue prices).
+- Verified: SQL test `supabase/tests/220_promotions_v2_test.sql` (75 checks: sale/bundle/BOGO rules, stacking
+  order, rounding, channels/events, VIP and personal codes, web order snapshot and use counting, early access,
+  till with code + points + reward, cancellation gives points back, report, birthday code, tier ids kept) on a
+  throwaway native Postgres with every migration replayed; all earlier SQL tests unchanged; unit tests,
+  typecheck, lint, build. Not run: e2e, and the pages against a DB with these migrations (none exists).
+
 ## Current notes
 - **CI is paused** (manual-only workflow) at the user's request — merge after local checks; re-enable in M17.
 - **Dev DB is hosted** (see DECISIONS T38): `.env.local` points at `https://ljjpyjzkbexucaqmxbas.supabase.co`.

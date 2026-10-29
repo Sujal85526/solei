@@ -614,3 +614,57 @@ Open client questions are built as configurable defaults. Each row: what we chos
 - **P2-77 — Schedulers:** `/api/cron/feedback-requests` (daily), `/api/cron/staff-reminders` (hourly),
   `/api/cron/event-digest` (daily), same `CRON_SECRET` guard as the others; admin "send now" buttons for the
   first two. Not added to `vercel.json` (P2-9) — see `PHASE2_MERGE.md` §6.
+
+## Phase 2 — promotions & loyalty, part 2 (branch `p2/promotions`, 2026-10-30)
+- **P2-60 — One pricing function.** `promo_price(lines, codes, ctx)` (20261030030002) prices a bag on every channel;
+  `cart_quote` (bag / checkout, service role) and `pos_quote` (till, `pos.use`) wrap it, and `coupon_evaluate`,
+  `create_web_order` and `pos_complete_sale` use it inside the order transaction (same signatures; new optional
+  keys `coupon_codes`, `customer_id`, `points`, `apply_offers`, `lines[].reward_id`). The browser shows the quote;
+  the order RPC prices again and refuses any difference. Staff manual orders keep their own prices (overrides).
+- **P2-61 — Order of application, whole fils:** (1) sale price = the best live sale for the item (largest
+  reduction) — it is the item's price (`order_lines.unit_price_fils`, `list_price_fils` = before the sale,
+  `price_override_reason` = "Sale: <name>"), not a discount; (2) bundles and buy X get Y offers in the admin's
+  order (`sort`), each item counting towards one offer only; (3) codes: buy X get Y codes, then % codes, then AED
+  codes, then free delivery (whatever order they were typed); (4) rewards, points and gift cards pay for what is
+  left (payments, as before). Every reduction is rounded half-up to the fils where it is worked out; a discount
+  spread over items uses largest remainder (shares add up exactly; ties to the earlier item). Reward lines take
+  no promotions.
+- **P2-62 — Combining:** one flag per code, "Can be combined" (`coupons.combinable`, default off — so every
+  existing code behaves as before). Several codes on an order only when all of them combine (max 5). A code that
+  doesn't combine also skips items already reduced by a sale or an offer. Automatic offers always apply.
+  `orders.applied_promotions` lists every sale / offer / code with its discount; `coupon_id`/`coupon_code` keep
+  the first code; `coupon_uses` counts a code anywhere in the list.
+- **P2-63 — Offers:** `offers` table, kinds `sale` (% or AED off each item, scope products/categories),
+  `bundle` (2–6 slots, each filled from products/categories × qty; a bundle price or % off the set; the
+  most expensive matching items are used; a bundle never raises a price) and `buy_x_get_y` (the cheapest
+  items of the scope get the % — 100 = free; the most expensive X per group are "bought"). Channels website / till;
+  dates; on/off. Buy X get Y also exists as a code kind (`coupon_kind` `buy_x_get_y`).
+- **P2-64 — Codes at the till and events:** codes made before this branch stay website-only (`coupons.channels`
+  default `{website}`); "Works on: Event till" turns the till on. A code linked to an event (`coupons.event_id`)
+  works online and at that event's till only, and the report shows it with its event. Offline the till sells at
+  catalogue prices and says so (`apply_offers = false`, also assumed for sales queued by an older till); codes,
+  points and rewards need a connection.
+- **P2-65 — VIP-only codes:** `coupons.tier_ids` (customer's current tier) and/or `coupons.customer_ids`. A
+  segment is saved as a snapshot of its customers (`segment_id` kept for "save again to refresh"), because
+  segment rules are evaluated with marketing permission and the till must not need it. The customer is the
+  signed-in account (website) or the mobile/email typed at the till. Tier ids survive saving the tiers
+  (`loyalty_tiers_save` now updates tiers in place, by position; a removed tier is taken out of codes and products).
+- **P2-66 — Early access:** `products.launch_at` + `early_access_tier_ids`. Before launch the product is left out
+  of the shop listings (cached hourly — it appears within the hour of its launch) but its page and the bag work,
+  so VIPs buy it from the link they are sent (e.g. a campaign to a VIP segment); `create_web_order` refuses
+  anyone not in a chosen tier (`product_buyable_by`). The till isn't restricted (staff decide).
+- **P2-67 — Points rewards:** `points_rewards` (a variant for N points, admin-editable). Website: the signed-in
+  customer ticks rewards in the order summary (max 3, one piece each); till: staff tick them once the customer
+  is found. A reward line is sold at its price and paid by a `loyalty_points` payment of that value
+  (`points_redeem_reward`, no minimum), so cancellations and refunds give the points back through the usual
+  path; it earns no points and takes no discounts.
+- **P2-68 — Birthday code:** `rewards_settings.birthday_reward` = points (default, as before) / code / both. The
+  code is personal (`customer_ids` = the customer, one use), % or AED off, valid N days (default 30) from the
+  birthday, optional minimum, website and till, does not combine; one per customer per year
+  (`birthday_code_issue`). Sent with the `birthday_code` template (points mentioned when both). Works with the
+  points programme off.
+- **P2-69 — Banners:** `promo_banners` — announcement bar (one line above the header; phones show the first)
+  and homepage banners (cards under the hero, optional photo in bucket `banners`), text, link, dates, on/off,
+  order; managed with `coupons.manage` under Admin → Promotions → Banners. Promotions report =
+  `promotion_performance(from, to)` from `applied_promotions` (codes with their event, sales, bundles, buy X get Y;
+  website and till).

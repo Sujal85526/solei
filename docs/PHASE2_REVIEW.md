@@ -236,31 +236,24 @@ default**). `main` has basic coupons (Phase 1) and the Solei Passport stamp card
 |---|---|---|
 | 1. Discount codes: % or fixed AED | ✅ | `main` already; `phase-2` adds free-delivery codes. |
 | 2. Seasonal promotions (Ramadan, Eid, National Day, Valentine's…) | ✅ `phase-2` | A code with start/end dates. No special "occasion" type; you just name the code. |
-| 3. Product promotions: selected products / categories (collections) | ✅ `phase-2` | Scope by products and/or categories. ⚠️ Codes only. **No automatic sale price** (e.g. "Ramadan: 15% off all sprays" shown on the shop without a code). |
-| 4. Bundle offers (perfume + spray at a promo price) | ❌ | Not built (noted in DECISIONS as later). |
-| 5. Buy X get Y (Buy 2 get 1 free) | ❌ | Not built. |
-| 6. Points for purchases, redeem for discounts **or products** | ⚠️ `phase-2` | Earn per AED paid, redeem at website checkout as money off. **Redeem for products: not built** (the Passport stamp card on `main` gives rewards separately). **Off by default.** Not at the POS. |
-| 7. VIP rewards: exclusive discounts, early access, special promotions | ⚠️ `phase-2` | VIP tiers by 12-month spend: points multiplier + a "perks" text. **No VIP-only discount codes, no early access to new collections.** Email campaigns to a VIP segment work (§7). |
+| 3. Product promotions: selected products / categories (collections) | ✅ `p2/promotions` | Codes scoped by products/categories, **and automatic sale prices** (Admin → Promotions → Offers → Sale price: % or AED off chosen products/categories, dates) shown as was/now on the shop and used on the website and at the till (P2-61, P2-63). |
+| 4. Bundle offers (perfume + spray at a promo price) | ✅ `p2/promotions` | Offers → Bundle: 2–6 items (each from chosen products/categories), a set price or % off; applied automatically in the bag, checkout and till (P2-63). |
+| 5. Buy X get Y (Buy 2 get 1 free) | ✅ `p2/promotions` | Automatic (Offers → Buy X get Y) or as a code; the cheapest items get the discount (P2-63). |
+| 6. Points for purchases, redeem for discounts **or products** | ✅ `p2/promotions` | Rewards catalogue (a product for N points, Loyalty → Points & tiers); rewards and points as money off at website checkout **and at the till** (P2-67). Programme still **off by default**. |
+| 7. VIP rewards: exclusive discounts, early access, special promotions | ✅ `p2/promotions` | VIP-only codes (tiers or a customer segment, P2-65); early access: a product's launch date + tiers (P2-66); campaigns to a VIP segment (§7). |
 | 8. Digital gift cards in AED 100 / 200 / 500… | ✅ `phase-2` | Amounts set by the owner ("100, 200, 500"); the code is emailed to the buyer or the person they name. |
 | 9. Redeem online, balance tracked automatically | ✅ `phase-2` | At checkout (and at the till if allowed). Balance = ledger; refunds go back to the card. |
-| 10. Birthday offers to opted-in customers | ⚠️ `phase-2` | Birthday **bonus points** + email, once a year (needs points switched on + a scheduler). **Not a birthday discount code.** |
+| 10. Birthday offers to opted-in customers | ✅ `p2/promotions` | Birthday reward = points, a personal one-time code (% or AED, valid N days) or both, sent in the birthday email (P2-68). Needs the scheduler (P2-9). |
 | 11. Scheduling: start / expiry dates | ✅ `phase-2` | On codes. (Campaigns send when you press send, not scheduled.) |
-| 12. Restrictions: products, minimum spend, use limits, combining | ⚠️ `phase-2` | Products/categories ✅, minimum order ✅, total uses ✅, uses per customer ✅. **Combining: one code per order only** (stacking not built). Gift card + points + one code together does work. |
-| 13. Promotional banners on the homepage | ❌ | Homepage hero/slides are in code (`src/content/home.ts`), **not editable from the admin**. No announcement bar. |
+| 12. Restrictions: products, minimum spend, use limits, combining | ✅ `p2/promotions` | Products/categories, minimum order, total uses, uses per customer, **combining** ("Can be combined" per code; offers + codes; fixed order of application, P2-61/P2-62). |
+| 13. Promotional banners on the homepage | ✅ `p2/promotions` | Admin → Promotions → Banners: announcement bar + homepage banners under the hero (text, link, photo, dates, on/off, order, P2-69). The hero itself is still in code. |
 | 14. Promotion performance: customers, sales, discount given | ✅ `phase-2` | Reports → Promotions: uses, discount given (goods + delivery), sales per code, for a date range. |
-| 15. Event-specific codes (exhibitions, weddings, events) | ⚠️ | You can make a code per event, but **codes work on the website only; the POS can't take a code** and codes aren't linked to an event in reports. |
+| 15. Event-specific codes (exhibitions, weddings, events) | ✅ `p2/promotions` | Codes work at the till ("Works on: Event till"); a code linked to an event works at that event's till and online and shows per event in Reports → Promotions (P2-64). |
 | ★ All managed from the admin, no developer | ✅ (except banners) | Codes, gift card amounts, points rates, tiers: all admin-editable. |
 | ★ Discounts worked out at checkout + in reports | ✅ `phase-2` | Database calculates (`coupon_evaluate`); orders keep `applied_promotions`; promotions report. |
 
-Gaps:
-- ❌ Bundle offers. ❌ Buy X get Y.
-- ❌ Automatic sale prices (no code needed).
-- ❌ Homepage banners / announcement bar editable from the admin.
-- ❌ Discount codes at the POS (needed for event codes); link a code to an event.
-- ⚠️ Combining several codes (one per order today).
-- ⚠️ Points: redeem for products; use at the POS. VIP-only codes + early access. Birthday as a discount code
-  instead of points.
-- ⚠️ Points & tiers are off; turn on after the merge (`POINTS_SWITCH_LOCKED` stays unset on production).
+Gaps: none left from this list on `p2/promotions` (items 34–42). Still to do after the merge: switch points &
+tiers on (`POINTS_SWITCH_LOCKED` stays unset on production) and add the scheduler for birthdays (P2-9).
 
 ## 11. Notifications, WhatsApp integration & automated communication 💬
 
@@ -339,15 +332,15 @@ Each item is still to be decided with the owner. Section number in brackets.
 30. ✅ Sales per staff member: report + filter (§9.8) — `p2/crm-staff`.
 31. ✅ Staff performance report: attendance + events worked + sales per person (§9.11) — `p2/crm-staff`.
 32. ✅ Planned shifts / rota for staff (§9.7) — `p2/crm-staff`.
-34. Bundle offers (e.g. perfume + spray at a set price) (§10.4).
-35. Buy X get Y free (§10.5).
-36. Automatic sale prices on products / categories without a code (§10.3).
-37. Homepage promo banners / announcement bar, editable from the admin (§10.13).
-38. Discount codes at the POS + link a code to an event for reports (§10.15).
-39. Combine several discounts on one order (stacking rules) (§10.12).
-40. Points: redeem for products, and use at the POS (§10.6).
-41. VIP-only discount codes + early access to new collections (§10.7).
-42. Birthday discount code (today: bonus points) (§10.10).
+34. ✅ Bundle offers (e.g. perfume + spray at a set price) (§10.4) — `p2/promotions`.
+35. ✅ Buy X get Y free (§10.5) — `p2/promotions`.
+36. ✅ Automatic sale prices on products / categories without a code (§10.3) — `p2/promotions`.
+37. ✅ Homepage promo banners / announcement bar, editable from the admin (§10.13) — `p2/promotions`.
+38. ✅ Discount codes at the POS + link a code to an event for reports (§10.15) — `p2/promotions`.
+39. ✅ Combine several discounts on one order (stacking rules) (§10.12) — `p2/promotions`.
+40. ✅ Points: redeem for products, and use at the POS (§10.6) — `p2/promotions`.
+41. ✅ VIP-only discount codes + early access to new collections (§10.7) — `p2/promotions`.
+42. ✅ Birthday discount code (today: bonus points) (§10.10) — `p2/promotions`.
 44. Official WhatsApp Business API: owner sets up Meta account + verification; we add a provider adapter;
     then all customer messages (confirmation, payment, status, delivery, failed payment) on WhatsApp too (§11).
 45. Automatic replies to common questions (availability, prices, delivery, hours) (§11.7).

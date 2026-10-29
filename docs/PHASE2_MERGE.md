@@ -98,3 +98,20 @@ external pinger / Supabase `pg_cron` + `pg_net`):
 - Every automation switch (feedback requests, staff reminders, owner digest) is **off** by default; nothing sends
   until the owner turns it on and a scheduler calls the routes (§6).
 - After the merge: regenerate `database.types.ts` (hand-edited here).
+
+## 8. Promotions & loyalty, part 2 (migrations `20261030030001`–`…005`, branch `p2/promotions`)
+- Needs the giveaways migrations (`20261030020002`/`…003`): `promo_price` calls the 3-argument
+  `line_unit_price_fils`, and the redefined `create_web_order` / `pos_complete_sale` keep the giveaway logic.
+- Main-safe while nothing new is set up: `coupon_evaluate`, `create_web_order`, `pos_complete_sale`,
+  `coupon_uses`, `birthdays_due`, `points_birthday`, `loyalty_tiers_save` keep their signatures; with no offers,
+  one code and no rewards they price exactly as before (SQL tests 120/130/160 unchanged). Existing codes stay
+  website-only and non-combining.
+- **Don't create offers (sale prices, bundles, buy X get Y), till/VIP/combinable codes, rewards or early-access
+  launch dates on the shared DB until the merge:** main's checkout sends catalogue prices and one code, so a
+  live sale would make the database refuse main's orders ("prices changed"), and main's admin doesn't know the
+  new code kinds. Banners are harmless (main doesn't read them). Keep `birthday_reward = points` until then.
+- The till sends `apply_offers`; sales queued offline by main's till are priced at catalogue prices.
+- New: bucket `banners` (public), template `birthday_code` (appears in the live Settings → Notifications list;
+  leave it). No new permission keys (`coupons.manage`, `loyalty.*`, `reports.view`, `pos.use`).
+- After the merge: regenerate `database.types.ts` (hand-edited here).
+
