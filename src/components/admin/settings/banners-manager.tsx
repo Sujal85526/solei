@@ -81,7 +81,9 @@ export function BannersManager({ banners }: { banners: Banner[] }) {
           </p>
         ) : null}
       </div>
-      {adding ? <AddBannerDialog onClose={() => setAdding(false)} /> : null}
+      {adding ? (
+        <AddBannerDialog first={banners.length === 0} onClose={() => setAdding(false)} />
+      ) : null}
     </div>
   );
 }
@@ -177,9 +179,10 @@ function BannerCard({ banner, index, count }: { banner: Banner; index: number; c
           />
         </Field>
         <Field
-          label="Description (for screen readers)"
+          label="Description (optional)"
           htmlFor={`alt-${banner.id}`}
           error={e.alt}
+          hint="A short sentence about the picture, for blind visitors and Google. Not shown on the page."
           className="sm:col-span-2"
         >
           <Input
@@ -254,7 +257,8 @@ function Picture({ bannerId, kind, url }: { bannerId: string; kind: BannerKind; 
   );
 }
 
-function AddBannerDialog({ onClose }: { onClose: () => void }) {
+/** `first`: no banners yet, so there is nothing to rotate with and no timer to ask for. */
+function AddBannerDialog({ first, onClose }: { first: boolean; onClose: () => void }) {
   const [files, setFiles] = useState<{ desktop?: File; mobile?: File }>({});
   const [busy, setBusy] = useState(false);
 
@@ -319,27 +323,32 @@ function AddBannerDialog({ onClose }: { onClose: () => void }) {
               />
             </Field>
           ))}
-          <Field
-            label="Stays for (seconds)"
-            htmlFor="new-seconds"
-            hint="Used when there's more than one banner."
-          >
-            <Input
-              id="new-seconds"
-              name="seconds"
-              type="number"
-              min={2}
-              max={60}
-              defaultValue={5}
-              className="h-11"
-            />
-          </Field>
+          {first ? (
+            <input type="hidden" name="seconds" value={5} />
+          ) : (
+            <Field
+              label="Stays for (seconds)"
+              htmlFor="new-seconds"
+              hint="Then the next banner fades in."
+            >
+              <Input
+                id="new-seconds"
+                name="seconds"
+                type="number"
+                min={2}
+                max={60}
+                defaultValue={5}
+                className="h-11"
+              />
+            </Field>
+          )}
           <Field label="Link (optional)" htmlFor="new-link" hint="e.g. /shop">
             <Input id="new-link" name="linkHref" placeholder="/shop" className="h-11" />
           </Field>
           <Field
-            label="Description (for screen readers)"
+            label="Description (optional)"
             htmlFor="new-alt"
+            hint="A short sentence about the picture, for blind visitors and Google. Not shown on the page."
             className="sm:col-span-2"
           >
             <Input id="new-alt" name="alt" placeholder="What the banner shows" className="h-11" />
