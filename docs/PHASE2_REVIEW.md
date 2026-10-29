@@ -151,9 +151,9 @@ Segments, campaigns and VIP tiers are on **`phase-2`** (`20261024000007`, `…00
 | 1. Profiles saved automatically: name, mobile, email, purchase history | ✅ `main` | From website sign-up/checkout, POS, manual orders, bookings, newsletter, CSV import. Source recorded. |
 | 2. One customer database | ✅ `main` | Admin → Customers: filters (consent, source, emirate, has orders), sort (recent, spent, name, newest), CSV export. |
 | 3. Purchase history: orders, products, amounts, dates | ✅ `main` | Customer page: every order from every channel; order count + total spent (money actually received, net of refunds). |
-| 4. VIP: regular + highest-spending customers | ⚠️ | `main`: sort by total spent / orders only. `phase-2`: VIP tiers by spend (points & tiers, **off by default**) + segments by spend/orders. No "VIP" badge on `main`. |
-| 5. Segmentation: new, returning, VIP, inactive | ⚠️ `phase-2` | Admin → Campaigns → Segments: saved rules (min/max spent, min orders, bought in last X days, **not bought in X days** = inactive, destinations, Passport, emirate, consent). These are **custom filters**, not fixed new/returning/VIP/inactive labels on each profile. |
-| 6. Feedback: reviews, complaints, suggestions | ⚠️ | Product reviews ✅ (`main`, owner approves). **Complaints / suggestions: not built.** Only a free-text "notes" field on the customer. |
+| 4. VIP: regular + highest-spending customers | ✅ `p2/crm-staff` | Automatic **VIP** label (spend in the last 12 months, owner-set threshold) with a badge on the list + profile and a list filter (P2-70). VIP tiers (points) also on `phase-2`, off by default. |
+| 5. Segmentation: new, returning, VIP, inactive | ✅ `p2/crm-staff` | Automatic **New / Returning / VIP / Inactive** labels, computed from purchases with rules in Customers → Labels & emails; badges, list filter, and a "Label" rule in segments (P2-70). |
+| 6. Feedback: reviews, complaints, suggestions | ✅ `p2/crm-staff` | Reviews (`main`). **Complaints & suggestions log**: per customer / order, kind, status, assigned staff, what was done; list page with filters; answers to the feedback email land there (P2-71). |
 | 7. Marketing: promos, new products, offers via WhatsApp or email, only to opted-in customers | ⚠️ `phase-2` | Email campaigns ✅: segment → campaign, only to customers with email consent, unsubscribe link in every email. **WhatsApp campaigns: not built.** Consent is stored per channel (email/WhatsApp) since Phase 1. |
 | 8. Analytics: new vs returning customers, purchasing trends | ✅ `p2/reports` | Reports → Business (`p2/reports`) → Customers: new / returning, repeat rate, top spenders, new vs returning over time. |
 | 9. Search by name or mobile | ✅ `main` | Matches local formats ("050 123 4567" finds +971…), name or email. |
@@ -211,11 +211,11 @@ Roles on the live DB: Owner (all, 33), Manager (32), Sales staff (13).
 | 4. Owner: full access | ✅ `main` | Owner always has every permission (can't be removed). |
 | 5. Sales staff: sales, availability, customer orders only | ✅ `main` | Sales staff role: POS, create/view orders, record payments, payment links, view stock, customers, bookings/events view. No financials, no settings, no staff. |
 | 6. Assign staff to exhibitions, weddings, events | ✅ `main` | Event → Staff, with a role (e.g. "Booth lead"). Weddings = booking → calendar entry, same assignment. |
-| 7. Attendance: attendance, working hours, **assigned shifts** | ⚠️ `phase-2` | Clock in / out on the dashboard (optionally at an event), hours per person for a period; staff with staff.manage see and edit everyone's. **Planned shifts / rota: not built.** |
-| 8. Sales per employee | ❌ | Orders store who made them (`orders.staff_id`), but **no report or filter by staff member**. |
+| 7. Attendance: attendance, working hours, **assigned shifts** | ✅ `phase-2` + `p2/crm-staff` | Clock in / out + hours (`phase-2`). **Rota**: Attendance → Rota, planned shifts per person (week view, optional event, copy last week), staff see their own (P2-72). |
+| 8. Sales per employee | ✅ `p2/crm-staff` | Orders → "Made by" filter; Reports → Staff: orders, units, sales per person for any period (P2-73). |
 | 9. Activity tracking: sales, stock changes, refunds, cancellations | ✅ `main` | `audit_log` on every important table + Admin → Activity (who, what, when). |
 | 10. Hide profits, expenses, financial reports from unauthorised staff | ✅ `main` | `reports.financial.view`: without it, COGS, profit, margins and expenses are hidden in reports and the database. |
-| 11. Staff performance report: attendance, events, individual sales | ❌ | Only attendance hour totals (on `phase-2`). No combined report per person. |
+| 11. Staff performance report: attendance, events, individual sales | ✅ `p2/crm-staff` | Reports → Staff: sales, hours worked vs planned, shifts, events worked, sales per hour; Excel export; hours only with staff.manage (P2-73). |
 | 12. Activate, deactivate, modify accounts | ✅ `main` | Staff page: edit, change role, deactivate / reactivate (blocks sign-in at once). |
 | ★ Simple for non-technical staff | ✅ | POS made for a few taps; in-app Help pages. |
 | ★ Owner controls permissions; all activity traceable | ✅ `main` | Role editor + Activity log. |
@@ -279,11 +279,11 @@ on/off per template, Outbox = history). **WhatsApp** order updates on **`phase-2
 | 6. Website ↔ official WhatsApp Business account, customers contact us | ⚠️ `main` | Click-to-chat links (`wa.me`) to the business number in the footer / contact page. No API connection. |
 | 7. Automatic replies: availability, prices, delivery, hours | ❌ | Not built. Only the public Help centre (policies, editable). Needs the WhatsApp API + a bot or a provider's auto-reply tool. |
 | 8. Promotional messages to opted-in customers | ⚠️ `phase-2` | Email campaigns ✅. WhatsApp ❌ (§7). |
-| 9. Event announcements to interested customers | ⚠️ | Can be sent as an email campaign by hand. **No "interested in events" list, no automatic announcement.** |
-| 10. Feedback request after delivery | ❌ | Not built (reviews exist, but no automatic "how was it?" message). |
+| 9. Event announcements to interested customers | ✅ `p2/crm-staff` | "Event news" sign-up (`/event-news`, account, staff on the profile) + **Announce** on a calendar event → draft email to those customers (P2-76). |
+| 10. Feedback request after delivery | ✅ `p2/crm-staff` | Editable `feedback_request` email N days after delivery, once per order, with a stop link; answers go to the complaints log, plus a review link (P2-74). Needs the scheduler. |
 | 11. Owner alert on a new online order | ✅ `main` | `owner_new_order` email (+ `owner_new_booking`). Email only, no WhatsApp/push. |
 | 12. Low-stock alerts | ✅ `main` | `owner_low_stock` email (§5). |
-| 13. Event + staff schedule reminders | ❌ | Not built. Staff are assigned to events (§6/§9) but get no reminder. |
+| 13. Event + staff schedule reminders | ✅ `p2/crm-staff` | Emails to assigned staff N hours before an event and before each planned shift; optional owner digest (P2-75). Needs the scheduler. |
 | 14. Failed payment + retry | ✅ `main` | `payment_failed` email with a link back to pay. |
 | 15. Manage WhatsApp + email templates from the admin | ✅ | Edit subject/body with variables, preview, on/off. (WhatsApp templates must **also** be approved by Meta once the API is live; see below.) |
 | 16. Communication history | ✅ `main` | Settings → Notifications → Outbox (every email / WhatsApp, status). Booking messages log per booking. |
@@ -323,7 +323,7 @@ Each item is still to be decided with the owner. Section number in brackets.
 3. Guided giveaway flow: product type (perfume / all-over spray) → scent from the real catalog → packaging (§1). ✅ `p2/giveaways`
 4. Plan Your Event section on the **homepage**, clearly visible (§2). ✅ `p2/giveaways`
 5. Fast vs slow-moving inventory report across all channels (§5). ✅ `p2/reports` (Reports → Business / Expenses).
-15. Complaints & suggestions log for customers (§7).
+15. ✅ Complaints & suggestions log for customers (§7) — `p2/crm-staff`.
 16. WhatsApp marketing messages (campaigns are email only) (§7).
 17. Customer analytics report: new vs returning customers, purchasing trends (§7, §8.7). ✅ `p2/reports` (Reports → Business / Expenses).
 20. Business-wide Reports page with a date range (day / week / month / year / custom) (§8.1, §8.11). ✅ `p2/reports` (Reports → Business / Expenses).
@@ -336,9 +336,9 @@ Each item is still to be decided with the owner. Section number in brackets.
 27. Estimated profit on the dashboard (§8.13). ✅ `p2/reports` (Reports → Business / Expenses).
 28. Compare months and categories (events compare already exists) (§8.14). ✅ `p2/reports` (Reports → Business / Expenses).
 29. PDF export for all reports (PDF exists only for event reports, on `phase-2`) (§8.12). ✅ `p2/reports` (Reports → Business / Expenses).
-30. Sales per staff member: report + filter (orders already store `staff_id`) (§9.8).
-31. Staff performance report: attendance + events worked + sales per person (§9.11).
-32. Planned shifts / rota for staff (§9.7).
+30. ✅ Sales per staff member: report + filter (§9.8) — `p2/crm-staff`.
+31. ✅ Staff performance report: attendance + events worked + sales per person (§9.11) — `p2/crm-staff`.
+32. ✅ Planned shifts / rota for staff (§9.7) — `p2/crm-staff`.
 34. Bundle offers (e.g. perfume + spray at a set price) (§10.4).
 35. Buy X get Y free (§10.5).
 36. Automatic sale prices on products / categories without a code (§10.3).
@@ -351,9 +351,9 @@ Each item is still to be decided with the owner. Section number in brackets.
 44. Official WhatsApp Business API: owner sets up Meta account + verification; we add a provider adapter;
     then all customer messages (confirmation, payment, status, delivery, failed payment) on WhatsApp too (§11).
 45. Automatic replies to common questions (availability, prices, delivery, hours) (§11.7).
-46. Feedback request after delivery (§11.10).
-47. Event + staff schedule reminders (§11.13).
-48. Event announcements to customers interested in events (§11.9).
+46. ✅ Feedback request after delivery (§11.10) — `p2/crm-staff`.
+47. ✅ Event + staff schedule reminders (§11.13) — `p2/crm-staff`.
+48. ✅ Event announcements to customers interested in events (§11.9) — `p2/crm-staff`.
 49. Owner alerts (new order, low stock) on WhatsApp, not only email (§11.11–12).
 50. Real courier account + tracking (stand-in today) (§11.4).
 51. Scheduler (Vercel cron or similar) for cart reminders, birthdays, tracking (§11.5).
@@ -369,8 +369,7 @@ Each item is still to be decided with the owner. Section number in brackets.
 12. PDF event report: on `phase-2` only, comes with the merge (§4).
 13. Low-stock alert by WhatsApp (email only today; WhatsApp provider is a stand-in) (§5).
 14. Calendar: "Wedding" event type? "Potential" → "Upcoming" label? (§6). ✅ `p2/giveaways`
-18. Automatic New / Returning / VIP / Inactive labels on customer profiles + list; VIP tiers exist on `phase-2`
-    but are off by default (§7).
+18. ✅ Automatic New / Returning / VIP / Inactive labels on customer profiles + list (§7) — `p2/crm-staff`.
 19. Segments + email campaigns are on `phase-2` only, so they come with the merge (§7).
 33. Staff attendance (clock in/out) is on `phase-2` only, so it comes with the merge (§9.7).
 43. Promotions (scope, limits, free delivery, report), gift cards, points/tiers/birthday: `phase-2` only, so they

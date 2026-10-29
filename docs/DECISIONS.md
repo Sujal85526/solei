@@ -573,3 +573,44 @@ Open client questions are built as configurable defaults. Each row: what we chos
   the KPI is left out instead of breaking the dashboard. Every Excel download now has a PDF beside it (exports,
   promotions report, business report); PDF tables size their columns from the content, shrink the font for wide
   tables and print amounts without "AED" there (one "Amounts in AED" note).
+## Phase 2 — CRM, staff & email automation (branch `p2/crm-staff`, 2026-10-30)
+- **P2-70 — Customer labels are computed, never typed:** `customer_label()` (SQL) from paid purchases with owner
+  rules in `settings.label_*` (Admin → Customers → Labels & emails). First match wins: **VIP** (spent ≥ AED 2,000
+  after refunds in the last 12 months) → **Inactive** (no purchase in 180 days) → **New** (first purchase in the
+  last 30 days) → **Returning** (2+ purchases). No purchases, or one older purchase not yet inactive = no label.
+  Read live, so changing a rule relabels everyone at once. `customer_summary` gains `recent_spent_fils` + `label`
+  at the end (main's selects are unaffected); segments gain a `labels` rule. VIP by points tier was left out
+  (tiers are off by default and owned by the points module); VIP-by-spend matches the owner's words.
+- **P2-71 — Complaints & suggestions log:** `customer_feedback` (complaint / suggestion / compliment / other;
+  open → in progress → resolved, `resolved_at` stamped by a trigger; assigned staff; "what we did"). Per customer,
+  optionally per order. Reuses `customers.view` / `customers.manage` (no new keys, P2-13). Answers to the feedback
+  email land here as `source = email` with the star rating, open, so staff follow up.
+- **P2-72 — Rota (planned shifts):** `staff_shifts` (person, start, end ≤ 24 h, optional event, note), planned with
+  `staff.manage`, everyone sees their own (RLS). Week view Monday–Sunday in UAE time; an end time before the start
+  is the next day; "Copy last week" for a regular rota (copies drop the event link). Separate from attendance
+  (clocked hours, P2-23), which the staff report compares against.
+- **P2-73 — Sales per staff member / staff report:** sales = orders with `staff_id` (POS and manual orders; web
+  orders have no staff), not cancelled or awaiting payment, order totals minus refunds, by Dubai business day.
+  `staff_performance(from, to)` needs `reports.view`; hours (worked / planned / shifts) are returned only with
+  `staff.manage` (same rule as attendance) and the Excel export drops those columns otherwise. Events worked =
+  assigned events overlapping the range. Orders list gains a "Made by" filter.
+- **P2-74 — Feedback request after delivery:** off by default; N days (default 3) after the order first reached
+  delivered/completed, only for delivery or pickup orders (not till sales handed over at events), up to 30 days
+  back, once per order (`feedback_requests` row is claimed before sending, so a failed email is not retried —
+  no double asks). Transactional with a "stop feedback emails" link (`customers.feedback_optout_at`, signed link,
+  a button so link scanners can't trigger it). The page asks for stars, kind and a message; a link to the first
+  product's page invites a review.
+- **P2-75 — Staff reminders:** off by default; N hours (default 24) before a confirmed event opens (its day hours,
+  else default hours, else 10:00) to each active assigned person, and before each planned shift. Run hourly;
+  the outbox dedupe makes each reminder go once (a moved shift gets a new one). Templates are "To staff"
+  (new `notification_audience` value `staff`; main's settings page simply doesn't list them before the merge).
+  Optional daily owner digest of the next 7 days' events and who works them, to the owner alert email.
+- **P2-76 — Event news:** its own consent (`customers.event_news`), separate from marketing consent: sign-up page
+  `/event-news` (footer link; creates the customer when new, source newsletter), Account → Emails switch, and
+  staff can add / remove on the profile. Announcing = "Announce" on a public calendar event (not private bookings,
+  not cancelled or past) creates a **draft campaign** with `audience = event_news`, filled from the editable
+  `event_announcement` template; the owner reviews, tests and sends it with the existing campaign sender. Its
+  footer says why they get it; unsubscribing turns off event news as well as marketing.
+- **P2-77 — Schedulers:** `/api/cron/feedback-requests` (daily), `/api/cron/staff-reminders` (hourly),
+  `/api/cron/event-digest` (daily), same `CRON_SECRET` guard as the others; admin "send now" buttons for the
+  first two. Not added to `vercel.json` (P2-9) — see `PHASE2_MERGE.md` §6.

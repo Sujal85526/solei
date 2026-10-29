@@ -41,6 +41,7 @@ after a `db:reset`).
 | 8 | Business reports: sales, channels, products, P&L + expenses, customers, movers, PDF everywhere | ✅ built (`20261030010001/2_business_*.sql`) |
 | 9 | Giveaways & occasions: page, guided order, option photos, till + manual orders | ✅ built (`20261030020001–3_giveaway*.sql`) |
 | 10 | Plan your event: homepage band, 6-step wizard, owner's event types, calendar wedding + "Upcoming" | ✅ built (`20261030020010–12`) |
+| 11 | CRM labels · complaints log · rota · staff report · feedback / staff reminders / event news emails | ✅ built on `p2/crm-staff` (`20261030040001–5`; DECISIONS P2-70–77) |
 
 **1 — Promotions:** Admin → Promotions (`/admin/promotions`): % off / AED off / free delivery, minimum
 order, start/end dates, total uses, uses per customer, category + product scope, pause/delete. Checkout
@@ -199,6 +200,20 @@ migrations. Pushed with the user's OK on 2026-10-24 (see "Preview deployment"). 
 - Rate-limit gift card lookups at checkout (signed-in only today; 32^12 codes) and on the till.
 - The desk preview browser (WebKit, background tab) doesn't reveal streamed admin pages until it is focused
   (React batches Suspense reveals on `requestAnimationFrame`); real browsers and Playwright are fine.
+
+### Phase 2 — CRM, staff & email automation (`p2/crm-staff`, 2026-10-30)
+- **Customers:** automatic New / Returning / VIP / Inactive labels (badges on list + profile, list filter, segment
+  rule; rules in Admin → Customers → Labels & emails). Complaints & suggestions log (Customers → Complaints &
+  suggestions, and on each profile).
+- **Staff:** Attendance → Rota (planned shifts, week view, copy last week; staff see their own). Reports → Staff
+  (`/admin/reports/staff`: sales, orders, units, hours worked vs planned, shifts, events, sales per hour; Excel).
+  Orders list "Made by" filter.
+- **Emails:** feedback request N days after delivery (`/feedback` page → complaints log), staff reminders before
+  events and planned shifts, optional owner digest, event news sign-up (`/event-news`, Account → Emails) and
+  "Announce" on a calendar event (draft campaign to event news subscribers). All off by default; need the
+  scheduler (`PHASE2_MERGE.md` §6).
+- Verified: SQL tests `supabase/tests/190_crm_staff_test.sql` (31 checks) on a throwaway native Postgres with all
+  migrations, unit tests, typecheck, lint, build. Not run: e2e and the pages against a DB with these migrations.
 
 ## Current notes
 - **CI is paused** (manual-only workflow) at the user's request — merge after local checks; re-enable in M17.

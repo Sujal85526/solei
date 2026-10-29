@@ -60,3 +60,41 @@ shared DB until the merge — `main`'s checkout can't send choices, so such a pr
   the live site shows the new names at once, which is what the owner asked for.
 - Don't mark a product "Sell this as a giveaway" on the shared DB until the merge: main's checkout can't send
   `giveaway_id` (giveaway products have no variants of their own, so main simply never shows them).
+## 6. Scheduled jobs (CRM, staff & email automation, `p2/crm-staff`)
+Every route needs `Authorization: Bearer $CRON_SECRET` (Vercel Cron sends it when `CRON_SECRET` is set) and
+does nothing until its switch is on in the admin. Suggested schedule (times UTC; UAE = UTC+4):
+
+| Route | What | Suggested |
+|---|---|---|
+| `/api/cron/cart-reminders` | Bag reminders (P2-8) | hourly — `0 * * * *` |
+| `/api/cron/birthdays` | Birthday bonus points (P2-17) | daily 05:00 UAE — `0 1 * * *` |
+| `/api/cron/tracking` | Courier tracking refresh (P2-22) | every 2 h — `0 */2 * * *` |
+| `/api/cron/feedback-requests` | "How was your order?" after delivery (P2-74) | daily 11:00 UAE — `0 7 * * *` |
+| `/api/cron/staff-reminders` | Staff event + shift reminders (P2-75) | hourly — `15 * * * *` |
+| `/api/cron/event-digest` | Owner's next-7-days events digest (P2-75) | daily 08:00 UAE — `0 4 * * *` |
+
+Proposed `vercel.json` block (**not added**: Vercel Hobby allows only daily crons, so the hourly ones need Pro or an
+external pinger / Supabase `pg_cron` + `pg_net`):
+
+```json
+"crons": [
+  { "path": "/api/cron/cart-reminders", "schedule": "0 * * * *" },
+  { "path": "/api/cron/birthdays", "schedule": "0 1 * * *" },
+  { "path": "/api/cron/tracking", "schedule": "0 */2 * * *" },
+  { "path": "/api/cron/feedback-requests", "schedule": "0 7 * * *" },
+  { "path": "/api/cron/staff-reminders", "schedule": "15 * * * *" },
+  { "path": "/api/cron/event-digest", "schedule": "0 4 * * *" }
+]
+```
+
+## 7. CRM, staff & email automation (migrations `20261030040001`–`…005`)
+- All additive: new tables (`customer_feedback`, `staff_shifts`, `feedback_requests`), new columns with defaults
+  on `settings`, `customers`, `campaigns`; `customer_summary` keeps its columns and adds two at the end;
+  `segment_members` and `customer_unsubscribe` keep their signatures. No new permission keys (reuses
+  `customers.*`, `staff.manage`, `reports.view`, `marketing.manage`, `settings.manage`) — nothing to grant.
+- `notification_audience` gains `staff` (own migration, `…004`). main's Settings → Notifications lists only
+  customer/owner templates, so the 3 staff templates are invisible there until the merge; leave them.
+- New templates on the live list: `feedback_request`, `owner_event_digest`, `event_announcement` — leave them.
+- Every automation switch (feedback requests, staff reminders, owner digest) is **off** by default; nothing sends
+  until the owner turns it on and a scheduler calls the routes (§6).
+- After the merge: regenerate `database.types.ts` (hand-edited here).
