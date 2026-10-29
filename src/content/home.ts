@@ -29,6 +29,7 @@ export function homeImages() {
     soho: editorial("soho-portrait.jpg", "/images/products/sprays-stone.jpg"),
     window: editorial("sunset-window.jpg", "/images/destinations/monaco.jpg"),
     bag: editorial("solei-bag.jpg", "/images/brand/hero-sprays-arch.jpg"),
+    events: editorial("event-booth.jpg", "/images/events/booth-florals.jpg"),
   };
 }
 
