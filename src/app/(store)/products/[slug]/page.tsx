@@ -9,6 +9,7 @@ import { ProductGrid, ProductGridSkeleton } from "@/components/store/shop/produc
 import { PurchasePanel } from "@/components/store/shop/purchase-panel";
 import { t } from "@/content/en";
 import { publicEnv } from "@/lib/env";
+import { businessDay, formatBusinessDate } from "@/lib/dates";
 import { formatAED } from "@/lib/money";
 import { listLiveSales } from "@/modules/promotions/queries";
 import { bestSale, type LiveSale } from "@/modules/promotions/quote";
@@ -166,6 +167,13 @@ export default async function ProductPage({ params }: PageProps<"/products/[slug
               <LiveProductPrice product={product} />
             </Suspense>
             {vatNote ? <p className="text-primary/55 mt-1 text-[0.7rem]">{vatNote}</p> : null}
+            {product.earlyAccessUntil ? (
+              <p className="text-primary mt-3 text-xs">
+                {t.product.earlyAccess(
+                  formatBusinessDate(businessDay(new Date(product.earlyAccessUntil))),
+                )}
+              </p>
+            ) : null}
             <span aria-hidden className="border-primary/20 mt-6 block border-t" />
             <div className="mt-8">
               <Suspense fallback={<PurchasePanel {...purchaseProps} availability={null} />}>

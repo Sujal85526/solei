@@ -75,6 +75,8 @@ export const en = {
     breadcrumb: "Breadcrumb",
   },
   product: {
+    earlyAccess: (date: string) =>
+      `Early access for our VIP members — open to everyone from ${date}.`,
     optional: "optional",
     each: "each",
     minPieces: (n: number) => `Minimum ${n} pieces per order.`,

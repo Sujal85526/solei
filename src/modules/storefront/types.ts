@@ -38,6 +38,8 @@ export type StoreProduct = {
   optionGroups: OptionGroup[];
   /** Fewest pieces per order (1 for ordinary products). */
   minOrderQty: number;
+  /** Before its launch: when it opens to everyone (until then early-access tiers only). */
+  earlyAccessUntil?: string | null;
 };
 
 export type StoreCategory = {

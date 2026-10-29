@@ -9,7 +9,12 @@ import { checkoutCustomer, pointsForCheckout } from "@/modules/points/service";
 import { priceBag, rewardPointsOf, rewardValueOf } from "@/modules/promotions/bag";
 import { listLiveRewards } from "@/modules/promotions/queries";
 import { normaliseCodes } from "@/modules/promotions/quote";
-import { fetchAvailability, getCartSettings, listProducts } from "@/modules/storefront/queries";
+import {
+  fetchAvailability,
+  fetchProductsForVariants,
+  getCartSettings,
+  listProducts,
+} from "@/modules/storefront/queries";
 import { resolveCart, type CartDetails, type CartGiftCard } from "./details";
 import { cartDetailsInputSchema } from "./schema";
 
@@ -43,6 +48,10 @@ export async function getCartDetails(input: unknown): Promise<CartDetails> {
   const wanted = new Set(ids);
   const availability = await fetchAvailability(ids);
   const products = catalogue.filter((p) => p.variants.some((v) => wanted.has(v.id)));
+  // Early-access products aren't in the shop listing yet: read them directly.
+  const listed = new Set(products.flatMap((p) => p.variants.map((v) => v.id)));
+  const unlisted = ids.filter((id) => !listed.has(id));
+  if (unlisted.length) products.push(...(await fetchProductsForVariants(unlisted)));
   // The signed-in customer (VIP and personal codes, rewards, per-customer limits) — only looked up
   // when a code or a reward needs it, so the bag drawer stays one stock read.
   const account = codes.length || rewardIds.length ? await currentAccount() : null;

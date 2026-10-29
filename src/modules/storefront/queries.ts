@@ -34,7 +34,7 @@ const productSelect = `
   destination:destinations (slug, name, region, mood, accent_colour),
   product_images (url, alt, sort),
   product_variants (id, label, size_ml, sku, price_fils, active, sort),
-  min_order_qty,
+  min_order_qty, launch_at,
   product_option_groups (id, name, kind, required, max_length, sort,
     product_options (id, label, price_delta_fils, active, sort, image_url))
 ` as const;
@@ -105,6 +105,8 @@ function toStoreProducts(rows: ProductRow[]): StoreProduct[] {
               })),
           })),
         minOrderQty: p.min_order_qty ?? 1,
+        // Not launched yet: only early-access tiers can buy it (the order RPC checks).
+        earlyAccessUntil: p.launch_at && new Date(p.launch_at) > new Date() ? p.launch_at : null,
       },
     ];
   });
@@ -116,7 +118,9 @@ export async function listProducts(): Promise<StoreProduct[]> {
   cacheTag(CONTENT_TAGS.catalog);
 
   if (isFallback()) return fallbackProducts();
-  return toStoreProducts(must(await productQuery(), "products"));
+  // Products before their launch stay off the shop (early-access customers get the link); the
+  // listing refreshes hourly, so a launch shows within the hour.
+  return toStoreProducts(must(await productQuery(), "products")).filter((p) => !p.earlyAccessUntil);
 }
 
 /** One product by slug (its own cache entry, so a newly published product resolves at once). */
