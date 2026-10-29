@@ -123,11 +123,18 @@ next steps (account_user_id column on orders, stored stock balances) are in DECI
   pilot order confirmed paid (SOL-001499, AED 1, 2026-10-27). Still needed: the second pilot with the other
   card brand, send both order IDs to ecomsupport@network.global, cancel pilot orders with restock, upload
   the Solei logo under Branding in the portal (checklist steps 7–8).
-- **Known minor items:** the customer linked to `client@solei.test` has email `test@gmail.com` (a stranger's
-  inbox — change it); checkout doesn't remember the mobile number; test customers "NI Test Customer" and
-  "Sujal Link Test" in admin — delete before launch; hidden test product "Test from dashboard" — delete before
-  launch (the AED 1 "Solei Trial" product was deleted 2026-10-29, so the second card-brand pilot needs a new AED 1
-  test product or a staff payment link).
+- **Pre-launch clean-up (2026-10-29):** the hosted DB was cleared of all test data in one transaction — every order,
+  payment, stock movement, loyalty stamp, review, notification and audit-log row; the 3 "Report Test" events and the
+  "Demo Pop-up"; the test products ("Solei Trial", "Test from dashboard"); all customers except Reem Alnaqbi and
+  sujal rajput; and the test logins (`client@solei.test`, `dev-bot@solei.test`, `*+shop`, kushal, aryan, …).
+  Kept: the 8 real products (Main stock numbers unchanged, one "Opening stock (launch)" entry each), settings,
+  delivery zones, policies, templates, loyalty/booking config, "The Edit" event, and 3 Owners (Sujal, CityReach
+  Admin, Solei Perfumes). Order numbers continue from SOL-001504 (sequence not reset). A full data backup is at
+  `~/personal/solei-backups/` (outside the repo, contains customer data). The two live pilot payments
+  (SOL-001499 AED 1, SOL-001503 AED 31) still need refunding in the N-Genius portal. The old Keychain test
+  passwords (`solei-client-test-password`, `solei-dev-bot-*`, `solei-shop-test-password`) no longer match any login.
+- **Known minor items:** checkout doesn't remember the mobile number; the "The Edit" event's location reads
+  "Emirates Placa Terrace" (typo).
 - **Western Region delivery (2026-10-29):** new `western_region` emirate + `delivery_zones` row (AED 50), migrations
   `20261029000001/2`. They were applied to the hosted DB with `psql` (both idempotent), **not** `supabase db push`:
   the hosted DB already has `phase-2`'s `20261024*` migrations that aren't on `main`, so `db push` refuses until
