@@ -2,6 +2,8 @@ import type { Metadata } from "next";
 import { PageHeader } from "@/components/admin/page-header";
 import { EventPicker } from "@/components/admin/reports/event-picker";
 import { PromotionReport } from "@/components/admin/reports/promotion-report";
+import { ExportButtons } from "@/components/admin/reports/report-parts";
+import { ReportsTabs } from "@/components/admin/reports/reports-tabs";
 import { AdminSection } from "@/components/admin/section";
 import { requirePagePermission } from "@/lib/auth/session";
 import { businessDay } from "@/lib/dates";
@@ -38,6 +40,9 @@ export default async function ReportsPage({ searchParams }: PageProps<"/admin/re
             : "Sales and stock per event — per day and in total."
         }
       />
+      <div className="-mt-6 -mb-6">
+        <ReportsTabs financial={financial} />
+      </div>
       <AdminSection
         title="Events"
         description="Open an event's report, or tick a few to compare them. Exports to Excel and CSV."
@@ -47,6 +52,11 @@ export default async function ReportsPage({ searchParams }: PageProps<"/admin/re
       <AdminSection
         title="Promotions"
         description="Paid website orders that used a discount code, and what each code gave away."
+        actions={
+          <ExportButtons
+            href={`/admin/reports/promotions/export?${new URLSearchParams({ from, to })}`}
+          />
+        }
       >
         <PromotionReport
           from={from}

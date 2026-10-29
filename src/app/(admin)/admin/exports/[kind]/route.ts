@@ -19,12 +19,12 @@ import {
   stockTable,
   type ExportTable,
 } from "@/modules/exports/tables";
-import { tableToCsv, workbookToXlsx, XLSX_TYPE } from "@/modules/reports/excel";
+import { parseFormat, reportDownload } from "@/modules/reports/download";
 
 /**
- * `/admin/exports/{orders|payments|customers|stock}?from=&to=&format=xlsx|csv`.
+ * `/admin/exports/{orders|payments|customers|stock}?from=&to=&format=xlsx|pdf|csv`.
  * Orders and payments take an Asia/Dubai date range (default: this month); customers and stock
- * are a snapshot. Excel includes a totals row; CSV is the plain table.
+ * are a snapshot. Excel and PDF include a totals row; CSV is the plain table.
  */
 export async function GET(request: NextRequest, ctx: RouteContext<"/admin/exports/[kind]">) {
   const { kind } = await ctx.params;
@@ -63,23 +63,10 @@ export async function GET(request: NextRequest, ctx: RouteContext<"/admin/export
   const name = range
     ? `solei-${kind}-${range.from}-to-${range.to}`
     : `solei-${kind}-${businessDay()}`;
-  const headers = { "Cache-Control": "private, no-store" };
-
-  if (sp.get("format") === "csv") {
-    return new Response(tableToCsv(table), {
-      headers: {
-        ...headers,
-        "Content-Type": "text/csv; charset=utf-8",
-        "Content-Disposition": `attachment; filename="${name}.csv"`,
-      },
-    });
-  }
-  const body = await workbookToXlsx(exportWorkbook(kind, table, range));
-  return new Response(new Uint8Array(body), {
-    headers: {
-      ...headers,
-      "Content-Type": XLSX_TYPE,
-      "Content-Disposition": `attachment; filename="${name}.xlsx"`,
-    },
-  });
+  return reportDownload(
+    parseFormat(sp.get("format")),
+    name,
+    exportWorkbook(kind, table, range),
+    table,
+  );
 }

@@ -1,4 +1,4 @@
-import { Download, FileSpreadsheet } from "lucide-react";
+import { Download, FileSpreadsheet, FileText } from "lucide-react";
 import { buttonVariants } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -33,6 +33,16 @@ export function ExportsPanel({
           data-testid={`export-${kind}-xlsx`}
         >
           <FileSpreadsheet /> Excel
+        </button>
+        <button
+          type="submit"
+          formAction={`/admin/exports/${kind}`}
+          name="format"
+          value="pdf"
+          className={cn(buttonVariants({ variant: "outline", size: "sm" }))}
+          data-testid={`export-${kind}-pdf`}
+        >
+          <FileText /> PDF
         </button>
         <button
           type="submit"
