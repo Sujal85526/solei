@@ -14,11 +14,14 @@ import { requirePagePermission } from "@/lib/auth/session";
 import { formatBusinessDate } from "@/lib/dates";
 import { formatAED } from "@/lib/money";
 import { can } from "@/lib/permissions";
+import { cn } from "@/lib/utils";
 import { eventsOn, myOpenShift } from "@/modules/attendance/queries";
 import { changeBp, formatChange, startsIn } from "@/modules/dashboard/logic";
 import { dashboardSummary } from "@/modules/dashboard/queries";
 import type { PeriodFigures, PeriodKey } from "@/modules/dashboard/types";
 import { EXPORT_KINDS, EXPORT_PERMISSION } from "@/modules/exports/params";
+import { formatBp } from "@/modules/reports/aggregate";
+import { monthProfit } from "@/modules/reports/queries";
 import { CHANNEL_LABELS } from "@/modules/orders/status";
 
 export const metadata: Metadata = { title: "Dashboard" };
@@ -67,12 +70,13 @@ const linkCls = "text-primary inline-flex items-center gap-1 text-sm font-medium
 
 export default async function AdminDashboard() {
   const staff = await requirePagePermission("dashboard.view");
-  const [d, openShift, todaysEvents] = await Promise.all([
+  const perms = staff.permissions;
+  const [d, openShift, todaysEvents, profit] = await Promise.all([
     dashboardSummary(),
     myOpenShift(),
     eventsOn(),
+    can(perms, "reports.view") && can(perms, "reports.financial.view") ? monthProfit() : null,
   ]);
-  const perms = staff.permissions;
   const firstName = staff.name.split(" ")[0] || staff.name;
   const exportKinds = EXPORT_KINDS.filter((k) => can(perms, EXPORT_PERMISSION[k]));
   const handle = d.to_handle.new + d.to_handle.preparing + d.to_handle.dispatched;
@@ -105,7 +109,7 @@ export default async function AdminDashboard() {
 
       <ClockCard open={openShift} events={todaysEvents} />
 
-      <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
+      <div className={cn("grid grid-cols-2 gap-3", profit ? "lg:grid-cols-5" : "lg:grid-cols-4")}>
         {PERIODS.map((p, i) => periodKpi(d.periods[p.key], p.label, p.vs, d.money, i === 0))}
         {d.outstanding ? (
           <Link href="/admin/orders/outstanding" className="rounded-xl">
@@ -119,6 +123,17 @@ export default async function AdminDashboard() {
         ) : (
           <Kpi label="To handle" value={handle} hint="new, preparing or dispatched" />
         )}
+        {profit ? (
+          <Link href="/admin/reports/business" className="col-span-2 rounded-xl lg:col-span-1">
+            <Kpi
+              label="This month · est. profit"
+              value={formatAED(profit.netProfitFils)}
+              hint={`${formatBp(profit.netMarginBp)} of net revenue, after costs and expenses`}
+              tone={profit.netProfitFils < 0 ? "loss" : undefined}
+              testId="kpi-profit"
+            />
+          </Link>
+        ) : null}
       </div>
 
       {d.money ? (
@@ -286,7 +301,7 @@ export default async function AdminDashboard() {
       {exportKinds.length ? (
         <AdminSection
           title="Exports"
-          description="Excel (with totals) or CSV. Dates are Asia/Dubai."
+          description="Excel (with totals), PDF or CSV. Dates are Asia/Dubai."
           className="lg:max-w-xl"
         >
           <ExportsPanel kinds={exportKinds} from={d.month_start} to={d.today} />

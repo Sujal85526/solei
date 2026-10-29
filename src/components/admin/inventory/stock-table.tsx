@@ -1,12 +1,24 @@
 import Link from "next/link";
 import { Badge } from "@/components/ui/badge";
+import { formatAED } from "@/lib/money";
 import { cn } from "@/lib/utils";
 import type { StockRow } from "@/modules/inventory/queries";
 
 type Loc = { id: string; name: string; kind: string };
 
-/** Desktop: variant × location table. Phones: one card per variant with location chips. */
-export function StockTable({ rows, locations }: { rows: StockRow[]; locations: Loc[] }) {
+/**
+ * Desktop: variant × location table. Phones: one card per variant with location chips.
+ * `values` (financial staff only): stock value per variant in fils, shown as a last column.
+ */
+export function StockTable({
+  rows,
+  locations,
+  values,
+}: {
+  rows: StockRow[];
+  locations: Loc[];
+  values?: Record<string, number>;
+}) {
   return (
     <>
       <div className="bg-card hidden overflow-x-auto rounded-xl border md:block">
@@ -24,6 +36,11 @@ export function StockTable({ rows, locations }: { rows: StockRow[]; locations: L
               <th scope="col" className="px-4 py-3 text-end font-medium">
                 Total
               </th>
+              {values ? (
+                <th scope="col" className="px-4 py-3 text-end font-medium">
+                  Value
+                </th>
+              ) : null}
             </tr>
           </thead>
           <tbody className="divide-y">
@@ -55,6 +72,11 @@ export function StockTable({ rows, locations }: { rows: StockRow[]; locations: L
                     {r.total}
                   </span>
                 </td>
+                {values ? (
+                  <td className="numeric text-muted-foreground px-4 py-3 text-end">
+                    {formatAED(values[r.variantId] ?? 0)}
+                  </td>
+                ) : null}
               </tr>
             ))}
           </tbody>
@@ -89,6 +111,11 @@ export function StockTable({ rows, locations }: { rows: StockRow[]; locations: L
                       {l.name}: {r.byLocation[l.id]}
                     </span>
                   ))}
+                {values ? (
+                  <span className="numeric bg-muted rounded-full px-2.5 py-1 text-xs">
+                    Value: {formatAED(values[r.variantId] ?? 0)}
+                  </span>
+                ) : null}
               </div>
             </Link>
           </li>
