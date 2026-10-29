@@ -126,14 +126,19 @@ export type CheckoutPoints =
  * What the signed-in customer's points can take off an amount due (checkout). The order RPC spends
  * them again under a lock.
  */
-export async function pointsForCheckout(dueFils: number): Promise<CheckoutPoints | null> {
+export async function pointsForCheckout(
+  dueFils: number,
+  /** Points already taken by rewards in the bag. */
+  reservedPoints = 0,
+): Promise<CheckoutPoints | null> {
   const { settings } = await getRewardsProgramme();
   if (!settings.enabled) return null;
   const account = await currentAccount();
   if (!account) return null;
   const customer = await customerForAccount(account.user);
   if (!customer) return null;
-  const s = await pointsSummaryFor(customer.id);
+  const summary = await pointsSummaryFor(customer.id);
+  const s = { ...summary, balance: summary.balance - reservedPoints };
   if (s.balance < settings.minRedeemPoints) {
     return {
       usable: false,
@@ -155,6 +160,22 @@ export async function pointsForCheckout(dueFils: number): Promise<CheckoutPoints
     balance: s.balance,
     points,
     valueFils: points * settings.pointValueFils,
+  };
+}
+
+/**
+ * The signed-in customer at checkout (programme on): their record and points balance, for points
+ * rewards and VIP codes.
+ */
+export async function checkoutCustomer(): Promise<{ id: string; balance: number } | null> {
+  const account = await currentAccount();
+  if (!account) return null;
+  const customer = await customerForAccount(account.user);
+  if (!customer) return null;
+  const { settings } = await getRewardsProgramme();
+  return {
+    id: customer.id,
+    balance: settings.enabled ? (await pointsSummaryFor(customer.id)).balance : 0,
   };
 }
 

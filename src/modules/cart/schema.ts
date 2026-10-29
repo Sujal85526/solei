@@ -35,6 +35,10 @@ export const cartDetailsInputSchema = z.object({
   emirate: emirateSchema.nullish(),
   /** Discount code typed at checkout (website only). */
   coupon: z.string().trim().max(40).nullish(),
+  /** Several codes (when they combine); takes the place of `coupon`. */
+  coupons: z.array(z.string().trim().max(40)).max(5).nullish(),
+  /** Points rewards chosen at checkout (signed-in customers), one piece each. */
+  rewards: z.array(z.guid()).max(3).nullish(),
   /** Gift card code applied at checkout (signed-in customers). */
   giftCard: z.string().trim().max(40).nullish(),
   /** Spend the signed-in customer's points (when the programme is on). */

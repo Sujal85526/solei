@@ -9,7 +9,7 @@ import { aedToFils, formatAED, type Fils } from "@/lib/money";
  * still called coupons (table, permission `coupons.manage`).
  */
 
-export type CouponKind = "percent" | "fixed" | "free_delivery";
+export type CouponKind = "percent" | "fixed" | "free_delivery" | "buy_x_get_y";
 
 export type Coupon = {
   id: string;
@@ -36,25 +36,25 @@ export const CODE_PATTERN = /^[A-Z0-9_-]{3,32}$/;
 
 export const normaliseCode = (code: string) => code.trim().toUpperCase().replace(/\s+/g, "");
 
-const checkbox = z
+export const checkbox = z
   .union([z.boolean(), z.literal("on"), z.literal("")])
   .optional()
   .transform((v) => v === true || v === "on");
 
-const optionalText = z
+export const optionalText = z
   .string()
   .trim()
   .optional()
   .transform((v) => v || null);
 
-const day = z
+export const day = z
   .string()
   .trim()
   .optional()
   .transform((v) => v || null)
   .refine((v) => v === null || /^\d{4}-\d{2}-\d{2}$/.test(v), "Pick a date");
 
-const positiveInt = z
+export const positiveInt = z
   .string()
   .trim()
   .optional()
@@ -68,7 +68,7 @@ const positiveInt = z
     return n;
   });
 
-const positiveAed = (label: string) =>
+export const positiveAed = (label: string) =>
   z
     .string()
     .trim()
@@ -195,10 +195,26 @@ export type CouponRefusal =
   | "used_up"
   | "already_used"
   | "min_order"
-  | "no_eligible_items";
+  | "no_eligible_items"
+  | "not_here"
+  | "not_eligible"
+  | "not_combinable"
+  | "min_items";
 
-export function refusalMessage(reason: CouponRefusal, minOrderFils?: number | null): string {
+export function refusalMessage(
+  reason: CouponRefusal,
+  minOrderFils?: number | null,
+  minItems?: number | null,
+): string {
   switch (reason) {
+    case "not_here":
+      return "This code can't be used here.";
+    case "not_eligible":
+      return "This code is for selected customers — sign in with the account it was sent to.";
+    case "not_combinable":
+      return "This code can't be combined with your other code.";
+    case "min_items":
+      return `Add at least ${minItems ?? 2} eligible items to use this code.`;
     case "not_started":
       return "This code isn't active yet.";
     case "expired":

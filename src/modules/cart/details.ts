@@ -14,6 +14,7 @@ import {
   type LineOptions,
 } from "@/modules/catalog/options";
 import type { StoreGiveaway } from "@/modules/giveaways/types";
+import type { AppliedPromotion } from "@/modules/promotions/quote";
 import { keyOf } from "./logic";
 import type { CartDetailsInput, Emirate } from "./schema";
 
@@ -62,6 +63,14 @@ export type CartDetailLine = {
   hasVariants: boolean;
   unitPriceFils: Fils;
   lineTotalFils: Fils;
+  /** Promotions (from the database quote): the price before a sale, the sale, the line's share
+   * of offers and codes, and the points when the line is a reward. */
+  listUnitFils?: Fils;
+  saleName?: string | null;
+  discountFils?: Fils;
+  rewardPoints?: number | null;
+  /** The points reward this line is (bought with points at checkout). */
+  rewardId?: string;
 };
 
 /**
@@ -83,6 +92,18 @@ export type CartDetails = {
   lines: CartDetailLine[];
   pricing: CartPricing;
   coupon: CartCoupon | null;
+  /** Every code typed, applied or refused (the first one is also `coupon`). */
+  coupons?: CartCoupon[];
+  /** Bundles and buy X get Y offers the bag gets automatically. */
+  offers?: AppliedPromotion[];
+  /** Points rewards the signed-in customer can choose at checkout (programme on). */
+  rewardOptions?: {
+    id: string;
+    name: string;
+    points: number;
+    priceFils: Fils;
+    affordable: boolean;
+  }[];
   giftCard?: CartGiftCard | null;
   /**
    * The signed-in customer's points at checkout (programme on): whether they can be used here and,

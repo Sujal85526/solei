@@ -2,14 +2,15 @@
 
 import { UserError } from "@/lib/action-result";
 import { currentAccount } from "@/modules/account/service";
-import { checkCoupon } from "@/modules/coupons/queries";
-import { normaliseCode, refusalMessage } from "@/modules/coupons/schema";
 import { checkGiftCardForCustomer } from "@/modules/gift-cards/service";
 import { fetchGiveaways } from "@/modules/giveaways/queries";
 import { giftCardApplies, giftCardRefusalMessage } from "@/modules/gift-cards/schema";
-import { pointsForCheckout } from "@/modules/points/service";
+import { checkoutCustomer, pointsForCheckout } from "@/modules/points/service";
+import { priceBag, rewardPointsOf, rewardValueOf } from "@/modules/promotions/bag";
+import { listLiveRewards } from "@/modules/promotions/queries";
+import { normaliseCodes } from "@/modules/promotions/quote";
 import { fetchAvailability, getCartSettings, listProducts } from "@/modules/storefront/queries";
-import { resolveCart, type CartCoupon, type CartDetails, type CartGiftCard } from "./details";
+import { resolveCart, type CartDetails, type CartGiftCard } from "./details";
 import { cartDetailsInputSchema } from "./schema";
 
 /**
@@ -17,40 +18,58 @@ import { cartDetailsInputSchema } from "./schema";
  * public: the cart itself lives in the browser. Product data comes from the cached catalogue
  * (refreshed whenever the admin edits it), so each call costs one live stock read; placing an
  * order re-reads prices uncached (`placeOrder`). With a discount code (checkout) the code is
- * checked against the bag and the signed-in customer, and the discount is priced in.
+ * checked against the bag and the signed-in customer, and the discount is priced in. Sale prices,
+ * bundles, buy X get Y and the codes come from the database (`priceBag`).
  */
 export async function getCartDetails(input: unknown): Promise<CartDetails> {
   const parsed = cartDetailsInputSchema.parse(input);
-  const ids = [...new Set(parsed.lines.map((l) => l.variantId))];
-  const wanted = new Set(ids);
+  const rewardIds = parsed.rewards ?? [];
+  const codes = normaliseCodes(parsed.coupons ?? [parsed.coupon]);
   const giveawayIds = [
     ...new Set(parsed.lines.flatMap((l) => (l.giveawayId ? [l.giveawayId] : []))),
   ];
-  const [catalogue, availability, settings, giveaways] = await Promise.all([
+  const [catalogue, settings, giveaways, rewards] = await Promise.all([
     listProducts(),
-    fetchAvailability(ids),
     getCartSettings(),
     fetchGiveaways(giveawayIds),
+    rewardIds.length ? listLiveRewards() : [],
   ]);
+  const ids = [
+    ...new Set([
+      ...parsed.lines.map((l) => l.variantId),
+      ...rewards.filter((r) => rewardIds.includes(r.id)).map((r) => r.variantId),
+    ]),
+  ];
+  const wanted = new Set(ids);
+  const availability = await fetchAvailability(ids);
   const products = catalogue.filter((p) => p.variants.some((v) => wanted.has(v.id)));
-  let details = resolveCart(parsed, products, availability, settings, null, giveaways);
-  const code = parsed.coupon ? normaliseCode(parsed.coupon) : "";
-  if (code) {
-    const account = await currentAccount();
-    const lines = details.lines.filter((l) => l.qty > 0);
-    const check = await checkCoupon(code, lines, account?.user.email ?? null);
-    const coupon: CartCoupon = check.ok
-      ? {
-          code: check.code,
-          discountFils: Math.min(check.discountFils, details.pricing.subtotalFils),
-          freeDelivery: check.freeDelivery,
-        }
-      : { code, error: refusalMessage(check.reason, check.minOrderFils) };
-    details = resolveCart(parsed, products, availability, settings, coupon, giveaways);
-  }
-  // Points come off first, then a gift card covers what it can of the rest.
-  let dueFils = details.pricing.totalFils;
-  const points = details.lines.some((l) => l.qty > 0) ? await pointsForCheckout(dueFils) : null;
+  // The signed-in customer (VIP and personal codes, rewards, per-customer limits) — only looked up
+  // when a code or a reward needs it, so the bag drawer stays one stock read.
+  const account = codes.length || rewardIds.length ? await currentAccount() : null;
+  const customer = account && rewardIds.length ? await checkoutCustomer() : null;
+  const { details } = await priceBag({
+    lines: parsed.lines,
+    codes,
+    rewardIds: customer ? rewardIds : [],
+    email: account?.user.email ?? null,
+    customerId: customer?.id ?? null,
+    settings,
+    resolve: (lines) =>
+      resolveCart(
+        { lines, emirate: parsed.emirate },
+        products,
+        availability,
+        settings,
+        null,
+        giveaways,
+      ),
+  });
+  // Rewards first, then points come off, then a gift card covers what it can of the rest.
+  const rewardPoints = rewardPointsOf(details);
+  let dueFils = details.pricing.totalFils - rewardValueOf(details);
+  const points = details.lines.some((l) => l.qty > 0)
+    ? await pointsForCheckout(dueFils, rewardPoints)
+    : null;
   if (points) {
     const applied = points.usable && Boolean(parsed.usePoints);
     details.points = points.usable
@@ -63,6 +82,14 @@ export async function getCartDetails(input: unknown): Promise<CartDetails> {
         }
       : points;
     if (applied && points.usable) dueFils -= points.valueFils;
+    const balance = points.balance;
+    details.rewardOptions = (await listLiveRewards()).map((r) => ({
+      id: r.id,
+      name: r.name,
+      points: r.points,
+      priceFils: r.priceFils,
+      affordable: rewardIds.includes(r.id) || r.points <= balance,
+    }));
   }
   if (parsed.giftCard) details.giftCard = await giftCardFor(parsed.giftCard, dueFils);
   return details;

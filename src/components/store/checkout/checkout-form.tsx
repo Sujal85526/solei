@@ -52,8 +52,10 @@ export function CheckoutFlow({
   const [redirecting, setRedirecting] = useState(false);
   const [, startLoad] = useTransition();
   const req = useRef(0);
-  // Discount code being applied; dropped again if the server refuses it.
-  const [coupon, setCoupon] = useState<string | null>(null);
+  // Discount codes being applied (several when they combine); a refused one is dropped again.
+  const [coupons, setCoupons] = useState<string[]>([]);
+  // Points rewards chosen in the summary.
+  const [rewards, setRewards] = useState<string[]>([]);
   const [couponError, setCouponError] = useState<string | null>(null);
   const [applying, startApply] = useTransition();
   // Gift card being applied (signed-in customers); dropped again if the server refuses it.
@@ -62,7 +64,7 @@ export function CheckoutFlow({
   // Spend points (signed-in, programme on).
   const [usePoints, setUsePoints] = useState(false);
   const key = state
-    ? JSON.stringify([state.lines, state.emirate, coupon, giftCard, usePoints])
+    ? JSON.stringify([state.lines, state.emirate, coupons, giftCard, usePoints, rewards])
     : null;
 
   // A saved address picks the emirate (and so the delivery fee) when none is chosen yet.
@@ -74,21 +76,26 @@ export function CheckoutFlow({
   useEffect(() => {
     if (!state || !state.lines.length) return;
     const id = ++req.current;
-    const load = coupon || giftCard ? startApply : startLoad;
+    const load = coupons.length || giftCard ? startApply : startLoad;
     load(async () => {
       const res = await getCartDetails({
         lines: state.lines,
         emirate: state.emirate,
-        coupon,
+        coupons,
         giftCard,
         usePoints,
+        rewards,
       });
       if (id !== req.current) return;
       setDetails(res);
-      if (res.coupon && "error" in res.coupon) {
-        setCouponError(res.coupon.error);
-        setCoupon(null);
+      const refused = (res.coupons ?? []).filter((r) => "error" in r);
+      if (refused.length) {
+        const last = refused[refused.length - 1];
+        setCouponError("error" in last ? last.error : null);
+        setCoupons((cs) => cs.filter((code) => !refused.some((r) => r.code === code)));
       }
+      const kept = res.lines.filter((l) => l.rewardId && l.qty > 0).map((l) => l.rewardId!);
+      if (kept.length !== rewards.length) setRewards(kept);
       if (res.giftCard && "error" in res.giftCard) {
         setGiftError(res.giftCard.error);
         setGiftCard(null);
@@ -97,19 +104,24 @@ export function CheckoutFlow({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [key]);
 
-  const applied = details?.coupon && "discountFils" in details.coupon ? details.coupon : null;
-  const couponProps = {
+  const applied = (details?.coupons ?? []).flatMap((r) => ("discountFils" in r ? [r] : []));
+  const couponProps: CouponProps = {
     applied,
     error: couponError,
     applying,
     onApply: (code: string) => {
       setCouponError(null);
-      setCoupon(code);
+      setCoupons((cs) => [...new Set([...cs, code.trim().toUpperCase()])].slice(0, 5));
     },
-    onRemove: () => {
+    onRemove: (code: string) => {
       setCouponError(null);
-      setCoupon(null);
+      setCoupons((cs) => cs.filter((c) => c !== code));
     },
+  };
+  const rewardProps: RewardProps = {
+    chosen: rewards,
+    onToggle: (id: string, on: boolean) =>
+      setRewards((rs) => (on ? [...new Set([...rs, id])].slice(0, 3) : rs.filter((r) => r !== id))),
   };
 
   const appliedGift =
@@ -167,6 +179,7 @@ export function CheckoutFlow({
               giftCard={giftProps}
               usePoints={usePoints}
               onUsePoints={setUsePoints}
+              rewards={rewardProps}
             />
           </div>
         </details>
@@ -177,6 +190,7 @@ export function CheckoutFlow({
             giftCard={giftProps}
             usePoints={usePoints}
             onUsePoints={setUsePoints}
+            rewards={rewardProps}
           />
         </div>
       </aside>
@@ -189,7 +203,8 @@ export function CheckoutFlow({
               zones={zones}
               state={state}
               details={details}
-              couponCode={applied?.code ?? null}
+              couponCodes={applied.map((a) => a.code)}
+              rewardIds={rewards}
               giftCardCode={appliedGift?.code ?? null}
               usePoints={Boolean(details?.points?.usable && details.points.applied)}
               onDetails={setDetails}
@@ -212,7 +227,8 @@ function DeliveryForm({
   zones,
   state,
   details,
-  couponCode,
+  couponCodes,
+  rewardIds,
   giftCardCode,
   usePoints,
   onDetails,
@@ -223,7 +239,8 @@ function DeliveryForm({
   zones: ZoneOption[];
   state: CartState;
   details: CartDetails | null;
-  couponCode: string | null;
+  couponCodes: string[];
+  rewardIds: string[];
   giftCardCode: string | null;
   usePoints: boolean;
   onDetails: (d: CartDetails) => void;
@@ -254,7 +271,8 @@ function DeliveryForm({
         ...fd,
         clientUuid: clientUuid.current,
         lines: state.lines,
-        coupon: couponCode ?? "",
+        coupons: couponCodes,
+        rewards: rewardIds,
         giftCard: giftCardCode ?? "",
         usePoints,
       });
@@ -269,7 +287,8 @@ function DeliveryForm({
       const fresh = await getCartDetails({
         lines: state.lines,
         emirate: state.emirate,
-        coupon: couponCode,
+        coupons: couponCodes,
+        rewards: rewardIds,
         giftCard: giftCardCode,
         usePoints,
       });
@@ -349,7 +368,7 @@ function DeliveryForm({
             <dt className="text-muted-foreground">{c.subtotal}</dt>
             <dd>{pricing ? formatAED(pricing.subtotalFils) : "—"}</dd>
           </div>
-          {couponCode && pricing?.discountFils ? (
+          {pricing?.discountFils ? (
             <div className="flex justify-between">
               <dt className="text-muted-foreground">{c.discount}</dt>
               <dd className="text-primary">−{formatAED(pricing.discountFils)}</dd>
@@ -474,19 +493,29 @@ type GiftCardProps = {
 };
 
 type CouponProps = {
-  applied: { code: string; discountFils: number; freeDelivery: boolean } | null;
+  applied: { code: string; discountFils: number; freeDelivery: boolean }[];
   error: string | null;
   applying: boolean;
   onApply: (code: string) => void;
-  onRemove: () => void;
+  onRemove: (code: string) => void;
 };
 
-/** Left to pay on the card page after points and a gift card (null when nothing is applied). */
+type RewardProps = { chosen: string[]; onToggle: (id: string, on: boolean) => void };
+
+/** Paid by points: the chosen rewards. */
+const rewardValue = (details: CartDetails) =>
+  details.lines.reduce((s, l) => s + (l.rewardId && l.qty > 0 ? l.lineTotalFils : 0), 0);
+
+/**
+ * Left to pay on the card page after rewards, points and a gift card (null when nothing is
+ * applied).
+ */
 function amountDue(details: CartDetails): number | null {
   const pts = details.points?.usable && details.points.applied ? details.points.valueFils : 0;
   const gift = details.giftCard && "dueFils" in details.giftCard ? details.giftCard : null;
   if (gift) return gift.dueFils;
-  return pts ? details.pricing.totalFils - pts : null;
+  const paid = pts + rewardValue(details);
+  return paid ? details.pricing.totalFils - paid : null;
 }
 
 function Summary({
@@ -495,12 +524,14 @@ function Summary({
   giftCard,
   usePoints,
   onUsePoints,
+  rewards,
 }: {
   details: CartDetails | null;
   coupon: CouponProps;
   giftCard: GiftCardProps | null;
   usePoints: boolean;
   onUsePoints: (on: boolean) => void;
+  rewards: RewardProps;
 }) {
   const points = details?.points;
   const due = details ? amountDue(details) : null;
@@ -536,12 +567,59 @@ function Summary({
               {l.optionsText ? (
                 <p className="text-muted-foreground text-xs">{l.optionsText}</p>
               ) : null}
+              {l.rewardId ? (
+                <p className="text-primary text-xs">
+                  {c.rewardLine} · {c.rewardPoints((l.rewardPoints ?? 0).toLocaleString("en-GB"))}
+                </p>
+              ) : l.saleName ? (
+                <p className="text-primary text-xs">{l.saleName}</p>
+              ) : null}
             </div>
-            <p className="numeric text-sm">{formatAED(l.lineTotalFils)}</p>
+            <p className="numeric text-end text-sm">
+              {l.listUnitFils && l.listUnitFils > l.unitPriceFils ? (
+                <s className="text-muted-foreground block text-xs">
+                  {formatAED(l.listUnitFils * l.qty)}
+                </s>
+              ) : null}
+              {formatAED(l.lineTotalFils)}
+            </p>
           </li>
         ))}
       </ul>
-      <CouponBox {...coupon} label={c.discountCode} />
+      {coupon.applied.map((a) => (
+        <AppliedCode key={a.code} code={a.code} onRemove={() => coupon.onRemove(a.code)} />
+      ))}
+      <CouponBox
+        {...coupon}
+        applied={null}
+        onRemove={() => {}}
+        label={coupon.applied.length ? c.anotherCode : c.discountCode}
+      />
+      {details?.rewardOptions?.length ? (
+        <fieldset className="border-border flex flex-col gap-2 border-t pt-5 text-sm">
+          <legend className="text-muted-foreground mb-2 text-xs">{c.rewards}</legend>
+          {details.rewardOptions.map((r) => (
+            <label
+              key={r.id}
+              className={cn("flex items-start gap-3", !r.affordable && "opacity-50")}
+            >
+              <input
+                type="checkbox"
+                disabled={!r.affordable}
+                checked={rewards.chosen.includes(r.id)}
+                onChange={(e) => rewards.onToggle(r.id, e.target.checked)}
+                className="accent-primary mt-0.5 size-4"
+              />
+              <span>
+                {r.name}
+                <span className="text-muted-foreground block text-xs">
+                  {c.rewardPoints(r.points.toLocaleString("en-GB"))} · {formatAED(r.priceFils)}
+                </span>
+              </span>
+            </label>
+          ))}
+        </fieldset>
+      ) : null}
       {giftCard ? (
         <CouponBox
           {...giftCard}
@@ -578,17 +656,31 @@ function Summary({
           <dt className="text-muted-foreground">{c.subtotal}</dt>
           <dd>{pricing ? formatAED(pricing.subtotalFils) : "—"}</dd>
         </div>
-        {coupon.applied && pricing?.discountFils ? (
+        {details?.offers?.map((o) => (
+          <div key={o.offerId} className="flex justify-between">
+            <dt className="text-muted-foreground">{o.name}</dt>
+            <dd className="text-primary">−{formatAED(o.discountFils)}</dd>
+          </div>
+        ))}
+        {coupon.applied.length && pricing?.discountFils ? (
           <div className="flex justify-between">
-            <dt className="text-muted-foreground">{c.discount}</dt>
-            <dd className="text-primary">−{formatAED(pricing.discountFils)}</dd>
+            <dt className="text-muted-foreground">
+              {c.discount} ({coupon.applied.map((a) => a.code).join(", ")})
+            </dt>
+            <dd className="text-primary">
+              −
+              {formatAED(
+                pricing.discountFils -
+                  (details?.offers ?? []).reduce((s, o) => s + o.discountFils, 0),
+              )}
+            </dd>
           </div>
         ) : null}
         <div className="flex justify-between">
           <dt className="text-muted-foreground">
             {c.shipping}
-            {coupon.applied?.freeDelivery && pricing?.deliveryDiscountFils
-              ? ` (${coupon.applied.code})`
+            {coupon.applied.find((a) => a.freeDelivery) && pricing?.deliveryDiscountFils
+              ? ` (${coupon.applied.find((a) => a.freeDelivery)!.code})`
               : ""}
           </dt>
           <dd>
@@ -613,6 +705,12 @@ function Summary({
             {pricing ? formatAED(pricing.totalFils).replace(/^AED\s*/, "") : "—"}
           </dd>
         </div>
+        {details && rewardValue(details) ? (
+          <div className="flex justify-between">
+            <dt className="text-muted-foreground">{c.rewards}</dt>
+            <dd className="text-primary">−{formatAED(rewardValue(details))}</dd>
+          </div>
+        ) : null}
         {points?.usable && points.applied ? (
           <div className="flex justify-between">
             <dt className="text-muted-foreground">{c.points}</dt>
@@ -634,6 +732,25 @@ function Summary({
           </div>
         ) : null}
       </dl>
+    </div>
+  );
+}
+
+/** An applied discount code, with a way to remove it. */
+function AppliedCode({ code, onRemove }: { code: string; onRemove: () => void }) {
+  return (
+    <div className="border-border flex items-center justify-between gap-3 border-t pt-5 text-sm">
+      <span className="flex items-center gap-2">
+        <Tag className="text-primary size-3.5" />
+        <span className="font-medium tracking-wide">{code}</span>
+      </span>
+      <button
+        type="button"
+        onClick={onRemove}
+        className="text-muted-foreground hover:text-primary text-xs underline underline-offset-4"
+      >
+        {c.removeCode}
+      </button>
     </div>
   );
 }
@@ -674,7 +791,7 @@ function CouponBox({
         </span>
         <button
           type="button"
-          onClick={onRemove}
+          onClick={() => onRemove(applied.code)}
           className="text-muted-foreground hover:text-primary text-xs underline underline-offset-4"
         >
           {c.removeCode}

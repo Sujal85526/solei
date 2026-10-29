@@ -40,6 +40,10 @@ export const checkoutSchema = z.object({
   saveAddress: checkbox,
   /** Discount code applied in the order summary (checked again server-side). */
   coupon: z.string().trim().max(40).optional().default(""),
+  /** Several codes (when they combine); takes the place of `coupon`. */
+  coupons: z.array(z.string().trim().max(40)).max(5).optional().default([]),
+  /** Points rewards chosen in the order summary (checked again server-side). */
+  rewards: z.array(z.guid()).max(3).optional().default([]),
   /** Gift card applied in the order summary (balance checked again server-side). */
   giftCard: z.string().trim().max(40).optional().default(""),
   /** Spend the customer's points (checked again server-side). */

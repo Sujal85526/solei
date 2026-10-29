@@ -769,12 +769,20 @@ export type Database = {
         Row: {
           active: boolean
           amount_fils: number | null
+          birthday_customer_id: string | null
+          birthday_year: number | null
+          buy_qty: number | null
           category_ids: string[]
+          channels: string[]
           code: string
+          combinable: boolean
           created_at: string
           created_by: string | null
+          customer_ids: string[]
           description: string | null
           ends_at: string | null
+          event_id: string | null
+          get_qty: number | null
           id: string
           kind: Database["public"]["Enums"]["coupon_kind"]
           max_uses: number | null
@@ -783,18 +791,28 @@ export type Database = {
           per_customer_limit: number | null
           percent_bp: number | null
           product_ids: string[]
+          segment_id: string | null
           starts_at: string | null
+          tier_ids: string[]
           updated_at: string
         }
         Insert: {
           active?: boolean
           amount_fils?: number | null
+          birthday_customer_id?: string | null
+          birthday_year?: number | null
+          buy_qty?: number | null
           category_ids?: string[]
+          channels?: string[]
           code: string
+          combinable?: boolean
           created_at?: string
           created_by?: string | null
+          customer_ids?: string[]
           description?: string | null
           ends_at?: string | null
+          event_id?: string | null
+          get_qty?: number | null
           id?: string
           kind: Database["public"]["Enums"]["coupon_kind"]
           max_uses?: number | null
@@ -803,18 +821,28 @@ export type Database = {
           per_customer_limit?: number | null
           percent_bp?: number | null
           product_ids?: string[]
+          segment_id?: string | null
           starts_at?: string | null
+          tier_ids?: string[]
           updated_at?: string
         }
         Update: {
           active?: boolean
           amount_fils?: number | null
+          birthday_customer_id?: string | null
+          birthday_year?: number | null
+          buy_qty?: number | null
           category_ids?: string[]
+          channels?: string[]
           code?: string
+          combinable?: boolean
           created_at?: string
           created_by?: string | null
+          customer_ids?: string[]
           description?: string | null
           ends_at?: string | null
+          event_id?: string | null
+          get_qty?: number | null
           id?: string
           kind?: Database["public"]["Enums"]["coupon_kind"]
           max_uses?: number | null
@@ -823,7 +851,9 @@ export type Database = {
           per_customer_limit?: number | null
           percent_bp?: number | null
           product_ids?: string[]
+          segment_id?: string | null
           starts_at?: string | null
+          tier_ids?: string[]
           updated_at?: string
         }
         Relationships: []
@@ -2254,6 +2284,72 @@ export type Database = {
         }
         Relationships: []
       }
+      offers: {
+        Row: {
+          active: boolean
+          amount_fils: number | null
+          bundle_price_fils: number | null
+          buy_qty: number | null
+          category_ids: string[]
+          channels: string[]
+          created_at: string
+          created_by: string | null
+          ends_at: string | null
+          get_qty: number | null
+          id: string
+          kind: Database["public"]["Enums"]["offer_kind"]
+          name: string
+          percent_bp: number | null
+          product_ids: string[]
+          slots: Json
+          sort: number
+          starts_at: string | null
+          updated_at: string
+        }
+        Insert: {
+          active?: boolean
+          amount_fils?: number | null
+          bundle_price_fils?: number | null
+          buy_qty?: number | null
+          category_ids?: string[]
+          channels?: string[]
+          created_at?: string
+          created_by?: string | null
+          ends_at?: string | null
+          get_qty?: number | null
+          id?: string
+          kind: Database["public"]["Enums"]["offer_kind"]
+          name: string
+          percent_bp?: number | null
+          product_ids?: string[]
+          slots?: Json
+          sort?: number
+          starts_at?: string | null
+          updated_at?: string
+        }
+        Update: {
+          active?: boolean
+          amount_fils?: number | null
+          bundle_price_fils?: number | null
+          buy_qty?: number | null
+          category_ids?: string[]
+          channels?: string[]
+          created_at?: string
+          created_by?: string | null
+          ends_at?: string | null
+          get_qty?: number | null
+          id?: string
+          kind?: Database["public"]["Enums"]["offer_kind"]
+          name?: string
+          percent_bp?: number | null
+          product_ids?: string[]
+          slots?: Json
+          sort?: number
+          starts_at?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       order_line_costs: {
         Row: {
           order_line_id: string
@@ -2959,6 +3055,44 @@ export type Database = {
           },
         ]
       }
+      points_rewards: {
+        Row: {
+          active: boolean
+          created_at: string
+          id: string
+          points: number
+          sort: number
+          updated_at: string
+          variant_id: string
+        }
+        Insert: {
+          active?: boolean
+          created_at?: string
+          id?: string
+          points: number
+          sort?: number
+          updated_at?: string
+          variant_id: string
+        }
+        Update: {
+          active?: boolean
+          created_at?: string
+          id?: string
+          points?: number
+          sort?: number
+          updated_at?: string
+          variant_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "points_rewards_variant_id_fkey"
+            columns: ["variant_id"]
+            isOneToOne: true
+            referencedRelation: "product_variants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       private_settings: {
         Row: {
           id: number
@@ -3299,9 +3433,11 @@ export type Database = {
           created_at: string
           description: string | null
           destination_id: string | null
+          early_access_tier_ids: string[]
           featured: boolean
           id: string
           is_giveaway: boolean
+          launch_at: string | null
           min_order_qty: number
           name: string
           notes_base: string[]
@@ -3317,9 +3453,11 @@ export type Database = {
           created_at?: string
           description?: string | null
           destination_id?: string | null
+          early_access_tier_ids?: string[]
           featured?: boolean
           id?: string
           is_giveaway?: boolean
+          launch_at?: string | null
           min_order_qty?: number
           name: string
           notes_base?: string[]
@@ -3335,9 +3473,11 @@ export type Database = {
           created_at?: string
           description?: string | null
           destination_id?: string | null
+          early_access_tier_ids?: string[]
           featured?: boolean
           id?: string
           is_giveaway?: boolean
+          launch_at?: string | null
           min_order_qty?: number
           name?: string
           notes_base?: string[]
@@ -3364,10 +3504,66 @@ export type Database = {
           },
         ]
       }
+      promo_banners: {
+        Row: {
+          active: boolean
+          body: string
+          created_at: string
+          ends_at: string | null
+          id: string
+          image_path: string | null
+          image_url: string | null
+          link_label: string | null
+          link_url: string | null
+          placement: string
+          sort: number
+          starts_at: string | null
+          title: string | null
+          updated_at: string
+        }
+        Insert: {
+          active?: boolean
+          body: string
+          created_at?: string
+          ends_at?: string | null
+          id?: string
+          image_path?: string | null
+          image_url?: string | null
+          link_label?: string | null
+          link_url?: string | null
+          placement: string
+          sort?: number
+          starts_at?: string | null
+          title?: string | null
+          updated_at?: string
+        }
+        Update: {
+          active?: boolean
+          body?: string
+          created_at?: string
+          ends_at?: string | null
+          id?: string
+          image_path?: string | null
+          image_url?: string | null
+          link_label?: string | null
+          link_url?: string | null
+          placement?: string
+          sort?: number
+          starts_at?: string | null
+          title?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       rewards_settings: {
         Row: {
+          birthday_code_amount_fils: number | null
+          birthday_code_min_order_fils: number | null
+          birthday_code_percent_bp: number | null
+          birthday_code_valid_days: number
           birthday_enabled: boolean
           birthday_points: number
+          birthday_reward: string
           id: number
           min_redeem_points: number
           point_value_fils: number
@@ -3377,8 +3573,13 @@ export type Database = {
           updated_by: string | null
         }
         Insert: {
+          birthday_code_amount_fils?: number | null
+          birthday_code_min_order_fils?: number | null
+          birthday_code_percent_bp?: number | null
+          birthday_code_valid_days?: number
           birthday_enabled?: boolean
           birthday_points?: number
+          birthday_reward?: string
           id?: number
           min_redeem_points?: number
           point_value_fils?: number
@@ -3388,8 +3589,13 @@ export type Database = {
           updated_by?: string | null
         }
         Update: {
+          birthday_code_amount_fils?: number | null
+          birthday_code_min_order_fils?: number | null
+          birthday_code_percent_bp?: number | null
+          birthday_code_valid_days?: number
           birthday_enabled?: boolean
           birthday_points?: number
+          birthday_reward?: string
           id?: number
           min_redeem_points?: number
           point_value_fils?: number
@@ -4108,6 +4314,7 @@ export type Database = {
       }
       booking_estimate: { Args: { p: Json }; Returns: Json }
       booking_paid_fils: { Args: { p_booking_id: string }; Returns: number }
+      birthday_code_issue: { Args: { p_customer: string }; Returns: Json }
       booking_payment_order: {
         Args: { p_booking_id: string; p_kind: string }
         Returns: string
@@ -4135,6 +4342,10 @@ export type Database = {
       }
       cart_order_paid: { Args: { p_order_id: string }; Returns: undefined }
       cart_reminder_sent: { Args: { p_cart: string }; Returns: undefined }
+      cart_quote: {
+        Args: { p_codes: Json; p_customer: string; p_email: string; p_lines: Json }
+        Returns: Json
+      }
       cart_set_optout: {
         Args: { p_out: boolean; p_user: string }
         Returns: undefined
@@ -4582,6 +4793,10 @@ export type Database = {
         Args: { p_customer: string; p_order_id: string; p_points: number }
         Returns: string
       }
+      points_redeem_reward: {
+        Args: { p_customer: string; p_order_id: string; p_points: number; p_value_fils: number }
+        Returns: string
+      }
       points_release_stale: {
         Args: never
         Returns: number
@@ -4601,7 +4816,33 @@ export type Database = {
         Args: { p_day?: string; p_event_id: string }
         Returns: Json
       }
+      pos_quote: { Args: { p: Json }; Returns: Json }
       product_option_group_save: { Args: { p: Json }; Returns: string }
+      product_buyable_by: {
+        Args: { p_at?: string; p_customer: string; p_product: string }
+        Returns: boolean
+      }
+      promo_price: {
+        Args: { p_codes: Json; p_ctx: Json; p_lines: Json }
+        Returns: Json
+      }
+      promotion_performance: {
+        Args: { p_from: string; p_to: string }
+        Returns: {
+          code: string
+          delivery_discount_fils: number
+          discount_fils: number
+          event_id: string
+          event_name: string
+          first_order_at: string
+          kind: string
+          last_order_at: string
+          name: string
+          orders: number
+          promotion_id: string
+          sales_fils: number
+        }[]
+      }
       promotion_report: {
         Args: { p_from: string; p_to: string }
         Returns: {
@@ -4872,7 +5113,7 @@ export type Database = {
       campaign_recipient_status: "pending" | "sent" | "failed" | "skipped"
       campaign_status: "draft" | "sending" | "sent"
       cart_status: "open" | "converted" | "emptied"
-      coupon_kind: "percent" | "fixed" | "free_delivery"
+      coupon_kind: "percent" | "fixed" | "free_delivery" | "buy_x_get_y"
       customer_source:
         | "website"
         | "pos"
@@ -4930,6 +5171,7 @@ export type Database = {
       notification_audience: "customer" | "owner" | "staff"
       notification_channel: "email" | "whatsapp"
       notification_status: "sent" | "failed" | "skipped"
+      offer_kind: "sale" | "bundle" | "buy_x_get_y"
       option_group_kind: "single" | "multi" | "text"
       order_channel:
         "website" | "pos" | "whatsapp" | "direct" | "payment_link" | "booking"
@@ -5111,7 +5353,7 @@ export const Constants = {
       campaign_recipient_status: ["pending", "sent", "failed", "skipped"],
       campaign_status: ["draft", "sending", "sent"],
       cart_status: ["open", "converted", "emptied"],
-      coupon_kind: ["percent", "fixed", "free_delivery"],
+      coupon_kind: ["percent", "fixed", "free_delivery", "buy_x_get_y"],
       customer_source: [
         "website",
         "pos",
@@ -5189,6 +5431,7 @@ export const Constants = {
       notification_audience: ["customer", "owner", "staff"],
       notification_channel: ["email", "whatsapp"],
       notification_status: ["sent", "failed", "skipped"],
+      offer_kind: ["sale", "bundle", "buy_x_get_y"],
       option_group_kind: ["single", "multi", "text"],
       order_channel: [
         "website",

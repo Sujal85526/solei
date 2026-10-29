@@ -6,8 +6,7 @@ import { createAdminClient } from "@/lib/supabase/server";
 import { currentAccount, rememberOrder, saveAddress } from "@/modules/account/service";
 import { resolveCart } from "@/modules/cart/details";
 import { toDbOptions } from "@/modules/catalog/options";
-import { checkCoupon } from "@/modules/coupons/queries";
-import { normaliseCode, refusalMessage } from "@/modules/coupons/schema";
+import { refusalMessage } from "@/modules/coupons/schema";
 import { checkGiftCard } from "@/modules/gift-cards/queries";
 import { fetchGiveaways } from "@/modules/giveaways/queries";
 import {
@@ -16,7 +15,10 @@ import {
   normaliseGiftCode,
 } from "@/modules/gift-cards/schema";
 import { onOrderPaid } from "@/modules/orders/events";
-import { pointsForCheckout } from "@/modules/points/service";
+import { checkoutCustomer, pointsForCheckout } from "@/modules/points/service";
+import { priceBag, rewardPointsOf, rewardValueOf } from "@/modules/promotions/bag";
+import { listLiveRewards } from "@/modules/promotions/queries";
+import { normaliseCodes } from "@/modules/promotions/quote";
 import {
   fetchAvailability,
   fetchProductsForVariants,
@@ -52,22 +54,35 @@ export async function placeOrder(
     lastName: account.meta.last_name ?? "",
   });
   const name = fullName(v);
-  const ids = [...new Set(v.lines.map((l) => l.variantId))];
+  const codes = normaliseCodes(v.coupons.length ? v.coupons : [v.coupon]);
   const giveawayIds = [...new Set(v.lines.flatMap((l) => (l.giveawayId ? [l.giveawayId] : [])))];
-  const [products, availability, settings, giveaways] = await Promise.all([
-    fetchProductsForVariants(ids),
-    fetchAvailability(ids),
+  const [settings, liveRewards, buyer, giveaways] = await Promise.all([
     getCartSettings(),
+    v.rewards.length ? listLiveRewards() : [],
+    checkoutCustomer(),
     fetchGiveaways(giveawayIds),
   ]);
-  let cart = resolveCart(
-    { lines: v.lines, emirate: v.emirate },
-    products,
-    availability,
+  const ids = [
+    ...new Set([
+      ...v.lines.map((l) => l.variantId),
+      ...liveRewards.filter((r) => v.rewards.includes(r.id)).map((r) => r.variantId),
+    ]),
+  ];
+  const [products, availability] = await Promise.all([
+    fetchProductsForVariants(ids),
+    fetchAvailability(ids),
+  ]);
+  // Prices, sale prices, offers and codes from the database (the order RPC prices it again).
+  const { details: cart, quote } = await priceBag({
+    lines: v.lines,
+    codes,
+    rewardIds: buyer ? v.rewards : [],
+    email: v.email,
+    customerId: buyer?.id ?? null,
     settings,
-    null,
-    giveaways,
-  );
+    resolve: (lines) =>
+      resolveCart({ lines, emirate: v.emirate }, products, availability, settings, null, giveaways),
+  });
 
   const problems = cart.lines.filter((l) => l.status !== "ok");
   if (problems.length) {
@@ -77,31 +92,22 @@ export async function placeOrder(
         : "Some items are no longer available — we've updated your cart. Please review it.",
     );
   }
-
-  // Discount code: checked against the final bag and this customer; the order RPC checks again.
-  const code = v.coupon ? normaliseCode(v.coupon) : "";
-  if (code) {
-    const check = await checkCoupon(code, cart.lines, v.email);
-    if (!check.ok) throw new UserError(refusalMessage(check.reason, check.minOrderFils));
-    cart = resolveCart(
-      { lines: v.lines, emirate: v.emirate },
-      products,
-      availability,
-      settings,
-      { code: check.code, discountFils: check.discountFils, freeDelivery: check.freeDelivery },
-      giveaways,
-    );
-  }
+  if (v.rewards.length && cart.lines.filter((l) => l.rewardId).length !== v.rewards.length)
+    throw new UserError("A reward you chose is no longer available — please review your order.");
+  const refused = quote?.codes.find((c) => !c.ok);
+  if (refused && !refused.ok)
+    throw new UserError(refusalMessage(refused.reason, refused.minOrderFils, refused.minItems));
 
   const pricing = cart.pricing;
   if (pricing.deliveryFeeFils === null) throw new UserError("Choose your emirate for delivery.");
 
-  // Points first (when chosen), then a gift card for what's left; the order RPC re-checks both.
+  // Rewards are paid by points; then points (when chosen), then a gift card for what's left. The
+  // order RPC re-checks all of them.
   let points = 0;
-  let pointsCustomer: string | null = null;
-  let dueFils = pricing.totalFils;
+  let pointsCustomer: string | null = buyer?.id ?? null;
+  let dueFils = pricing.totalFils - rewardValueOf(cart);
   if (v.usePoints) {
-    const p = await pointsForCheckout(dueFils);
+    const p = await pointsForCheckout(dueFils, rewardPointsOf(cart));
     if (!p?.usable)
       throw new UserError("Your points can't be used on this order — please review it.");
     points = p.points;
@@ -134,9 +140,12 @@ export async function placeOrder(
           unit_price_fils: l.unitPriceFils,
           options: toDbOptions(l.options),
           giveaway_id: l.giveawayId ?? null,
+          reward_id: l.rewardId ?? null,
         })),
         subtotal_fils: pricing.subtotalFils,
-        coupon_code: code || null,
+        coupon_code: codes[0] ?? null,
+        coupon_codes: codes,
+        customer_id: buyer?.id ?? null,
         discount_fils: pricing.discountFils,
         delivery_discount_fils: pricing.deliveryDiscountFils,
         delivery_fee_fils: pricing.deliveryFeeFils,
