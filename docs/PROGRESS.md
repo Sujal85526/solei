@@ -133,6 +133,11 @@ next steps (account_user_id column on orders, stored stock balances) are in DECI
   `~/personal/solei-backups/` (outside the repo, contains customer data). The two live pilot payments
   (SOL-001499 AED 1, SOL-001503 AED 31) still need refunding in the N-Genius portal. The old Keychain test
   passwords (`solei-client-test-password`, `solei-dev-bot-*`, `solei-shop-test-password`) no longer match any login.
+- **Homepage banners (2026-10-30):** Admin → Settings → Homepage banners (`settings.manage`). Each banner has a desktop
+  and a phone picture (own files, `banners` bucket, 5 MB), a "stays for" time (2–60 s, hidden with a single banner),
+  an optional link and a description; up to 8, reorder / replace / delete. Two or more fade into each other on their own
+  timers (paused on hover and with reduced motion); with none, the built-in Cannes hero shows. Table `hero_banners`,
+  migration `20261030000001` applied with `psql`; the storefront reads it through `getHeroBanners()` (cache tag `banners`).
 - **Known minor items:** checkout doesn't remember the mobile number; the "The Edit" event's location reads
   "Emirates Placa Terrace" (typo).
 - **Western Region delivery (2026-10-29):** new `western_region` emirate + `delivery_zones` row (AED 50), migrations

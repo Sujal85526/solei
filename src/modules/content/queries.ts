@@ -5,6 +5,8 @@
 export const CONTENT_TAGS = {
   catalog: "catalog",
   settings: "settings",
+  /** Homepage hero banners. */
+  banners: "banners",
   /** Help centre topics (policies). */
   help: "help",
   loyalty: "loyalty",

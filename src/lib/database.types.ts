@@ -930,6 +930,42 @@ export type Database = {
         }
         Relationships: []
       }
+      hero_banners: {
+        Row: {
+          alt: string
+          created_at: string
+          desktop_path: string
+          id: string
+          link_href: string | null
+          mobile_path: string
+          seconds: number
+          sort: number
+          updated_at: string
+        }
+        Insert: {
+          alt?: string
+          created_at?: string
+          desktop_path: string
+          id?: string
+          link_href?: string | null
+          mobile_path: string
+          seconds?: number
+          sort?: number
+          updated_at?: string
+        }
+        Update: {
+          alt?: string
+          created_at?: string
+          desktop_path?: string
+          id?: string
+          link_href?: string | null
+          mobile_path?: string
+          seconds?: number
+          sort?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
       help_topics: {
         Row: {
           body: string

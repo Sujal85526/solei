@@ -6,10 +6,11 @@ import { Hero } from "@/components/store/home/hero";
 import { SignatureScents } from "@/components/store/home/signature-scents";
 import { StorySplit } from "@/components/store/home/story-split";
 import { featuredShelf, heroContent, homeImages } from "@/content/home";
+import { getHeroBanners } from "@/modules/banners/queries";
 import { listProducts } from "@/modules/storefront/queries";
 
 export default async function HomePage() {
-  const products = await listProducts();
+  const [products, banners] = await Promise.all([listProducts(), getHeroBanners()]);
   const images = homeImages();
   const shelf = featuredShelf.flatMap(({ slug, image }) => {
     const product = products.find((p) => p.slug === slug);
@@ -19,7 +20,7 @@ export default async function HomePage() {
   return (
     <>
       <IntroLoader />
-      <Hero hero={heroContent()} />
+      <Hero hero={heroContent()} banners={banners} />
       {/* The hero stays put; everything after it scrolls up over it. */}
       <div className="bg-background relative z-10 shadow-[0_-40px_80px_-20px_rgb(0_0_0/0.65)]">
         <StorySplit image={images.soho} />
