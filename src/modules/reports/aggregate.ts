@@ -185,7 +185,7 @@ export type EventReport = {
 const lineCost = (l: LineFact) => l.qty * (l.unit_cost_fils ?? 0);
 
 /** Order → share of its total that is not VAT, to take VAT out of line values. */
-type NetRatio = Map<string, { total: number; vat: number }>;
+export type NetRatio = Map<string, { total: number; vat: number }>;
 const netOf = (l: LineFact, ratios: NetRatio) => {
   const r = ratios.get(l.order_id);
   return r ? prorate(l.line_total_fils, r.total - r.vat, r.total) : l.line_total_fils;
@@ -195,7 +195,7 @@ const netOf = (l: LineFact, ratios: NetRatio) => {
 export const rowMarginBp = (r: Pick<SalesRow, "netSalesFils" | "cogsFils">) =>
   r.cogsFils === null ? null : ratioBp(r.netSalesFils - r.cogsFils, r.netSalesFils);
 
-function groupSales(
+export function groupSales(
   lines: LineFact[],
   keyOf: (l: LineFact) => string,
   labelOf: (l: LineFact) => string,

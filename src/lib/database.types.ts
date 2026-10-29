@@ -456,6 +456,74 @@ export type Database = {
         }
         Relationships: []
       }
+      business_expense_categories: {
+        Row: {
+          active: boolean
+          created_at: string
+          id: string
+          name: string
+          sort: number
+          updated_at: string
+        }
+        Insert: {
+          active?: boolean
+          created_at?: string
+          id?: string
+          name: string
+          sort?: number
+          updated_at?: string
+        }
+        Update: {
+          active?: boolean
+          created_at?: string
+          id?: string
+          name?: string
+          sort?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      business_expenses: {
+        Row: {
+          amount_fils: number
+          category_id: string
+          created_at: string
+          created_by: string | null
+          id: string
+          note: string | null
+          spent_on: string
+          updated_at: string
+        }
+        Insert: {
+          amount_fils: number
+          category_id: string
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          note?: string | null
+          spent_on?: string
+          updated_at?: string
+        }
+        Update: {
+          amount_fils?: number
+          category_id?: string
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          note?: string | null
+          spent_on?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "business_expenses_category_id_fkey"
+            columns: ["category_id"]
+            isOneToOne: false
+            referencedRelation: "business_expense_categories"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       campaign_recipients: {
         Row: {
           campaign_id: string
@@ -3712,6 +3780,10 @@ export type Database = {
         }[]
       }
       business_day: { Args: { ts: string }; Returns: string }
+      business_report_data: {
+        Args: { p_detail?: boolean; p_from: string; p_to: string }
+        Returns: Json
+      }
       business_today: { Args: never; Returns: string }
       can_access_event_object: {
         Args: { p_name: string; p_write: boolean }

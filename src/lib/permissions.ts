@@ -60,6 +60,10 @@ export const PERMISSIONS = {
     group: "Reports",
     description: "See costs, COGS, expenses and profit",
   },
+  "expenses.manage": {
+    group: "Reports",
+    description: "Add, edit and delete business expenses (rent, salaries…)",
+  },
   "notifications.manage": { group: "Settings", description: "Edit notification templates" },
   "settings.manage": { group: "Settings", description: "Change business settings" },
   "staff.manage": {
@@ -96,7 +100,7 @@ export const DEFAULT_ROLE_PERMISSIONS: Record<RoleKey, PermissionKey[] | "all"> 
 };
 
 /** Permissions that expose costs/profit — never granted to sales staff by default. */
-export const FINANCIAL_PERMISSIONS: PermissionKey[] = ["reports.financial.view"];
+export const FINANCIAL_PERMISSIONS: PermissionKey[] = ["reports.financial.view", "expenses.manage"];
 
 export function can(
   granted: ReadonlySet<string> | readonly string[] | "all",
