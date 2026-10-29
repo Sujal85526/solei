@@ -6,13 +6,11 @@ import { BannerRotator, type RotatorSlide } from "./banner-rotator";
 
 /** Desktop and phone pictures of one banner, as the srcSets the browser picks from. */
 function rotatorSlide(b: Banner): RotatorSlide {
-  const common = { alt: b.alt, sizes: "100vw", quality: 80 };
+  const common = { alt: "", sizes: "100vw", quality: 80 };
   const desktop = getImageProps({ ...common, src: b.desktopUrl, width: 2400, height: 1350 });
   const mobile = getImageProps({ ...common, src: b.mobileUrl, width: 1080, height: 1920 });
   return {
     id: b.id,
-    alt: b.alt,
-    href: b.href,
     seconds: b.seconds,
     desktopSrcSet: desktop.props.srcSet ?? "",
     mobileSrc: mobile.props.src,
