@@ -345,7 +345,13 @@ export function QuickCreateCustomerForm({
             className="h-12 text-base"
           />
         </Field>
-        <Field label="Email" htmlFor={id("email")} error={errors.email}>
+        <Field
+          label="Email"
+          htmlFor={id("email")}
+          error={errors.email}
+          required
+          hint="Check it's spelled right — their Solei Passport links to this email."
+        >
           <Input
             {...aria("email")}
             type="email"

@@ -38,8 +38,8 @@ export async function searchCustomers(query: unknown): Promise<CustomerOption[]>
 }
 
 /**
- * Quick-create. Dedupes like `upsert_customer`: an existing customer with the same phone (or,
- * without a phone, the same email) is returned instead of creating a duplicate.
+ * Quick-create. Dedupes like `upsert_customer`: an existing customer with the same phone, or else the same
+ * email, is returned instead of creating a duplicate (one email = one record to link an account to).
  */
 export async function createCustomer(
   input: unknown,
@@ -49,12 +49,15 @@ export async function createCustomer(
   const supabase = await createClient();
 
   const findExisting = async () => {
-    const q = supabase
-      .from("customer_summary")
-      .select("id, name, phone, email, emirate, marketing_consent, order_count");
-    const { data } = v.phone
-      ? await q.eq("phone", v.phone).maybeSingle()
-      : await q.eq("email", v.email!).order("created_at").limit(1).maybeSingle();
+    const select = () =>
+      supabase
+        .from("customer_summary")
+        .select("id, name, phone, email, emirate, marketing_consent, order_count");
+    if (v.phone) {
+      const { data } = await select().eq("phone", v.phone).maybeSingle();
+      if (data?.id) return toOption(data);
+    }
+    const { data } = await select().eq("email", v.email).order("created_at").limit(1).maybeSingle();
     return data?.id ? toOption(data) : null;
   };
 

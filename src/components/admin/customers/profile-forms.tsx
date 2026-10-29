@@ -87,7 +87,13 @@ export function EditContactDialog({ customer }: { customer: Contact }) {
                 className="h-11"
               />
             </Field>
-            <Field label="Email" htmlFor="email" error={errors.email}>
+            <Field
+              label="Email"
+              htmlFor="email"
+              error={errors.email}
+              required
+              hint="Their Solei Passport links to this email."
+            >
               <Input
                 {...fieldAria("email", errors.email)}
                 type="email"
