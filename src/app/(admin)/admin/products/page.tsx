@@ -67,7 +67,7 @@ export default async function ProductsPage({ searchParams }: PageProps<"/admin/p
         </Button>
       </form>
 
-      <ul className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
+      <ul className="grid grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-3">
         {products.map((p) => {
           const prices = p.product_variants.filter((v) => v.active).map((v) => v.price_fils);
           const cover = p.product_images[0];
@@ -85,7 +85,7 @@ export default async function ProductsPage({ searchParams }: PageProps<"/admin/p
                 </span>
                 <span className="min-w-0 flex-1">
                   <span className="flex flex-wrap items-center gap-1.5">
-                    <span className="truncate font-medium">{p.name}</span>
+                    <span className="min-w-0 truncate font-medium">{p.name}</span>
                     {!p.active ? <Badge variant="muted">Hidden</Badge> : null}
                     {p.featured ? <Badge variant="pink">Featured</Badge> : null}
                   </span>
