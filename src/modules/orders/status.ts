@@ -63,6 +63,7 @@ export const CHANNEL_LABELS: Record<OrderChannel, string> = {
   website: "Website",
   pos: "Event POS",
   whatsapp: "WhatsApp",
+  instagram: "Instagram",
   direct: "Direct",
   payment_link: "Payment link",
   booking: "Booking",
