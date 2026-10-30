@@ -89,7 +89,7 @@ export function GiveawayFlow({
               <label
                 key={type.slug}
                 className={cn(
-                  "has-[:focus-visible]:ring-primary/30 cursor-pointer border px-4 py-2.5 text-xs tracking-[0.12em] uppercase transition-colors has-[:focus-visible]:ring-2",
+                  "has-[:focus-visible]:ring-primary/30 inline-flex min-h-11 cursor-pointer items-center border px-4 py-2.5 text-xs tracking-[0.12em] uppercase transition-colors has-[:focus-visible]:ring-2",
                   typeSlug === type.slug
                     ? "border-primary bg-primary text-primary-foreground"
                     : "border-primary/25 text-primary hover:border-primary",

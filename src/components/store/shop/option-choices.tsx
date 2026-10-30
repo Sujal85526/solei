@@ -102,7 +102,7 @@ export function OptionChoices({
               <label
                 key={o.id}
                 className={cn(
-                  "has-[:focus-visible]:ring-primary/30 cursor-pointer border px-3.5 py-2 text-xs transition-colors has-[:focus-visible]:ring-2",
+                  "has-[:focus-visible]:ring-primary/30 inline-flex min-h-10 cursor-pointer items-center gap-1 border px-3.5 py-2 text-xs transition-colors has-[:focus-visible]:ring-2",
                   on
                     ? "border-primary bg-primary text-primary-foreground"
                     : "border-primary/25 text-primary hover:border-primary",
