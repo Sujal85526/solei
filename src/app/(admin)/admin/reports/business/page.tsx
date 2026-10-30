@@ -128,7 +128,7 @@ export default async function BusinessReportPage({
 
       <SalesOverTime r={r} />
 
-      <div className="grid gap-6 lg:grid-cols-2">
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
         <Channels rows={r.byChannel} />
         <Methods rows={r.byMethod} />
       </div>
@@ -357,7 +357,7 @@ function Products({ r }: { r: BusinessReport }) {
     >
       {r.byVariant.length ? (
         <div className="flex flex-col gap-6">
-          <div className="grid gap-6 lg:grid-cols-2">
+          <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
             <div className="flex flex-col gap-3">
               <h3 className="text-sm font-semibold">Categories</h3>
               <BarList
@@ -451,7 +451,7 @@ function ProfitAndLoss({ r, canManage }: { r: BusinessReport; canManage: boolean
         </Link>
       }
     >
-      <div className="grid gap-6 lg:grid-cols-2">
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
         <dl className="numeric text-sm" data-testid="pnl">
           {rows.map((x) => (
             <div
@@ -544,7 +544,7 @@ function Customers({ r }: { r: BusinessReport }) {
           <Kpi label="Repeat rate" value={formatBp(c.repeatRateBp)} />
         </div>
         {c.customers ? (
-          <div className="grid gap-6 lg:grid-cols-2">
+          <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
             <div className="flex flex-col gap-3">
               <h3 className="text-sm font-semibold">New and returning over time</h3>
               <CompareColumnChart

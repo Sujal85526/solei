@@ -137,7 +137,7 @@ export default async function AdminDashboard() {
       </div>
 
       {d.money ? (
-        <div className="grid gap-6 lg:grid-cols-2">
+        <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
           <AdminSection title="Revenue by channel" description="This month, before refunds.">
             {d.by_channel?.length ? (
               <BarList
@@ -159,7 +159,7 @@ export default async function AdminDashboard() {
         <TopProducts d={d} money={false} />
       )}
 
-      <div className="grid gap-6 lg:grid-cols-2">
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
         {can(perms, "orders.view") ? (
           <AdminSection
             title="Orders to handle"
