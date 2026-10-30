@@ -20,7 +20,10 @@ select order_id, order_number from public.create_web_order(jsonb_build_object(
   'vat_rate_bp', 500, 'prices_include_vat', true
 )) \gset
 
-select is((select count(*)::int from public.notification_templates), 14, 'all notification templates are seeded');
+-- Later features add their own templates, so check the order ones by key rather than a total.
+select is((select count(*)::int from public.notification_templates where key in (
+  'order_confirmation', 'payment_received', 'payment_failed', 'payment_reminder',
+  'order_preparing', 'order_dispatched', 'order_delivered')), 7, 'the order notification templates are seeded');
 select is((select status::text from public.orders where id = :'order_id'), 'pending_payment', 'web order awaits payment');
 
 -- ---------------------------------------------------------------- sales staff

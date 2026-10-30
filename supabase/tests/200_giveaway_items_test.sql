@@ -1,6 +1,6 @@
 begin;
 \ir helpers/setup.psql
-select plan(22);
+select plan(23);
 
 -- A wedding giveaway offering two real bottles: Cannes 50 ml at a giveaway price of AED 150 and
 -- Soho spray 100 ml at its own price (AED 190); a packaging choice with a photo; at least 20 pieces.

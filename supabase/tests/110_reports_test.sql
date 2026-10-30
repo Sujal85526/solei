@@ -74,8 +74,9 @@ select ok(
 select is(jsonb_array_length(:'viewer_doc'::jsonb -> 'orders'), 3, 'viewer sees units/revenue facts');
 
 select tests.login_as(:'owner_id', 'aal1');
-select is((public.event_report_data(array[:'expo']::uuid[]) -> 0 ->> 'financial')::boolean, false,
-  'owner without MFA gets no financial figures');
+-- T15: owner/manager permissions only count at aal2, so without MFA there is no report at all.
+select throws_ok(format($$ select public.event_report_data(array[%L]::uuid[]) $$, :'expo'),
+  '42501', null, 'owner without MFA cannot read reports');
 
 select tests.login_as(:'owner_id');
 select public.event_report_data(array[:'expo']::uuid[]) -> 0 as doc \gset

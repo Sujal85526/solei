@@ -145,11 +145,14 @@ select is((select count(*)::int from public.booking_messages where booking_id = 
 
 select tests.login_anon();
 select is((public.get_booking_quote(:'q2_token') ->> 'paid_fils')::int, 100000, 'quote page sees the paid amount');
-select is((select total_fils from public.orders where id = public.quote_payment_order(:'q2_token', 'balance')), null,
+-- Call it on its own: inside an RLS-filtered query the planner may never run it (no visible rows for anon).
+select public.quote_payment_order(:'q2_token', 'balance') as balance_order \gset
+select is((select total_fils from public.orders where id = :'balance_order'), null,
   'anon cannot read the balance order (RLS) even though it was created');
 select tests.logout();
 
-select is((select o.total_fils from public.orders o where o.booking_id = :'sub_booking_id' and o.status = 'pending_payment'),
+select is((select o.total_fils from public.orders o
+            where o.id = :'balance_order' and o.booking_id = :'sub_booking_id' and o.status = 'pending_payment'),
   500000, 'balance order = total − paid');
 
 select * from finish();
