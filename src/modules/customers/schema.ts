@@ -27,6 +27,7 @@ export const sourceLabels: Record<CustomerSource, string> = {
   website: "Website",
   pos: "Event POS",
   whatsapp: "WhatsApp",
+  instagram: "Instagram",
   direct: "Direct",
   booking: "Event booking",
   newsletter: "Newsletter",
