@@ -6,8 +6,9 @@ export default defineConfig({
   testDir: "./e2e",
   fullyParallel: true,
   forbidOnly: !!process.env.CI,
-  retries: process.env.CI ? 1 : 0,
-  // Slower against a hosted test database: E2E_EXPECT_TIMEOUT=20000 E2E_TEST_TIMEOUT=90000.
+  retries: process.env.CI ? 1 : Number(process.env.E2E_RETRIES ?? 0),
+  globalTeardown: "./e2e/global-teardown.ts",
+  // Slower against a hosted test database: E2E_EXPECT_TIMEOUT=25000 E2E_TEST_TIMEOUT=120000 E2E_RETRIES=1.
   timeout: Number(process.env.E2E_TEST_TIMEOUT ?? 30_000),
   expect: { timeout: Number(process.env.E2E_EXPECT_TIMEOUT ?? 10_000) },
   reporter: process.env.CI ? "github" : "list",

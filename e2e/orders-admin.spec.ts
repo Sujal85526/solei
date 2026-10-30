@@ -116,10 +116,6 @@ async function openOrder(page: Page, number: string) {
 }
 
 test.describe("orders admin", () => {
-  test.afterAll(async () => {
-    await adminClient().from("products").update({ active: false }).like("name", "E2E Orders %");
-  });
-
   test("filters the list and marks an order dispatched with tracking", async ({
     page,
     request,

@@ -9,11 +9,6 @@ const PNG = Buffer.from(
 );
 
 test.describe("catalog & inventory admin", () => {
-  // Products created here keep their ledger history (can't be deleted), so hide them from the shop afterwards.
-  test.afterAll(async () => {
-    await adminClient().from("products").update({ active: false }).like("name", "E2E Scent %");
-  });
-
   test("owner creates a product with a variant, photo and stock, then adjusts and transfers it", async ({
     page,
   }, info) => {
