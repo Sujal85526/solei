@@ -2,7 +2,7 @@ begin;
 -- One snapshot for the whole file: the test DB is shared, so rows others commit mid-run stay out of the checks.
 set transaction isolation level repeatable read;
 \ir helpers/setup.psql
-select plan(7);
+select plan(12);
 
 -- Phones nobody has yet (the test DB is shared, so fixed numbers can already belong to someone).
 select p as phone1 from (select format('+97150%s', lpad((floor(random() * 1e7))::int::text, 7, '0')) p
@@ -29,6 +29,17 @@ select is((select actor_id from public.audit_log where entity = 'product_variant
   :'owner_id'::uuid, 'price change is audited with the actor');
 select is((select (before ->> 'price_fils')::int || '→' || (after ->> 'price_fils') from public.audit_log
            where entity = 'product_variants' order by id desc limit 1), '28000→29000', 'audit keeps before/after');
+
+-- One customer per email: the email decides, the mobile is the backup, nothing on file is overwritten.
+reset role;
+insert into public.customers (name, phone, email) values ('Match A', '+971501119001', 'match.a@solei.test') returning id as ma \gset
+insert into public.customers (name, phone) values ('Match B', '+971501119002') returning id as mb \gset
+select is(public.upsert_customer(null, 'Match.A@solei.test'), :'ma'::uuid, 'email alone finds a customer who also has a mobile');
+select is(public.upsert_customer('+971501119003', 'match.a@solei.test'), :'ma'::uuid, 'the email decides over a different mobile');
+select is((select phone from public.customers where id = :'ma'), '+971501119001', 'the mobile on file is kept');
+select is(public.upsert_customer('+971501119002', null), :'mb'::uuid, 'no email: the mobile still finds a phone-only customer');
+select lives_ok($$ select public.upsert_customer('+971501119002', 'match.a@solei.test') $$,
+  'a mobile that belongs to someone else is left alone, not a crash');
 
 select * from finish();
 rollback;

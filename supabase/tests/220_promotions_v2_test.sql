@@ -132,8 +132,8 @@ select is(pg_temp.price(pg_temp.bag(:'p1', '1'), '{TSTEXPO}', jsonb_build_object
   '5600', '…but does at its own event');
 select is(pg_temp.price(pg_temp.bag(:'p1', '1'), '{TSTEXPO}') ->> 'discount_fils', '5600', '…and on the website');
 
-insert into public.customers (name, email, phone) values ('Vip Buyer', 'vip.buyer@solei.test', '+971501230001') returning id as vip \gset
-insert into public.customers (name, email, phone) values ('New Buyer', 'new.buyer@solei.test', '+971501230002') returning id as newbie \gset
+insert into public.customers (name, email, phone) values ('Vip Buyer', 'vip.buyer@solei.test', '+971509990135') returning id as vip \gset
+insert into public.customers (name, email, phone) values ('New Buyer', 'new.buyer@solei.test', '+971509990136') returning id as newbie \gset
 insert into public.orders (customer_id, channel, status, total_fils, subtotal_fils, fulfilment)
 values (:'vip', 'pos', 'completed', 150000, 150000, 'handed_over') returning id as vip_order \gset
 insert into public.payments (order_id, amount_fils, method, status) values (:'vip_order', 150000, 'cash', 'succeeded');
@@ -203,9 +203,9 @@ select tests.login_as((select user_id from public.staff_profiles where email = '
 select is((public.pos_quote(jsonb_build_object('event_id', :'ev', 'customer_email', ' Email.Only@Solei.test ',
   'lines', pg_temp.bag(:'p1', '1'))) ->> 'customer_id')::uuid, :'email_only'::uuid,
   'till finds a customer by email alone (trimmed, any case)');
-select is(public.pos_quote(jsonb_build_object('event_id', :'ev', 'customer_email', 'vip.buyer@solei.test',
-  'customer_phone', '+971509999999', 'lines', pg_temp.bag(:'p1', '1'))) ->> 'customer_id', null,
-  'an email whose customer has a different mobile is not matched (same rule as upsert_customer)');
+select is((public.pos_quote(jsonb_build_object('event_id', :'ev', 'customer_email', 'vip.buyer@solei.test',
+  'customer_phone', '+971509999999', 'lines', pg_temp.bag(:'p1', '1'))) ->> 'customer_id')::uuid, :'vip'::uuid,
+  'the email decides, even with a different mobile (same rule as upsert_customer)');
 select order_id as till from public.pos_complete_sale(jsonb_build_object(
   'client_uuid', gen_random_uuid(), 'event_id', :'ev', 'customer_id', :'vip', 'coupon_codes', '["tstexpo"]'::jsonb, 'points', 200,
   'lines', jsonb_build_array(jsonb_build_object('variant_id', :'p1', 'qty', 1),
