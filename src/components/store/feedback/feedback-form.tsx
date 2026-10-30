@@ -59,7 +59,7 @@ export function FeedbackForm({ orderId, token }: { orderId: string; token: strin
         <legend className="mb-3 text-sm">{c.kind}</legend>
         <div className="grid grid-cols-2 gap-2">
           {kinds.map((k) => (
-            <label key={k} className="flex items-center gap-2 text-sm">
+            <label key={k} className="flex min-h-10 items-center gap-2 text-sm">
               <input
                 type="radio"
                 name="kind"
