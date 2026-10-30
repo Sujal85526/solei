@@ -3,6 +3,7 @@ import { assertPermission } from "@/lib/auth/session";
 import { must } from "@/lib/supabase/must";
 import { createAdminClient, createClient } from "@/lib/supabase/server";
 import type { FeedbackEntry, FeedbackFilters } from "./schema";
+import { hiddenStaffIds } from "@/modules/staff/hidden";
 
 export const FEEDBACK_PAGE_SIZE = 25;
 
@@ -97,9 +98,14 @@ export async function feedbackCounts(): Promise<{ open: number; inProgress: numb
  */
 export async function assignableStaff(): Promise<{ id: string; name: string; active: boolean }[]> {
   await assertPermission("customers.view");
-  const { data } = await createAdminClient()
-    .from("staff_profiles")
-    .select("user_id, full_name, active")
-    .order("full_name");
-  return (data ?? []).map((s) => ({ id: s.user_id, name: s.full_name, active: s.active }));
+  const [{ data }, hidden] = await Promise.all([
+    createAdminClient()
+      .from("staff_profiles")
+      .select("user_id, full_name, active")
+      .order("full_name"),
+    hiddenStaffIds(),
+  ]);
+  return (data ?? [])
+    .filter((s) => !hidden.has(s.user_id))
+    .map((s) => ({ id: s.user_id, name: s.full_name, active: s.active }));
 }
