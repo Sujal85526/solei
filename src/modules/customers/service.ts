@@ -57,8 +57,14 @@ export async function createCustomer(
       supabase
         .from("customer_summary")
         .select("id, name, phone, email, emirate, marketing_consent, order_count");
-    const { data } = await select().eq("email", v.email).order("created_at").limit(1).maybeSingle();
-    if (data?.id) return toOption(data);
+    if (v.email) {
+      const { data } = await select()
+        .eq("email", v.email)
+        .order("created_at")
+        .limit(1)
+        .maybeSingle();
+      if (data?.id) return toOption(data);
+    }
     if (v.phone) {
       const { data: byPhone } = await select().eq("phone", v.phone).maybeSingle();
       if (byPhone?.id) return toOption(byPhone);
@@ -114,7 +120,7 @@ export async function createCustomer(
 
   // After the stickers, so the email shows the right count. A failed email never undoes the customer.
   let welcome: WelcomeOutcome | undefined;
-  if (v.sendWelcome) {
+  if (v.sendWelcome && v.email) {
     try {
       await sendWelcome(data.id);
       welcome = { sent: true };
