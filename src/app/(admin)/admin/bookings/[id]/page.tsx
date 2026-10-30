@@ -59,6 +59,9 @@ export default async function BookingPage({ params }: PageProps<"/admin/bookings
     .map((p) => `${p.category.replaceAll("_", " ")} × ${p.qty}`)
     .join(", ");
 
+  // Services and products of interest are no longer asked (P2-57): shown only on older
+  // bookings that have them.
+  const services = booking.services.map((s) => s.name).join(", ");
   const details: [string, React.ReactNode][] = [
     ["Occasion", booking.booking_event_types?.name ?? "—"],
     [
@@ -67,7 +70,7 @@ export default async function BookingPage({ params }: PageProps<"/admin/bookings
     ],
     ["Venue", `${booking.location}, ${eventsCopy.emirates[booking.emirate]}`],
     ["Guests", booking.guests],
-    ["Services", booking.services.map((s) => s.name).join(", ") || "—"],
+    ...(services ? [["Services", services] as [string, React.ReactNode]] : []),
     ["Package", booking.booking_packages?.name ?? "Not sure yet"],
     ["Booth", booking.booth_designs?.name ?? "No preference"],
     [
@@ -85,7 +88,7 @@ export default async function BookingPage({ params }: PageProps<"/admin/bookings
         "None"
       ),
     ],
-    ["Products", products || "—"],
+    ...(products ? [["Products", products] as [string, React.ReactNode]] : []),
     ["Special requests", booking.special_requests ?? "—"],
   ];
 
