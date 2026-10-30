@@ -17,7 +17,7 @@ import { CHANNEL_LABELS, CUSTOMER_STATUS_TEMPLATES, type OrderStatus } from "./s
 const adminUrl = (path: string) => `${publicEnv.NEXT_PUBLIC_SITE_URL}${path}`;
 
 /** Channels whose customers can open the guest order page (same rule as public tracking). */
-const GUEST_LINK_CHANNELS = new Set(["website", "whatsapp", "direct", "payment_link"]);
+const GUEST_LINK_CHANNELS = new Set(["website", "whatsapp", "instagram", "direct", "payment_link"]);
 
 async function loadOrder(orderId: string) {
   const admin = createAdminClient();
