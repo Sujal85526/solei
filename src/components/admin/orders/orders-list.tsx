@@ -108,8 +108,10 @@ export function OrdersList({ rows }: { rows: OrderListRow[] }) {
                     {o.event_name ? ` · ${o.event_name}` : ""}
                   </p>
                 </div>
-                <div className="text-end">
-                  <p className="numeric text-lg font-semibold">{formatAED(o.total_fils ?? 0)}</p>
+                <div className="shrink-0 text-end">
+                  <p className="numeric text-lg font-semibold whitespace-nowrap">
+                    {formatAED(o.total_fils ?? 0)}
+                  </p>
                   {(o.outstanding_fils ?? 0) > 0 && o.status !== "cancelled" ? (
                     <p className="numeric text-xs text-[#8A5108]">
                       {formatAED(o.outstanding_fils ?? 0)} due
