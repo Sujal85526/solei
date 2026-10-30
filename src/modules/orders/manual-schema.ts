@@ -14,7 +14,7 @@ export const manualLineSchema = z.object({
 export const manualOrderSchema = z
   .object({
     clientUuid: z.uuid(),
-    channel: z.enum(["whatsapp", "direct"]),
+    channel: z.enum(["whatsapp", "instagram", "direct"]),
     customerId: z.uuid("Choose a customer"),
     fulfilment: z.enum(["handed_over", "pickup", "delivery"]),
     deliveryAddress: z
