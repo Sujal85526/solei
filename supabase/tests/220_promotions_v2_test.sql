@@ -1,6 +1,6 @@
 begin;
 \ir helpers/setup.psql
-select plan(75);
+select plan(77);
 
 select id as p1 from public.product_variants where sku = 'TST-P-CAN-50' \gset
 select id as p2 from public.product_variants where sku = 'TST-P-CAP-50' \gset
@@ -197,6 +197,15 @@ insert into public.points_rewards (variant_id, points) values (:'s2', 500) retur
 select tests.login_as((select user_id from public.staff_profiles where email = 'promo-owner@solei.test'));
 select is(public.pos_quote(jsonb_build_object('event_id', :'ev', 'customer_id', :'vip', 'coupon_codes', '["TSTEXPO"]'::jsonb,
   'lines', pg_temp.bag(:'p1', '1'))) ->> 'discount_fils', '5600', 'till quote with the event code');
+reset role;
+insert into public.customers (name, email) values ('Email Only', 'email.only@solei.test') returning id as email_only \gset
+select tests.login_as((select user_id from public.staff_profiles where email = 'promo-owner@solei.test'));
+select is((public.pos_quote(jsonb_build_object('event_id', :'ev', 'customer_email', ' Email.Only@Solei.test ',
+  'lines', pg_temp.bag(:'p1', '1'))) ->> 'customer_id')::uuid, :'email_only'::uuid,
+  'till finds a customer by email alone (trimmed, any case)');
+select is(public.pos_quote(jsonb_build_object('event_id', :'ev', 'customer_email', 'vip.buyer@solei.test',
+  'customer_phone', '+971509999999', 'lines', pg_temp.bag(:'p1', '1'))) ->> 'customer_id', null,
+  'an email whose customer has a different mobile is not matched (same rule as upsert_customer)');
 select order_id as till from public.pos_complete_sale(jsonb_build_object(
   'client_uuid', gen_random_uuid(), 'event_id', :'ev', 'customer_id', :'vip', 'coupon_codes', '["tstexpo"]'::jsonb, 'points', 200,
   'lines', jsonb_build_array(jsonb_build_object('variant_id', :'p1', 'qty', 1),
