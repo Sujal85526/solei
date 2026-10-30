@@ -1,5 +1,5 @@
 import { expect, test, type Page } from "@playwright/test";
-import { adminClient, signInAsOwner } from "./helpers/auth";
+import { adminClient, settle, signInAsOwner } from "./helpers/auth";
 
 /*
  * Event booking happy path (BUILD_PROMPT §6.10): public wizard → admin quote → customer accepts
@@ -132,6 +132,8 @@ test.describe("event booking", () => {
     // ─── Admin sees the confirmation and the calendar link ────────────────────────────────
     await page.goto(`/admin/bookings/${booking!.id}`);
     await expect(page.getByText("Confirmed", { exact: true }).first()).toBeVisible();
+    // A tap while the page hydrates can be dropped by Next's router under `next dev`.
+    await settle(page);
     await page.getByRole("link", { name: /On the calendar/ }).click();
     await expect(page).toHaveURL(new RegExp(`/admin/calendar/events/${confirmed!.event_id}`));
   });
