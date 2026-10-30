@@ -4,6 +4,7 @@ import { businessDay, businessDayRange } from "@/lib/dates";
 import { can } from "@/lib/permissions";
 import { createClient } from "@/lib/supabase/server";
 import type { Shift } from "./schema";
+import { hiddenStaffIds } from "@/modules/staff/hidden";
 
 type Row = {
   id: string;
@@ -81,11 +82,13 @@ export async function eventsOn(day = businessDay()): Promise<{ id: string; name:
 export async function staffPeople(): Promise<{ id: string; name: string }[]> {
   await assertPermission("staff.manage");
   const supabase = await createClient();
-  const { data } = await supabase
-    .from("staff_profiles")
-    .select("user_id, full_name")
-    .order("full_name");
-  return (data ?? []).map((s) => ({ id: s.user_id, name: s.full_name }));
+  const [{ data }, hidden] = await Promise.all([
+    supabase.from("staff_profiles").select("user_id, full_name").order("full_name"),
+    hiddenStaffIds(),
+  ]);
+  return (data ?? [])
+    .filter((s) => !hidden.has(s.user_id))
+    .map((s) => ({ id: s.user_id, name: s.full_name }));
 }
 
 /** Events overlapping a period (for the owner's shift form). */
