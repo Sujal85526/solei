@@ -668,3 +668,16 @@ Open client questions are built as configurable defaults. Each row: what we chos
   order; managed with `coupons.manage` under Admin → Promotions → Banners. Promotions report =
   `promotion_performance(from, to)` from `applied_promotions` (codes with their event, sales, bundles, buy X get Y;
   website and till).
+
+## Phase 2 — after the testing round (branch `phase-2`, 2026-10-30)
+- **P2-80 — Email is optional again for staff-added customers** (owner; reverses `de8ae59`): a customer needs a name and a phone
+  or an email (the existing `customers_contact_required` rule), so a sale can always be recorded. Without an email the customer
+  still earns stickers, but they don't show in an online account, and there are no emails or payment links (N-Genius needs an
+  email). The forms say so.
+- **P2-81 — One select for the whole app:** `NativeSelect` keeps its props and `<option>` children but draws its own solid list,
+  because browsers draw a native select's list themselves (translucent on macOS). A visually hidden real `<select>` stays
+  underneath for forms, labels, `data-field` reads and Playwright's `selectOption`. The box is named with `title`, not
+  `aria-label`, so `getByLabel` still finds one control. Size the box with `[&_button]:…`.
+- **P2-82 — Till safety:** the event is chosen once per device and shown in the payment box; a device reopens on its last event
+  only while that event is running today. A payment tapped during the price check runs when the price is back, and asks again
+  if the price changed (never charges a price the cashier hasn't seen).
