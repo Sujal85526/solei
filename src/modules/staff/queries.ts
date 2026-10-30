@@ -1,10 +1,11 @@
 import "server-only";
 import { must } from "@/lib/supabase/must";
 import { createClient } from "@/lib/supabase/server";
+import { isHiddenStaffEmail } from "./hidden-list";
 
 export async function listStaff() {
   const supabase = await createClient();
-  return must(
+  const rows = must(
     await supabase
       .from("staff_profiles")
       .select(
@@ -14,6 +15,7 @@ export async function listStaff() {
       .order("full_name"),
     "staff",
   );
+  return rows.filter((s) => !isHiddenStaffEmail(s.email));
 }
 
 export async function getStaff(userId: string) {
@@ -36,11 +38,11 @@ export async function listRoles() {
       .select("id, key, name, description, requires_mfa, is_system")
       .order("created_at"),
     supabase.from("role_permissions").select("role_id, permission_key"),
-    supabase.from("staff_profiles").select("role_id").eq("active", true),
+    supabase.from("staff_profiles").select("role_id, email").eq("active", true),
   ]);
   const rows = must(roles, "roles");
   const grants = must(perms, "role permissions");
-  const staffRows = staff.data ?? [];
+  const staffRows = (staff.data ?? []).filter((s) => !isHiddenStaffEmail(s.email));
   return rows.map((r) => ({
     ...r,
     permissions: grants.filter((g) => g.role_id === r.id).map((g) => g.permission_key),
