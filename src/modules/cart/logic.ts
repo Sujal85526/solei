@@ -17,7 +17,15 @@ export type CartState = {
   lines: CartLine[];
   /** Emirate chosen for the delivery estimate (a preference, not part of the order). */
   emirate: Emirate | null;
+  /**
+   * Discount codes applied at checkout, kept with the bag so a reload doesn't drop them. Only
+   * remembered here — the server checks them again on every price update and at the order.
+   */
+  coupons?: string[];
 };
+
+/** Most codes one order can carry (they must combine). */
+export const MAX_CODES = 5;
 
 export const EMPTY_CART: CartState = Object.freeze({ lines: [], emirate: null }) as CartState;
 
@@ -118,11 +126,12 @@ export function parseCart(raw: string | null): CartState {
     return EMPTY_CART;
   }
   if (!data || typeof data !== "object") return EMPTY_CART;
-  const obj = data as { lines?: unknown; emirate?: unknown };
+  const obj = data as { lines?: unknown; emirate?: unknown; coupons?: unknown };
   let state: CartState = {
     lines: [],
     emirate: emirateSchema.safeParse(obj.emirate).success ? (obj.emirate as Emirate) : null,
   };
+  if (Array.isArray(obj.coupons)) state = setCoupons(state, obj.coupons.filter(isString));
   if (Array.isArray(obj.lines)) {
     for (const item of obj.lines) {
       const line = cartLineSchema.safeParse(item);
@@ -140,5 +149,26 @@ export function parseCart(raw: string | null): CartState {
 }
 
 export function serializeCart(state: CartState): string {
-  return JSON.stringify({ v: 1, lines: state.lines, emirate: state.emirate });
+  return JSON.stringify({
+    v: 1,
+    lines: state.lines,
+    emirate: state.emirate,
+    ...(state.coupons?.length ? { coupons: state.coupons } : {}),
+  });
+}
+
+const isString = (v: unknown): v is string => typeof v === "string";
+
+/** The applied discount codes (normalised, de-duplicated, at most MAX_CODES). */
+export function setCoupons(state: CartState, codes: string[]): CartState {
+  const next = [
+    ...new Set(
+      codes
+        .map((c) => c.trim().toUpperCase().replace(/\s+/g, ""))
+        .filter((c) => c && c.length <= 40),
+    ),
+  ].slice(0, MAX_CODES);
+  const current = state.coupons ?? [];
+  if (next.length === current.length && next.every((c, i) => c === current[i])) return state;
+  return { ...state, coupons: next };
 }

@@ -27,6 +27,8 @@ import { maskGiftCode } from "@/modules/gift-cards/schema";
 
 const c = t.checkout;
 
+const NO_CODES: string[] = [];
+
 export type CheckoutAccount = {
   email: string;
   firstName: string;
@@ -52,8 +54,9 @@ export function CheckoutFlow({
   const [redirecting, setRedirecting] = useState(false);
   const [, startLoad] = useTransition();
   const req = useRef(0);
-  // Discount codes being applied (several when they combine); a refused one is dropped again.
-  const [coupons, setCoupons] = useState<string[]>([]);
+  // Discount codes being applied (several when they combine), kept with the bag so a reload
+  // keeps them; a refused one is dropped again.
+  const coupons = state?.coupons ?? NO_CODES;
   // Points rewards chosen in the summary.
   const [rewards, setRewards] = useState<string[]>([]);
   const [couponError, setCouponError] = useState<string | null>(null);
@@ -92,7 +95,7 @@ export function CheckoutFlow({
       if (refused.length) {
         const last = refused[refused.length - 1];
         setCouponError("error" in last ? last.error : null);
-        setCoupons((cs) => cs.filter((code) => !refused.some((r) => r.code === code)));
+        cart.setCoupons(coupons.filter((code) => !refused.some((r) => r.code === code)));
       }
       const kept = res.lines.filter((l) => l.rewardId && l.qty > 0).map((l) => l.rewardId!);
       if (kept.length !== rewards.length) setRewards(kept);
@@ -111,11 +114,11 @@ export function CheckoutFlow({
     applying,
     onApply: (code: string) => {
       setCouponError(null);
-      setCoupons((cs) => [...new Set([...cs, code.trim().toUpperCase()])].slice(0, 5));
+      cart.setCoupons([...coupons, code]);
     },
     onRemove: (code: string) => {
       setCouponError(null);
-      setCoupons((cs) => cs.filter((c) => c !== code));
+      cart.setCoupons(coupons.filter((c) => c !== code));
     },
   };
   const rewardProps: RewardProps = {

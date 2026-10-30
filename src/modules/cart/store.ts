@@ -8,6 +8,7 @@ import {
   removeLine,
   serializeCart,
   setEmirate,
+  setCoupons,
   setQty,
   type CartState,
 } from "./logic";
@@ -85,7 +86,8 @@ export const cart = {
   remove: (key: string) => write(removeLine(read(), key)),
   setEmirate: (emirate: Emirate | null) => write(setEmirate(read(), emirate)),
   reconcile: (allowed: Map<string, number>) => write(reconcile(read(), allowed)),
-  clear: () => write({ ...read(), lines: [] }),
+  setCoupons: (codes: string[]) => write(setCoupons(read(), codes)),
+  clear: () => write({ ...read(), lines: [], coupons: [] }),
 };
 
 /** Current cart, or `null` before hydration (render a placeholder then). */

@@ -8,6 +8,7 @@ import {
   reconcile,
   removeLine,
   serializeCart,
+  setCoupons,
   setEmirate,
   setQty,
 } from "./logic";
@@ -120,5 +121,21 @@ describe("cart persistence", () => {
       emirate: "atlantis",
     });
     expect(parseCart(raw)).toEqual({ lines: [{ variantId: A, qty: 3 }], emirate: null });
+  });
+});
+
+describe("discount codes kept with the bag", () => {
+  it("normalises, de-duplicates and caps the codes, and survives a reload", () => {
+    const s = setCoupons(EMPTY_CART, [" qa10 ", "QA10", "summer 20", "", "a", "b", "c", "d"]);
+    expect(s.coupons).toEqual(["QA10", "SUMMER20", "A", "B", "C"]);
+    expect(parseCart(serializeCart(s)).coupons).toEqual(["QA10", "SUMMER20", "A", "B", "C"]);
+  });
+
+  it("ignores junk in storage and leaves old bags without codes untouched", () => {
+    expect(parseCart(JSON.stringify({ lines: [], coupons: [1, "ok", null] })).coupons).toEqual([
+      "OK",
+    ]);
+    expect(parseCart(JSON.stringify({ lines: [], emirate: null })).coupons).toBeUndefined();
+    expect(setCoupons(EMPTY_CART, [])).toBe(EMPTY_CART);
   });
 });
