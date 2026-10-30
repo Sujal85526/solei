@@ -3427,6 +3427,7 @@ export type Database = {
         | "website"
         | "pos"
         | "whatsapp"
+        | "instagram"
         | "direct"
         | "booking"
         | "newsletter"
@@ -3483,6 +3484,7 @@ export type Database = {
         | "website"
         | "pos"
         | "whatsapp"
+        | "instagram"
         | "direct"
         | "payment_link"
         | "booking"
@@ -3665,6 +3667,7 @@ export const Constants = {
         "website",
         "pos",
         "whatsapp",
+        "instagram",
         "direct",
         "booking",
         "newsletter",
@@ -3728,6 +3731,7 @@ export const Constants = {
         "website",
         "pos",
         "whatsapp",
+        "instagram",
         "direct",
         "payment_link",
         "booking",
