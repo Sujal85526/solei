@@ -307,7 +307,8 @@ function GroupDialog({
               {options.map((o) => (
                 <div
                   key={o.key}
-                  className="grid grid-cols-[auto_1fr_6.5rem_auto_auto] items-center gap-2"
+                  // Phones: photo · name · remove, then price and "Shown" under the name.
+                  className="grid grid-cols-[auto_1fr_auto] items-center gap-2 sm:grid-cols-[auto_1fr_6.5rem_auto_auto]"
                 >
                   {o.imageUrl ? (
                     <span className="relative size-10 shrink-0 overflow-hidden rounded border">
@@ -354,9 +355,9 @@ function GroupDialog({
                     value={o.priceDelta}
                     onChange={(e) => update(o.key, { priceDelta: e.target.value })}
                     placeholder="+ AED"
-                    className="numeric h-10"
+                    className="numeric col-start-2 row-start-2 h-10 sm:col-start-auto sm:row-start-auto"
                   />
-                  <label className="flex items-center gap-1.5 text-xs">
+                  <label className="col-start-3 row-start-2 flex items-center gap-1.5 text-xs sm:col-start-auto sm:row-start-auto">
                     <input
                       type="checkbox"
                       checked={o.active}
@@ -369,6 +370,7 @@ function GroupDialog({
                     variant="ghost"
                     size="icon-sm"
                     aria-label={`Remove ${o.label || "option"}`}
+                    className="col-start-3 row-start-1 justify-self-end sm:col-start-auto sm:row-start-auto"
                     disabled={options.length === 1}
                     onClick={() => setOptions(options.filter((x) => x.key !== o.key))}
                   >
