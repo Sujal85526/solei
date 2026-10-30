@@ -61,6 +61,7 @@ export async function createCustomer(
       const { data } = await select().eq("phone", v.phone).maybeSingle();
       if (data?.id) return toOption(data);
     }
+    if (!v.email) return null;
     const { data } = await select().eq("email", v.email).order("created_at").limit(1).maybeSingle();
     return data?.id ? toOption(data) : null;
   };
@@ -113,7 +114,7 @@ export async function createCustomer(
 
   // After the stickers, so the email shows the right count. A failed email never undoes the customer.
   let welcome: WelcomeOutcome | undefined;
-  if (v.sendWelcome) {
+  if (v.sendWelcome && v.email) {
     try {
       await sendWelcome(data.id);
       welcome = { sent: true };
