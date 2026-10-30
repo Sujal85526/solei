@@ -681,3 +681,7 @@ Open client questions are built as configurable defaults. Each row: what we chos
 - **P2-82 — Till safety:** the event is chosen once per device and shown in the payment box; a device reopens on its last event
   only while that event is running today. A payment tapped during the price check runs when the price is back, and asks again
   if the price changed (never charges a price the cashier hasn't seen).
+- **P2-83 — One customer per email** (owner): sales go to the customer with that email, even when their mobile on file is missing
+  or different; the mobile decides only when no email matches, so phone-only customers keep working. Before, an email without
+  the matching mobile made a second record, whose stickers never reached the online account (it links by verified email only).
+  Trade-off: two people sharing one email share one record.
