@@ -122,22 +122,29 @@ export function QuoteBuilder({
               onChange={(e) => set(i, { label: e.target.value })}
               className="col-span-2 h-10 sm:col-span-1"
             />
-            <Input
-              aria-label={`Line ${i + 1} quantity`}
-              type="number"
-              inputMode="numeric"
-              min={1}
-              value={r.qty}
-              onChange={(e) => set(i, { qty: e.target.value })}
-              className="h-10"
-            />
-            <Input
-              aria-label={`Line ${i + 1} unit price (AED)`}
-              inputMode="decimal"
-              value={r.unit}
-              onChange={(e) => set(i, { unit: e.target.value })}
-              className="h-10"
-            />
+            {/* Phones: the column headings are hidden, so each field says what it is. */}
+            <label className="flex min-w-0 flex-col gap-1">
+              <span className="text-muted-foreground text-xs sm:hidden">Qty</span>
+              <Input
+                aria-label={`Line ${i + 1} quantity`}
+                type="number"
+                inputMode="numeric"
+                min={1}
+                value={r.qty}
+                onChange={(e) => set(i, { qty: e.target.value })}
+                className="h-10"
+              />
+            </label>
+            <label className="flex min-w-0 flex-col gap-1">
+              <span className="text-muted-foreground text-xs sm:hidden">Unit (AED)</span>
+              <Input
+                aria-label={`Line ${i + 1} unit price (AED)`}
+                inputMode="decimal"
+                value={r.unit}
+                onChange={(e) => set(i, { unit: e.target.value })}
+                className="h-10"
+              />
+            </label>
             <span className="numeric text-sm sm:text-end">
               {totals?.lines[i] ? formatAED(totals.lines[i].totalFils) : "—"}
             </span>
