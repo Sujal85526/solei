@@ -4,6 +4,7 @@ import { must } from "@/lib/supabase/must";
 import { assertPermission } from "@/lib/auth/session";
 import { createAdminClient, createClient } from "@/lib/supabase/server";
 import { searchNeedles, type OrderFilters } from "./schema";
+import { hiddenStaffIds } from "@/modules/staff/hidden";
 
 export const ORDERS_PAGE_SIZE = 25;
 
@@ -76,12 +77,17 @@ export async function eventOptions() {
  */
 export async function staffOptions(): Promise<{ id: string; name: string }[]> {
   await assertPermission("orders.view");
-  const { data } = await createAdminClient()
-    .from("staff_profiles")
-    .select("user_id, full_name, active")
-    .order("active", { ascending: false })
-    .order("full_name");
-  return (data ?? []).map((s) => ({ id: s.user_id, name: s.full_name }));
+  const [{ data }, hidden] = await Promise.all([
+    createAdminClient()
+      .from("staff_profiles")
+      .select("user_id, full_name, active")
+      .order("active", { ascending: false })
+      .order("full_name"),
+    hiddenStaffIds(),
+  ]);
+  return (data ?? [])
+    .filter((s) => !hidden.has(s.user_id))
+    .map((s) => ({ id: s.user_id, name: s.full_name }));
 }
 
 /** Everything the order detail page shows. Line costs come back empty without financial access (RLS). */
