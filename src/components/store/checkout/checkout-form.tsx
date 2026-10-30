@@ -323,7 +323,7 @@ function DeliveryForm({
                 router.refresh();
               })
             }
-            className="text-muted-foreground hover:text-primary text-xs underline underline-offset-4"
+            className="text-muted-foreground hover:text-primary -my-2.5 py-2.5 text-xs underline underline-offset-4"
           >
             {c.notYou}
           </button>
@@ -590,6 +590,8 @@ function Summary({
         <AppliedCode key={a.code} code={a.code} onRemove={() => coupon.onRemove(a.code)} />
       ))}
       <CouponBox
+        // A fresh, empty box once a code is applied (or removed), ready for the next one.
+        key={coupon.applied.map((a) => a.code).join()}
         {...coupon}
         applied={null}
         onRemove={() => {}}
@@ -747,7 +749,7 @@ function AppliedCode({ code, onRemove }: { code: string; onRemove: () => void })
       <button
         type="button"
         onClick={onRemove}
-        className="text-muted-foreground hover:text-primary text-xs underline underline-offset-4"
+        className="text-muted-foreground hover:text-primary -my-2.5 py-2.5 text-xs underline underline-offset-4"
       >
         {c.removeCode}
       </button>
@@ -792,7 +794,7 @@ function CouponBox({
         <button
           type="button"
           onClick={() => onRemove(applied.code)}
-          className="text-muted-foreground hover:text-primary text-xs underline underline-offset-4"
+          className="text-muted-foreground hover:text-primary -my-2.5 py-2.5 text-xs underline underline-offset-4"
         >
           {c.removeCode}
         </button>
