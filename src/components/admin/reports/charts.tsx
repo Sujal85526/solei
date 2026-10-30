@@ -156,7 +156,8 @@ export function BarList({
         <XAxis
           type="number"
           hide
-          domain={[(min: number) => Math.min(0, min), (max: number) => Math.max(0, max)]}
+          // Extra room on the negative side: a loss's value label sits left of its bar.
+          domain={[(min: number) => (min < 0 ? min * 1.6 : 0), (max: number) => Math.max(0, max)]}
         />
         <YAxis
           type="category"
