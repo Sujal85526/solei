@@ -34,7 +34,7 @@ export function NewCustomerDialog() {
         <DialogHeader>
           <DialogTitle>Find or add a customer</DialogTitle>
           <DialogDescription>
-            Search by phone first — every customer is kept once per phone number.
+            Search by email or phone first, so each customer is kept once.
           </DialogDescription>
         </DialogHeader>
         <CustomerPicker onSelect={onSelect} source="manual" welcome autoFocus />
