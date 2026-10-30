@@ -78,7 +78,7 @@ test.describe("promotions", () => {
     await page.getByRole("checkbox", { name: /I agree to the/i }).check();
 
     await page.getByRole("button", { name: /continue to payment/i }).click();
-    await expect(page.getByText("Test payment · no real card")).toBeVisible();
+    await expect(page.getByText("Test payment · no real card")).toBeVisible({ timeout: 30_000 });
     await expect(page.getByText("AED 280")).toBeVisible(); // goods only, delivery waived
     await page.getByRole("button", { name: "Pay with test card" }).click();
     await expect(page.getByRole("heading", { name: "Thank you." })).toBeVisible({

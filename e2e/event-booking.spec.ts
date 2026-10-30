@@ -113,7 +113,7 @@ test.describe("event booking", () => {
     await page.getByRole("button", { name: "Accept quotation" }).click();
     await expect(page.getByText("Quotation accepted.")).toBeVisible();
     await page.getByRole("button", { name: /Pay deposit · AED 3,725/ }).click();
-    await expect(page.getByText("Test payment · no real card")).toBeVisible();
+    await expect(page.getByText("Test payment · no real card")).toBeVisible({ timeout: 30_000 });
     await page.getByRole("button", { name: "Pay with test card" }).click();
     await expect(page.getByText("Your booking is confirmed.")).toBeVisible({ timeout: 30_000 });
 

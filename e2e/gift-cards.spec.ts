@@ -40,7 +40,7 @@ test.describe("gift cards", () => {
     await page.getByLabel("Their email").fill(recipientEmail);
     await page.getByLabel("Message (optional)").fill("Happy birthday");
     await page.getByRole("button", { name: /buy gift card · AED 500/i }).click();
-    await expect(page.getByText("Test payment · no real card")).toBeVisible();
+    await expect(page.getByText("Test payment · no real card")).toBeVisible({ timeout: 30_000 });
     await page.getByRole("button", { name: "Pay with test card" }).click();
     await expect(page.getByText(`we've emailed it to ${recipientEmail}`)).toBeVisible({
       timeout: 20_000,

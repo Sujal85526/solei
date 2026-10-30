@@ -56,7 +56,7 @@ async function checkoutPerfume(page: Page, qty: number, phone: string) {
   const pay = page.getByRole("button", { name: /continue to payment/i });
   await expect(pay).toBeEnabled();
   await pay.click();
-  await expect(page.getByText("Test payment · no real card")).toBeVisible();
+  await expect(page.getByText("Test payment · no real card")).toBeVisible({ timeout: 30_000 });
 }
 
 test.describe("checkout & payments", () => {

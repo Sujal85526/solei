@@ -1,4 +1,5 @@
 import { expect, test } from "@playwright/test";
+import { settle } from "./helpers/auth";
 
 test.describe("homepage", () => {
   test("shows the hero and every section", async ({ page }) => {
@@ -43,6 +44,8 @@ test.describe("homepage", () => {
 
   test("early-access sign-up requires consent", async ({ page }) => {
     await page.goto("/");
+    // Typing before the form hydrates is lost (the field is reset).
+    await settle(page);
     const section = page.locator("section[aria-labelledby=experience-title]");
     await section.getByLabel("Email").fill(`early.${Date.now()}@solei.test`);
     await section.getByRole("button", { name: "Sign up" }).click();
