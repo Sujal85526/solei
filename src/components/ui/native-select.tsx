@@ -58,7 +58,7 @@ export function NativeSelect({
     const el = select.current;
     if (!el) return;
     // The visible box is named by the same <label> as the hidden select.
-    setLabel(ariaLabel ?? el.labels?.[0]?.textContent ?? undefined);
+    setLabel(ariaLabel ?? el.labels?.[0]?.textContent?.replace(/\s*\*\s*$/, "") ?? undefined);
     const form = el.form;
     if (!form) return;
     const reset = () => setOwn(initial);
@@ -117,7 +117,7 @@ export function NativeSelect({
       >
         <SelectPrimitive.Trigger
           ref={trigger}
-          aria-label={label}
+          title={label}
           aria-invalid={props["aria-invalid"]}
           aria-describedby={props["aria-describedby"]}
           className="border-input bg-card focus-visible:border-ring focus-visible:ring-ring/20 aria-invalid:border-destructive flex h-10 w-full min-w-0 items-center justify-between gap-2 rounded-md border ps-3 pe-3 text-start text-sm outline-none focus-visible:ring-3 disabled:opacity-50"
