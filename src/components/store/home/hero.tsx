@@ -1,12 +1,49 @@
-import Image from "next/image";
+import Image, { getImageProps } from "next/image";
 import Link from "next/link";
 import type { HeroContent } from "@/content/home";
+import type { Banner } from "@/modules/banners/schema";
+import { BannerRotator, type RotatorSlide } from "./banner-rotator";
+
+/** Desktop and phone pictures of one banner, as the srcSets the browser picks from. */
+function rotatorSlide(b: Banner): RotatorSlide {
+  const common = { alt: b.alt, sizes: "100vw", quality: 80 };
+  const desktop = getImageProps({ ...common, src: b.desktopUrl, width: 2400, height: 1350 });
+  const mobile = getImageProps({ ...common, src: b.mobileUrl, width: 1080, height: 1920 });
+  return {
+    id: b.id,
+    alt: b.alt,
+    href: b.href,
+    seconds: b.seconds,
+    desktopSrcSet: desktop.props.srcSet ?? "",
+    mobileSrc: mobile.props.src,
+    mobileSrcSet: mobile.props.srcSet ?? "",
+  };
+}
 
 /**
- * Full-screen hero: the Cannes bottle with the copy centred above it. The section is sticky, so the
- * rest of the page slides up over it. Server-rendered; the entrance is CSS (globals.css "Hero").
+ * Full-screen hero. With owner-uploaded banners (Admin → Settings → Homepage banners) it is those
+ * pictures, rotating; otherwise the Cannes bottle with the copy centred above it. The section is
+ * sticky, so the rest of the page slides up over it. Server-rendered; the entrance is CSS
+ * (globals.css "Hero").
  */
-export function Hero({ hero }: { hero: HeroContent }) {
+export function Hero({ hero, banners = [] }: { hero: HeroContent; banners?: Banner[] }) {
+  if (banners.length) {
+    return (
+      <section
+        data-hero
+        aria-label="Featured"
+        className="sticky top-0 isolate h-[100svh] min-h-[560px] overflow-hidden bg-[#2a0610]"
+      >
+        <h1 className="sr-only">Solei — {hero.title.join(" ")}</h1>
+        <BannerRotator slides={banners.map(rotatorSlide)} />
+        {/* Keeps the white header readable over any picture. */}
+        <div
+          aria-hidden
+          className="from-noir/60 pointer-events-none absolute inset-x-0 top-0 z-10 h-32 bg-gradient-to-b to-transparent"
+        />
+      </section>
+    );
+  }
   return (
     <section
       data-hero
