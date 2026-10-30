@@ -1,6 +1,7 @@
 import "server-only";
 import { must } from "@/lib/supabase/must";
 import { createClient } from "@/lib/supabase/server";
+import { hiddenStaffIds } from "@/modules/staff/hidden";
 import { parseDailyHours, type EventStatus, type EventType } from "./schema";
 
 const EVENT_DOCS_BUCKET = "event-docs";
@@ -73,8 +74,13 @@ export type Overlap = Awaited<ReturnType<typeof findOverlaps>>[number];
 /** Everyone who can be put on an event (names only; see `event_staff_options`). */
 export async function staffOptions() {
   const supabase = await createClient();
-  const rows = must(await supabase.rpc("event_staff_options"), "staff options");
-  return rows.map((r) => ({ ...r, position: r.position as string | null }));
+  const [result, hidden] = await Promise.all([
+    supabase.rpc("event_staff_options"),
+    hiddenStaffIds(),
+  ]);
+  return must(result, "staff options")
+    .filter((r) => !hidden.has(r.user_id))
+    .map((r) => ({ ...r, position: r.position as string | null }));
 }
 
 export async function listEventStaff(eventId: string) {
