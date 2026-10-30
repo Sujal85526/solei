@@ -100,7 +100,11 @@ export async function createTestProduct(
  * navigation doesn't race the page finishing hydration (WebKit can reload it under `next dev`).
  */
 export async function addToBag(page: Page) {
-  await page.getByRole("button", { name: /add to cart/i }).click();
+  // The "Checking availability…" fallback can still be in the page next to the real panel.
+  const add = page.getByTestId("add-to-cart").filter({ hasText: /add to cart/i });
+  await expect(add).toBeEnabled();
+  await settle(page);
+  await add.click();
   await expect(
     page
       .getByRole("dialog", { name: /Your Cart/ })

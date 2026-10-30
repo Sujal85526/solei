@@ -7,7 +7,9 @@ export default defineConfig({
   fullyParallel: true,
   forbidOnly: !!process.env.CI,
   retries: process.env.CI ? 1 : 0,
-  expect: { timeout: 10_000 },
+  // Slower against a hosted test database: E2E_EXPECT_TIMEOUT=20000 E2E_TEST_TIMEOUT=90000.
+  timeout: Number(process.env.E2E_TEST_TIMEOUT ?? 30_000),
+  expect: { timeout: Number(process.env.E2E_EXPECT_TIMEOUT ?? 10_000) },
   reporter: process.env.CI ? "github" : "list",
   use: {
     baseURL: `http://localhost:${port}`,

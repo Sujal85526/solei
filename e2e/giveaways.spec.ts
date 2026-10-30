@@ -128,13 +128,17 @@ test.describe("giveaways customiser", () => {
     if (error) throw error;
 
     await page.goto(`/products/${slug}`);
+    // The "Checking availability…" fallback can still sit next to the real panel for a moment.
+    const add = page.getByTestId("add-to-cart").filter({ hasText: "Add to cart" });
+    await expect(add).toBeEnabled();
+    await settle(page);
     // Adding without choosing explains what's missing.
-    await page.getByTestId("add-to-cart").click();
+    await add.click();
     await expect(page.getByText("Please choose “Ribbon”.")).toBeVisible();
     await page.getByText("Gold", { exact: false }).first().click();
     await page.getByRole("textbox", { name: "Names on the tag" }).fill("Sara & Omar");
     await expect(page.getByText("AED 30 each")).toBeVisible();
-    await page.getByTestId("add-to-cart").click();
+    await add.click();
     await expect(
       page.getByText("Ribbon: Gold · Names on the tag: Sara & Omar").first(),
     ).toBeVisible();

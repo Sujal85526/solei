@@ -1,5 +1,5 @@
 import { expect, test } from "@playwright/test";
-import { adminClient, signInAsOwner } from "./helpers/auth";
+import { adminClient, settle, signInAsOwner } from "./helpers/auth";
 import { addToBag, createTestProduct } from "./helpers/catalog";
 import { withLock } from "./helpers/lock";
 
@@ -95,6 +95,7 @@ test.describe("points & tiers", () => {
 
       // Back off through the admin (so the cached programme settings refresh too).
       await staff.reload();
+      await settle(staff);
       await staff.getByLabel(/Points & tiers are on/).uncheck();
       await staff.getByRole("button", { name: "Save", exact: true }).click();
       await expect(staff.getByText("Off — customers see nothing")).toBeVisible();

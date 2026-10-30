@@ -89,7 +89,11 @@ test.describe("Solei Passport", () => {
     // Redeem → zero-priced order.
     await panel.getByRole("button", { name: "Redeem" }).click();
     await page.getByRole("dialog").getByRole("button", { name: "Redeem reward" }).click();
-    // The dialog closes and the reward is marked as used on the new order.
+    // The dialog confirms the new order (it can also close straight away as the panel refreshes);
+    // the panel then marks the reward as used on that order.
+    const confirmed = page.getByRole("dialog").getByText(/Redeemed on order/);
+    await expect(confirmed.or(panel.getByText(/used on SOL-\d+/))).toBeVisible();
+    if (await page.getByRole("dialog").isVisible()) await page.keyboard.press("Escape");
     await expect(panel.getByText(/used on SOL-\d+/)).toBeVisible();
     await expect(panel.getByText("Redeemed", { exact: true })).toBeVisible();
   });

@@ -1,5 +1,5 @@
 import { expect, test } from "@playwright/test";
-import { adminClient, signInAsOwner, signInAsSales } from "./helpers/auth";
+import { adminClient, settle, signInAsOwner, signInAsSales } from "./helpers/auth";
 import { createTestProduct } from "./helpers/catalog";
 
 // 1×1 PNG
@@ -64,6 +64,8 @@ test.describe("catalog & inventory admin", () => {
     await form.getByLabel("Units").fill("2");
     await form.getByRole("button", { name: "Save adjustment" }).click();
     await expect(form.getByText(/Say why/)).toBeVisible();
+    // The refused submit resets the form as it finishes: don't type into it before that.
+    await settle(page);
     await form.getByLabel("Reason").fill("Broken in transit");
     await form.getByRole("button", { name: "Save adjustment" }).click();
     await expect(page.getByText("Stock adjusted.")).toBeVisible();
@@ -81,9 +83,15 @@ test.describe("catalog & inventory admin", () => {
 
     // Ledger: 100 − 2 = 98 total, 88 in main, 10 in the new location; history shows each movement.
     await page.reload();
-    await expect(page.getByText("Total on hand").locator("..").getByText("98")).toBeVisible();
-    await expect(page.getByText("Main stock").locator("..").getByText("88")).toBeVisible();
-    await expect(page.getByText(locName).locator("..").getByText("10")).toBeVisible();
+    await expect(
+      page.getByText("Total on hand").locator("..").getByText("98", { exact: true }),
+    ).toBeVisible();
+    await expect(
+      page.getByText("Main stock").locator("..").getByText("88", { exact: true }),
+    ).toBeVisible();
+    await expect(
+      page.getByText(locName).locator("..").getByText("10", { exact: true }),
+    ).toBeVisible();
     await expect(page.getByText("Broken in transit")).toBeVisible();
     await expect(page.getByText("Transferred out")).toBeVisible();
   });
