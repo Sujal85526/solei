@@ -344,8 +344,8 @@ next steps (account_user_id column on orders, stored stock balances) are in DECI
   passwords (`solei-client-test-password`, `solei-dev-bot-*`, `solei-shop-test-password`) no longer match any login.
 - **Homepage banners (2026-10-30):** Admin → Settings → Homepage banners (`settings.manage`). Each banner has a desktop
   and a phone picture (own files, `banners` bucket, 5 MB), a "stays for" time (2–60 s, hidden with a single banner),
-  an optional link and a description; up to 8, reorder / replace / delete. Two or more fade into each other on their own
-  timers (paused on hover and with reduced motion); with none, the built-in Cannes hero shows. Table `hero_banners`,
+  up to 8, reorder / replace / delete. Two or more fade into each other on their own
+  timers (paused on hover and with reduced motion); with none, the built-in Cannes hero shows. Table `hero_banners` (its `alt` and `link_href` columns are unused — no field for them),
   migration `20261030000001` applied with `psql`; the storefront reads it through `getHeroBanners()` (cache tag `banners`).
 - **Known minor items:** checkout doesn't remember the mobile number; the "The Edit" event's location reads
   "Emirates Placa Terrace" (typo).

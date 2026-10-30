@@ -1,12 +1,9 @@
 "use client";
 
-import Link from "next/link";
 import { useEffect, useState } from "react";
 
 export type RotatorSlide = {
   id: string;
-  alt: string;
-  href: string | null;
   seconds: number;
   desktopSrcSet: string;
   mobileSrc: string;
@@ -56,7 +53,7 @@ export function BannerRotator({ slides }: { slides: RotatorSlide[] }) {
               src={s.mobileSrc}
               srcSet={s.mobileSrcSet}
               sizes="100vw"
-              alt={s.alt}
+              alt=""
               loading={i === 0 ? "eager" : "lazy"}
               fetchPriority={i === 0 ? "high" : "auto"}
               decoding="async"
@@ -72,13 +69,7 @@ export function BannerRotator({ slides }: { slides: RotatorSlide[] }) {
               active ? "z-10 opacity-100" : "pointer-events-none opacity-0"
             }`}
           >
-            {s.href ? (
-              <Link href={s.href} tabIndex={active ? 0 : -1} className="absolute inset-0 block">
-                {picture}
-              </Link>
-            ) : (
-              picture
-            )}
+            {picture}
           </div>
         );
       })}

@@ -23,7 +23,7 @@ export async function listBanners(): Promise<Banner[]> {
   const supabase = await createClient();
   const { data, error } = await supabase
     .from("hero_banners")
-    .select("id, desktop_path, mobile_path, alt, link_href, seconds")
+    .select("id, desktop_path, mobile_path, seconds")
     .order("sort")
     .order("created_at");
   if (error) throw new Error(error.message);
@@ -48,8 +48,6 @@ export async function createBanner(input: unknown) {
     sort: (last?.[0]?.sort ?? -1) + 1,
     desktop_path: v.desktopPath,
     mobile_path: v.mobilePath,
-    alt: v.alt,
-    link_href: v.linkHref,
     seconds: v.seconds,
   });
   if (error) throw new Error(error.message);
@@ -61,7 +59,7 @@ export async function updateBanner(input: unknown) {
   const supabase = await createClient();
   const { data, error } = await supabase
     .from("hero_banners")
-    .update({ alt: v.alt, link_href: v.linkHref, seconds: v.seconds })
+    .update({ seconds: v.seconds })
     .eq("id", v.id)
     .select("id")
     .maybeSingle();

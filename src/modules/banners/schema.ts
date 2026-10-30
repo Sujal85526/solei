@@ -6,21 +6,8 @@ export const MAX_BANNERS = 8;
 export const bannerKinds = ["desktop", "mobile"] as const;
 export type BannerKind = (typeof bannerKinds)[number];
 
-const link = z
-  .string()
-  .trim()
-  .max(300)
-  .default("")
-  .transform((v) => v || null)
-  .refine(
-    (v) => v === null || /^\/(?!\/)/.test(v) || /^https:\/\//.test(v),
-    "Use a page on the site like /shop, or a full https:// link",
-  );
-
 /** What the owner types for a banner (everything except the pictures). */
 export const bannerFieldsSchema = z.object({
-  alt: z.string().trim().max(200).default(""),
-  linkHref: link,
   seconds: z.coerce
     .number("Enter the seconds")
     .int("Whole seconds only")
@@ -48,7 +35,5 @@ export type Banner = {
   id: string;
   desktopUrl: string;
   mobileUrl: string;
-  alt: string;
-  href: string | null;
   seconds: number;
 };

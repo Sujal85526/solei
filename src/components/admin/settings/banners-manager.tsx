@@ -164,35 +164,6 @@ function BannerCard({ banner, index, count }: { banner: Banner; index: number; c
         ) : (
           <input type="hidden" name="seconds" value={banner.seconds} />
         )}
-        <Field
-          label="Link (optional)"
-          htmlFor={`link-${banner.id}`}
-          error={e.linkHref}
-          hint="Where a tap on the banner goes, e.g. /shop"
-        >
-          <Input
-            id={`link-${banner.id}`}
-            name="linkHref"
-            defaultValue={banner.href ?? ""}
-            placeholder="/shop"
-            className="h-11"
-          />
-        </Field>
-        <Field
-          label="Description (optional)"
-          htmlFor={`alt-${banner.id}`}
-          error={e.alt}
-          hint="A short sentence about the picture, for blind visitors and Google. Not shown on the page."
-          className="sm:col-span-2"
-        >
-          <Input
-            id={`alt-${banner.id}`}
-            name="alt"
-            defaultValue={banner.alt}
-            placeholder="What the banner shows"
-            className="h-11"
-          />
-        </Field>
         <div className="sm:col-span-2">
           <Button type="submit" disabled={saving}>
             {saving ? "Saving…" : "Save"}
@@ -281,8 +252,6 @@ function AddBannerDialog({ first, onClose }: { first: boolean; onClose: () => vo
         desktopPath,
         mobilePath,
         seconds: fd.get("seconds"),
-        linkHref: fd.get("linkHref"),
-        alt: fd.get("alt"),
       });
       if (r.ok) {
         toast.success(r.message ?? "Banner added.");
@@ -342,17 +311,6 @@ function AddBannerDialog({ first, onClose }: { first: boolean; onClose: () => vo
               />
             </Field>
           )}
-          <Field label="Link (optional)" htmlFor="new-link" hint="e.g. /shop">
-            <Input id="new-link" name="linkHref" placeholder="/shop" className="h-11" />
-          </Field>
-          <Field
-            label="Description (optional)"
-            htmlFor="new-alt"
-            hint="A short sentence about the picture, for blind visitors and Google. Not shown on the page."
-            className="sm:col-span-2"
-          >
-            <Input id="new-alt" name="alt" placeholder="What the banner shows" className="h-11" />
-          </Field>
           <DialogFooter className="sm:col-span-2">
             <Button type="submit" disabled={busy}>
               {busy ? "Uploading…" : "Add banner"}
