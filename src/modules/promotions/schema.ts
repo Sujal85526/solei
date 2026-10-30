@@ -197,7 +197,7 @@ export const offerFormSchema = z
 export type OfferFormData = z.output<typeof offerFormSchema>;
 
 /** Bundle slots as stored (snake case). */
-export const toDbSlots = (slots: BundleSlot[]): Json =>
+export const toDbSlots = (slots: BundleSlot[]): Json[] =>
   slots.map((s) => ({
     label: s.label,
     product_ids: s.productIds,
