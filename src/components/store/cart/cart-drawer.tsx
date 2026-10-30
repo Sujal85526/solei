@@ -32,6 +32,17 @@ export function CartDrawer() {
   const count = state?.lines.reduce((s, l) => s + l.qty, 0) ?? 0;
   const pricing = details?.pricing;
   const threshold = details?.settings.freeDeliveryThresholdFils ?? null;
+  // Shown with the empty state too: a bag whose only line sold out is emptied, and the notice
+  // explains why.
+  const noticeList = notices.length ? (
+    <ul className="mt-5 flex flex-col gap-2" aria-live="polite">
+      {notices.map((n) => (
+        <li key={n} className="bg-burgundy/5 text-burgundy px-3 py-2 text-xs">
+          {n}
+        </li>
+      ))}
+    </ul>
+  ) : null;
 
   return (
     <SideDrawer
@@ -49,6 +60,7 @@ export function CartDrawer() {
     >
       {!count ? (
         <div className="flex flex-1 flex-col items-center justify-center gap-5 text-center">
+          {noticeList}
           <p className="font-display text-burgundy text-2xl italic">{t.cart.empty}</p>
           <Link
             href="/shop"
@@ -92,15 +104,7 @@ export function CartDrawer() {
             </div>
           ) : null}
 
-          {notices.length ? (
-            <ul className="mt-5 flex flex-col gap-2" aria-live="polite">
-              {notices.map((n) => (
-                <li key={n} className="bg-burgundy/5 text-burgundy px-3 py-2 text-xs">
-                  {n}
-                </li>
-              ))}
-            </ul>
-          ) : null}
+          {noticeList}
 
           <ul className="divide-burgundy/15 border-burgundy/15 mt-5 divide-y border-b">
             {state!.lines.map((line, i) => (
