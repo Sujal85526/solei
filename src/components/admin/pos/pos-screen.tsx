@@ -426,7 +426,7 @@ export function PosScreen({
                   ) : null}
                 </span>
                 <span className="flex flex-col gap-0.5 p-3">
-                  <span className="font-display text-burgundy text-xl leading-tight">
+                  <span className="font-display text-burgundy text-xl leading-tight [overflow-wrap:anywhere]">
                     {p.destination ?? p.name}
                   </span>
                   <span className="text-muted-foreground text-xs">
@@ -501,7 +501,7 @@ export function PosScreen({
                 key={l.key}
                 className="bg-background flex shrink-0 items-center gap-1 rounded-full border py-1 ps-4 pe-1"
               >
-                <span className="me-1 text-sm font-medium">
+                <span className="me-1 max-w-[60vw] truncate text-sm font-medium sm:max-w-80">
                   {l.qty} × {l.title}
                 </span>
                 <Button
