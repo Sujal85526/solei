@@ -1,4 +1,6 @@
 begin;
+-- One snapshot for the whole file: the test DB is shared, so rows others commit mid-run stay out of the checks.
+set transaction isolation level repeatable read;
 \ir helpers/setup.psql
 select plan(17);
 
@@ -53,9 +55,10 @@ select is((select count(*)::int from public.order_line_costs where order_line_id
   (select id from public.order_lines where order_id = :'o_a')), 1, 'cost snapshot exists');
 
 -- Sales staff: can view customers and totals, can edit customers, can't see costs.
+select count(*)::int as all_customers from public.customers \gset
 select tests.create_staff('sales@test.solei', 'sales_staff') as sales \gset
 select tests.login_as(:'sales', 'aal1');
-select is((select count(*)::int from public.customer_summary), 2, 'sales staff sees customers');
+select is((select count(*)::int from public.customer_summary), :all_customers, 'sales staff sees customers');
 select is((select total_spent_fils from public.customer_summary where id = :'cust'), 41000, 'sales staff sees totals');
 update public.customers set notes = 'Prefers Capri' where id = :'cust';
 select is((select notes from public.customers where id = :'cust'), 'Prefers Capri', 'sales staff can edit notes (customers.manage)');
@@ -71,7 +74,7 @@ insert into public.role_permissions (role_id, permission_key)
 select id, 'customers.view' from public.roles where key = 'front_desk';
 select tests.create_staff('desk@test.solei', 'front_desk') as desk \gset
 select tests.login_as(:'desk', 'aal1');
-select is((select count(*)::int from public.customer_summary), 2, 'customers.view lists customers');
+select is((select count(*)::int from public.customer_summary), :all_customers, 'customers.view lists customers');
 select is((select total_spent_fils from public.customer_summary where id = :'cust'), 0,
   'without orders.view the order totals stay hidden');
 update public.customers set notes = 'hijack' where id = :'cust';

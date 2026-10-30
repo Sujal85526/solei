@@ -1,4 +1,6 @@
 begin;
+-- One snapshot for the whole file: the test DB is shared, so rows others commit mid-run stay out of the checks.
+set transaction isolation level repeatable read;
 \ir helpers/setup.psql
 select plan(9);
 
@@ -7,7 +9,14 @@ select tests.create_staff('sales@test.solei', 'sales_staff') as sales_id \gset
 select id as variant from public.product_variants where sku = 'SOL-P-CAP-50' \gset
 select id as main from public.stock_locations where is_default \gset
 
--- Start from exactly 100: seed gave 50, receive 50 more.
+-- Start from exactly 100 at main and nothing elsewhere, whatever the DB holds (seed gives 50).
+insert into public.stock_movements (variant_id, location_id, qty, type, reason)
+select :'variant', location_id, -sum(qty), 'adjustment', 'test baseline' from public.stock_movements
+  where variant_id = :'variant' and location_id <> :'main' group by location_id having sum(qty) <> 0;
+select (50 - public.on_hand(:'variant', :'main')) as top_up \gset
+insert into public.stock_movements (variant_id, location_id, qty, type, reason)
+select :'variant', :'main', :top_up, 'adjustment', 'test baseline' where :top_up <> 0;
+
 select tests.login_as(:'owner_id');
 select lives_ok(format($$ select public.record_stock_movement(%L, %L, 'receive', 50, 'Delivery #1') $$, :'variant', :'main'), 'owner receives stock');
 select tests.logout();
