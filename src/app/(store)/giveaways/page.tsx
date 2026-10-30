@@ -89,7 +89,7 @@ async function Results({ searchParams }: Pick<PageProps<"/giveaways">, "searchPa
                     )}
                     <span className="from-noir/80 absolute inset-0 bg-gradient-to-t via-transparent" />
                     <span className="text-pearl absolute inset-x-0 bottom-0 flex flex-col gap-1 p-4">
-                      <span className="font-display text-xl tracking-[0.06em] uppercase">
+                      <span className="font-display text-lg tracking-[0.06em] [overflow-wrap:anywhere] uppercase sm:text-xl">
                         {o.name}
                       </span>
                       {o.blurb ? (

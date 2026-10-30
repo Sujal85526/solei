@@ -14,7 +14,7 @@ export const giveawaysCopy = {
   viewAll: "See all giveaways",
   contact: "Ask us",
   from: "From",
-  minPieces: (n: number) => `From ${n} pieces`,
+  minPieces: (n: number) => `Minimum ${n} pieces`,
   customise: "Customise",
   // Guided flow
   steps: {

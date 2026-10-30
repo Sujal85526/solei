@@ -34,17 +34,20 @@ export function GiveawayCard({ giveaway: g }: { giveaway: StoreGiveaway }) {
           </p>
         ) : null}
         <div className="border-primary/20 mt-3 flex min-h-[3.25rem] items-center justify-between gap-3 border-t pt-3">
-          <span className="numeric text-primary text-[0.7rem] tracking-[0.18em] sm:text-xs">
-            {c.from} {formatAED(giveawayFromFils(g))}
+          <span className="numeric text-primary min-w-0 text-[0.7rem] tracking-[0.18em] sm:text-xs">
+            <span className="whitespace-nowrap">
+              {c.from} {formatAED(giveawayFromFils(g))}
+            </span>
             {g.minOrderQty > 1 ? (
               <span className="text-primary/60 block tracking-normal">
                 {c.minPieces(g.minOrderQty)}
               </span>
             ) : null}
           </span>
+          {/* Phones: the photo and the name already open it. */}
           <Link
             href={href}
-            className="eyebrow text-primary text-[0.6rem] underline underline-offset-4"
+            className="eyebrow text-primary hidden min-h-10 shrink-0 items-center text-[0.6rem] underline underline-offset-4 sm:inline-flex"
           >
             {c.customise}
           </Link>
