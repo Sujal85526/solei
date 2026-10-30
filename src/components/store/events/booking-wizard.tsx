@@ -272,7 +272,7 @@ export function BookingWizard({ config }: { config: BookingConfig }) {
         }}
         className="flex flex-col gap-8"
       >
-        <fieldset className="flex flex-col gap-6" aria-labelledby="wizard-step-title">
+        <fieldset className="flex min-w-0 flex-col gap-6" aria-labelledby="wizard-step-title">
           <div>
             <h3
               id="wizard-step-title"

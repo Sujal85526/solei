@@ -330,7 +330,7 @@ export function FlowersStep({ draft, errors, update, config }: StepProps) {
         />
       </div>
       {draft.flowers ? (
-        <fieldset data-field="flowerOptionId">
+        <fieldset data-field="flowerOptionId" className="min-w-0">
           <legend className="eyebrow text-pink/70 mb-4">{s.colour}</legend>
           <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
             {config.flowers.map((f, i) => (
