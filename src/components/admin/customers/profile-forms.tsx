@@ -92,8 +92,7 @@ export function EditContactDialog({ customer }: { customer: Contact }) {
               label="Email"
               htmlFor="email"
               error={errors.email}
-              required
-              hint="Their Solei Passport links to this email."
+              hint="Optional if they have a phone. Without an email, stickers won't show in an online account, and they get no emails or payment links."
             >
               <Input
                 {...fieldAria("email", errors.email)}
