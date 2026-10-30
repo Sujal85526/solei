@@ -116,7 +116,7 @@ export function GiftCardForm({
               aria-checked={forOther === value}
               onClick={() => setForOther(value)}
               className={cn(
-                "border-b pb-1 transition-colors",
+                "min-h-10 border-b pt-3 pb-1 transition-colors",
                 forOther === value
                   ? "border-burgundy text-burgundy"
                   : "text-foreground/60 hover:text-burgundy border-transparent",
