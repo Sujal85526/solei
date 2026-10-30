@@ -17,8 +17,11 @@ const eventDate = (project: string) =>
 const phoneFor = (project: string) =>
   `050 ${project === "mobile" ? "441" : "442"} ${String(Date.now()).slice(-4)}`;
 
+/** Choose a card by clicking its label (the radio itself is visually hidden), as people do. */
 async function pick(page: Page, name: RegExp | string) {
-  await page.getByRole("radio", { name }).check({ force: true });
+  const radio = page.getByRole("radio", { name });
+  await page.locator("label").filter({ has: radio }).click();
+  await expect(radio).toBeChecked();
 }
 
 async function next(page: Page) {

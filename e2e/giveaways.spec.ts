@@ -1,5 +1,5 @@
 import { expect, test, type Browser } from "@playwright/test";
-import { adminClient, signInAsOwner } from "./helpers/auth";
+import { adminClient, settle, signInAsOwner } from "./helpers/auth";
 
 /** A giveaway product of its own for this run: AED 25, at least 20, with stock. */
 async function giveawayProduct(tag: string) {
@@ -138,6 +138,7 @@ test.describe("giveaways customiser", () => {
     await expect(
       page.getByText("Ribbon: Gold · Names on the tag: Sara & Omar").first(),
     ).toBeVisible();
+    await settle(page);
 
     await page.goto("/checkout");
     await page.getByRole("button", { name: /already have an account/i }).click();

@@ -2,7 +2,7 @@ import { createHash, createHmac } from "node:crypto";
 import { expect, test } from "@playwright/test";
 import { adminClient, signInAsOwner } from "./helpers/auth";
 import { localEnv } from "./helpers/env";
-import { createTestProduct } from "./helpers/catalog";
+import { addToBag, createTestProduct } from "./helpers/catalog";
 
 /** Same signing as src/modules/carts/links.ts with the derived secret. */
 const cartLinkSecret = () =>
@@ -32,7 +32,7 @@ test.describe("abandoned carts", () => {
 
     // Sign in at checkout with a perfume in the bag → the bag is saved.
     await page.goto(`/products/${perfume.slug}`);
-    await page.getByRole("button", { name: /add to cart/i }).click();
+    await addToBag(page);
     await page.goto("/checkout");
     await page.getByRole("button", { name: /already have an account/i }).click();
     await page.getByLabel("Email address").fill(email);

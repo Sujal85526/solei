@@ -1,6 +1,6 @@
 import { expect, test, type Page } from "@playwright/test";
 import { adminClient, signInAsOwner } from "./helpers/auth";
-import { createTestProduct } from "./helpers/catalog";
+import { addToBag, createTestProduct } from "./helpers/catalog";
 
 /** A verified storefront account, created directly for the test. */
 async function customerAccount(tag: string) {
@@ -69,7 +69,7 @@ test.describe("gift cards", () => {
     const mira = await customerAccount("mira");
     const perfume = await createTestProduct("giftcard");
     await page.goto(`/products/${perfume.slug}`);
-    await page.getByRole("button", { name: /add to cart/i }).click();
+    await addToBag(page);
     await page.goto("/checkout");
     await signInFromDrawer(page, mira);
     await expect(page.getByText(`Signed in as ${mira.email}`)).toBeVisible();
@@ -83,7 +83,8 @@ test.describe("gift cards", () => {
     if (await fold.isVisible()) await fold.click();
     await page.getByRole("textbox", { name: "Gift card" }).locator("visible=true").fill(card!.code);
     await page.getByRole("button", { name: "Apply" }).locator("visible=true").nth(1).click();
-    await expect(page.getByText("To pay by card").locator("visible=true")).toBeVisible();
+    // Phones show the summary twice (folded at the top and above the button).
+    await expect(page.getByText("To pay by card").locator("visible=true").first()).toBeVisible();
     await page.getByRole("checkbox", { name: /I agree to the/i }).check();
     await page.getByRole("button", { name: "Place order" }).click();
     await expect(page.getByRole("heading", { name: "Thank you." })).toBeVisible({

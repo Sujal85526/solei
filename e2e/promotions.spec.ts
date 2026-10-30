@@ -1,6 +1,6 @@
 import { expect, test } from "@playwright/test";
 import { adminClient, signInAsOwner } from "./helpers/auth";
-import { createTestProduct } from "./helpers/catalog";
+import { addToBag, createTestProduct } from "./helpers/catalog";
 
 /** A verified storefront account (checkout requires one), created directly for the test. */
 async function customerAccount() {
@@ -51,7 +51,7 @@ test.describe("promotions", () => {
     const perfume = await createTestProduct("freeship");
 
     await page.goto(`/products/${perfume.slug}`);
-    await page.getByRole("button", { name: /add to cart/i }).click();
+    await addToBag(page);
     await page.goto("/checkout");
     await page.getByRole("button", { name: /already have an account/i }).click();
     await page.getByLabel("Email address").fill(account.email);

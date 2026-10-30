@@ -1,7 +1,7 @@
 import { createHash, createHmac } from "node:crypto";
 import { expect, test, type Page } from "@playwright/test";
 import { adminClient } from "./helpers/auth";
-import { createTestProduct, type TestProduct } from "./helpers/catalog";
+import { addToBag, createTestProduct, type TestProduct } from "./helpers/catalog";
 import { localEnv } from "./helpers/env";
 
 const mockSecret = () =>
@@ -34,7 +34,7 @@ async function checkoutPerfume(page: Page, qty: number, phone: string) {
   await page.goto(`/products/${perfume.slug}`);
   // Plain products have no stepper on the product page: adding opens the bag drawer, set the
   // quantity there.
-  await page.getByRole("button", { name: /add to cart/i }).click();
+  await addToBag(page);
   const drawer = page.getByRole("dialog", { name: /Your Cart/ });
   for (let i = 1; i < qty; i++)
     await drawer.getByRole("button", { name: "Increase quantity" }).click();
@@ -62,7 +62,8 @@ async function checkoutPerfume(page: Page, qty: number, phone: string) {
 test.describe("checkout & payments", () => {
   test.describe.configure({ mode: "serial" });
   test.beforeAll(async ({}, info) => {
-    perfume = await createTestProduct(`checkout-${info.project.name}`);
+    // With a destination, so the paid order shows the passport stamp.
+    perfume = await createTestProduct(`checkout-${info.project.name}`, { destination: true });
   });
 
   test("paying via the hosted page confirms the order and deducts stock once", async ({ page }) => {
@@ -83,7 +84,10 @@ test.describe("checkout & payments", () => {
     await expect(page.getByText("Stamp earned")).toBeVisible();
     expect(await stockOf(perfume.variantId)).toBe(before - 2);
 
-    // Cart cleared after payment.
+    // Cart cleared after payment (once the confirmation page has hydrated).
+    await expect
+      .poll(() => page.evaluate(() => localStorage.getItem("solei.cart.v1") ?? ""))
+      .not.toContain(perfume.variantId);
     await page.goto("/shop");
     await page.getByRole("button", { name: /Cart$/ }).click();
     await expect(page.getByText("Your cart is empty")).toBeVisible();

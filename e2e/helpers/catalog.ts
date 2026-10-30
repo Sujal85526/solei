@@ -1,4 +1,5 @@
-import { adminClient } from "./auth";
+import { expect, type Page } from "@playwright/test";
+import { adminClient, settle } from "./auth";
 
 export type TestProduct = {
   productId: string;
@@ -40,15 +41,17 @@ export async function createTestProduct(
 
   let destination: TestProduct["destination"] = null;
   if (opts.destination) {
-    // Inactive, so it doesn't appear on the storefront for others; stamps still carry it.
-    const name = `E2E Dest ${stamp}`;
+    // One of the shop's own destinations: the storefront only shows active ones, and test
+    // destinations would show up in the shop's filters for everyone else.
     const { data, error } = await admin
       .from("destinations")
-      .insert({ slug: `e2e-${stamp}`, name, active: false, sort: 999 })
-      .select("id")
+      .select("id, name")
+      .eq("active", true)
+      .order("sort")
+      .limit(1)
       .single();
     if (error) throw error;
-    destination = { id: data.id, name };
+    destination = data;
   }
 
   const name = opts.name ?? `E2E Product ${stamp}`;
@@ -90,4 +93,19 @@ export async function createTestProduct(
     if (e3) throw e3;
   }
   return { productId: product.id, variantId: variant.id, sku, slug, name, priceFils, destination };
+}
+
+/**
+ * "Add to cart" on a product page, then wait until the bag drawer shows the line, so the next
+ * navigation doesn't race the page finishing hydration (WebKit can reload it under `next dev`).
+ */
+export async function addToBag(page: Page) {
+  await page.getByRole("button", { name: /add to cart/i }).click();
+  await expect(
+    page
+      .getByRole("dialog", { name: /Your Cart/ })
+      .getByTestId("drawer-line")
+      .first(),
+  ).toBeVisible();
+  await settle(page);
 }

@@ -1,5 +1,5 @@
 import { expect, test } from "@playwright/test";
-import { adminClient } from "./helpers/auth";
+import { adminClient, settle } from "./helpers/auth";
 import { createTestProduct } from "./helpers/catalog";
 
 /** An active product the shop lists in a category (from whatever catalogue the database has). */
@@ -11,6 +11,8 @@ async function listedProduct(category: string) {
     .eq("categories.slug", category)
     .eq("product_variants.active", true)
     .not("name", "like", "E2E%")
+    .not("name", "like", "QA%")
+    .order("name")
     .limit(1)
     .single();
   return data!.name;
@@ -44,12 +46,17 @@ test.describe("storefront — browse and cart", () => {
     if (await drawerToggle.isVisible()) await drawerToggle.click();
     await page.getByRole("link", { name: "Low to high" }).click();
     await expect(page).toHaveURL(/sort=price-asc/);
+    // On phones choosing an option closes the drawer; "Clear filters" sits inside it.
+    const phone = await drawerToggle.isVisible();
+    if (phone) await drawerToggle.click();
     await expect(page.getByRole("link", { name: "Clear filters" })).toBeVisible();
+    if (phone) await page.keyboard.press("Escape");
     await page
       .getByRole("link", { name: new RegExp(perfumeName) })
       .first()
       .click();
     await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
+    await settle(page);
 
     // Product page (the suite's own AED 280 perfume with a destination).
     await page.goto(`/products/${perfume.slug}`);

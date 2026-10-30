@@ -5,6 +5,12 @@ import { totp } from "./totp";
 
 export const DEV_PASSWORD = "Solei-dev-2026";
 
+/**
+ * Signing in ends on the dashboard, which reads a lot: against a hosted test database it can take
+ * several seconds under parallel load, more than the 10 s default for one expectation.
+ */
+const SIGN_IN_TIMEOUT = 30_000;
+
 export function adminClient() {
   const env = localEnv();
   return createClient(
@@ -61,19 +67,32 @@ export async function signInAsOwner(page: Page, owner?: TotpUser) {
   // The TOTP step only shows while the owner role requires two-factor (Staff → Roles).
   const verify = page.getByRole("heading", { name: "Verify it's you" });
   const hello = page.getByRole("heading", { level: 1, name: /^Hello/ });
-  await expect(verify.or(hello)).toBeVisible();
+  await expect(verify.or(hello)).toBeVisible({ timeout: SIGN_IN_TIMEOUT });
   if (await verify.isVisible()) {
     await page.getByLabel("6-digit code").fill(totp(who.totpSecret));
     await page.getByRole("button", { name: "Verify" }).click();
   }
-  await expect(hello).toBeVisible();
+  await expect(hello).toBeVisible({ timeout: SIGN_IN_TIMEOUT });
+  await settle(page);
+}
+
+/**
+ * Wait until the page's own requests are done. In WebKit a `page.goto` that aborts one of Next's
+ * in-flight fetches (RSC payload, server action) makes Next fall back to a full reload of the
+ * current URL, which then interrupts the test's navigation.
+ */
+export async function settle(page: Page) {
+  await page.waitForLoadState("networkidle").catch(() => {});
 }
 
 /** Sign in as a throwaway sales-staff user (no MFA for that role). */
 export async function signInAsSales(page: Page) {
   const { email } = await createStaffUser("sales_staff", `s${process.pid}`);
   await signIn(page, email);
-  await expect(page.getByRole("heading", { level: 1, name: /^Hello/ })).toBeVisible();
+  await expect(page.getByRole("heading", { level: 1, name: /^Hello/ })).toBeVisible({
+    timeout: SIGN_IN_TIMEOUT,
+  });
+  await settle(page);
 }
 
 /**
@@ -82,13 +101,21 @@ export async function signInAsSales(page: Page) {
  */
 export const MFA_ROLE = "e2e_mfa";
 export async function ensureMfaRole() {
-  const { error } = await adminClient()
+  const admin = adminClient();
+  const { data: role, error } = await admin
     .from("roles")
-    .upsert(
-      { key: MFA_ROLE, name: "E2E two-factor", requires_mfa: true },
-      { onConflict: "key", ignoreDuplicates: true },
-    );
+    .upsert({ key: MFA_ROLE, name: "E2E two-factor", requires_mfa: true }, { onConflict: "key" })
+    .select("id")
+    .single();
   if (error) throw error;
+  // Enough to land on the dashboard after signing in.
+  const { error: e2 } = await admin
+    .from("role_permissions")
+    .upsert(
+      { role_id: role.id, permission_key: "dashboard.view" },
+      { onConflict: "role_id,permission_key", ignoreDuplicates: true },
+    );
+  if (e2) throw e2;
 }
 
 /** Create a throwaway staff user directly (for tests that mutate state). */
