@@ -36,7 +36,7 @@ returns uuid language sql as $$
     'client_uuid', p_uuid, 'emirate', 'abu_dhabi',
     'contact', jsonb_build_object('name', 'Mira', 'phone', '+971509998877', 'email', 'mira@solei.test'),
     'address', jsonb_build_object('line1', 'Street 1'),
-    'lines', jsonb_build_array(jsonb_build_object('variant_id', (select id from public.product_variants where sku = 'SOL-P-CAN-50'), 'qty', 1, 'unit_price_fils', 28000)),
+    'lines', jsonb_build_array(jsonb_build_object('variant_id', (select id from public.product_variants where sku = 'TST-P-CAN-50'), 'qty', 1, 'unit_price_fils', 28000)),
     'subtotal_fils', 28000, 'discount_fils', 0, 'delivery_fee_fils', 0,
     'vat_fils', 0, 'total_fils', 28000, 'vat_rate_bp', 0, 'prices_include_vat', true,
     'gift_card_code', p_gift, 'gift_card_fils', p_gift_fils));
@@ -98,7 +98,7 @@ create function pg_temp.till_sale(p_event uuid, p_code text)
 returns uuid language sql as $$
   select order_id from public.pos_complete_sale(jsonb_build_object(
     'client_uuid', gen_random_uuid(), 'event_id', p_event,
-    'lines', jsonb_build_array(jsonb_build_object('variant_id', (select id from public.product_variants where sku = 'SOL-P-CAN-50'), 'qty', 1)),
+    'lines', jsonb_build_array(jsonb_build_object('variant_id', (select id from public.product_variants where sku = 'TST-P-CAN-50'), 'qty', 1)),
     'payments', jsonb_build_array(
       jsonb_build_object('method', 'gift_card', 'amount_fils', 20000, 'reference', p_code),
       jsonb_build_object('method', 'cash', 'amount_fils', 8000))));

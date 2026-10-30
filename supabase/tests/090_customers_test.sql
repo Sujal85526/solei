@@ -4,9 +4,15 @@ set transaction isolation level repeatable read;
 \ir helpers/setup.psql
 select plan(17);
 
+-- Phones nobody has yet (the test DB is shared, so fixed numbers can already belong to someone).
+select p as phone1 from (select format('+97150%s', lpad((floor(random() * 1e7))::int::text, 7, '0')) p
+  from generate_series(1, 50)) x where not exists (select 1 from public.customers c where c.phone = x.p) limit 1 \gset
+select p as phone2 from (select format('+97155%s', lpad((floor(random() * 1e7))::int::text, 7, '0')) p
+  from generate_series(1, 50)) x where not exists (select 1 from public.customers c where c.phone = x.p) limit 1 \gset
+
 -- A customer with orders across channels, partial payments and refunds.
-select public.upsert_customer('+971501112233', 'noor@example.com', 'Noor', 'pos') as cust \gset
-select public.upsert_customer('+971504445566', null, 'Sara', 'website') as other \gset
+select public.upsert_customer(:'phone1', 'noor@example.com', 'Noor', 'pos') as cust \gset
+select public.upsert_customer(:'phone2', null, 'Sara', 'website') as other \gset
 
 -- A: POS, fully paid 300
 insert into public.orders (customer_id, channel, total_fils, status, placed_at)
@@ -14,7 +20,7 @@ values (:'cust', 'pos', 30000, 'completed', '2026-09-01 10:00+04') returning id 
 insert into public.payments (order_id, amount_fils, method, status) values (:'o_a', 30000, 'cash', 'succeeded');
 with line as (
   insert into public.order_lines (order_id, variant_id, product_name, sku, qty, list_price_fils, unit_price_fils, line_total_fils)
-  select :'o_a', id, 'Cannes', sku, 1, 30000, 30000, 30000 from public.product_variants where sku = 'SOL-P-CAN-50'
+  select :'o_a', id, 'Cannes', sku, 1, 30000, 30000, 30000 from public.product_variants where sku = 'TST-P-CAN-50'
   returning id
 )
 insert into public.order_line_costs (order_line_id, unit_cost_fils) select id, 9000 from line;
@@ -62,7 +68,7 @@ select is((select count(*)::int from public.customer_summary), :all_customers, '
 select is((select total_spent_fils from public.customer_summary where id = :'cust'), 41000, 'sales staff sees totals');
 update public.customers set notes = 'Prefers Capri' where id = :'cust';
 select is((select notes from public.customers where id = :'cust'), 'Prefers Capri', 'sales staff can edit notes (customers.manage)');
-select throws_ok($$ update public.customers set phone = '+971504445566' where name = 'Noor' $$, '23505', null,
+select throws_ok(format($$ update public.customers set phone = %L where id = %L $$, :'phone2', :'cust'), '23505', null,
   'phone stays unique');
 select is((select count(*)::int from public.order_line_costs where order_line_id in
   (select id from public.order_lines where order_id = :'o_a')), 0, 'sales staff cannot read cost snapshots');

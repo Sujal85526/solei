@@ -10,7 +10,7 @@ select id, 'reports.view' from public.roles where key = 'report_viewer';
 select tests.create_staff('owner@test110.solei', 'owner') as owner_id \gset
 select tests.create_staff('viewer@test110.solei', 'report_viewer') as viewer_id \gset
 select tests.create_staff('sales@test110.solei', 'sales_staff') as sales_id \gset
-select id as variant from public.product_variants where sku = 'SOL-P-CAP-50' \gset
+select id as variant from public.product_variants where sku = 'TST-P-CAP-50' \gset
 select id as main from public.stock_locations where is_default \gset
 
 insert into public.events (name, type, status, start_date, end_date, participation_fee_fils, fee_payment_status)
@@ -33,12 +33,12 @@ values ('pos', :'expo', '2031-05-11', 'cancelled', 28000, 28000, 1333, '2031-05-
 returning id as o3 \gset
 
 insert into public.order_lines (order_id, variant_id, product_name, variant_label, sku, qty, list_price_fils, unit_price_fils, line_total_fils)
-values (:'o1', :'variant', 'Capri Perfume', '50 ml', 'SOL-P-CAP-50', 2, 28000, 28000, 56000)
+values (:'o1', :'variant', 'Capri Perfume', '50 ml', 'TST-P-CAP-50', 2, 28000, 28000, 56000)
 returning id as l1 \gset
 insert into public.order_lines (order_id, variant_id, product_name, variant_label, sku, qty, list_price_fils, unit_price_fils, line_total_fils)
-values (:'o2', :'variant', 'Capri Perfume', '50 ml', 'SOL-P-CAP-50', 1, 28000, 28000, 28000);
+values (:'o2', :'variant', 'Capri Perfume', '50 ml', 'TST-P-CAP-50', 1, 28000, 28000, 28000);
 insert into public.order_lines (order_id, variant_id, product_name, variant_label, sku, qty, list_price_fils, unit_price_fils, line_total_fils)
-values (:'o3', :'variant', 'Capri Perfume', '50 ml', 'SOL-P-CAP-50', 1, 28000, 28000, 28000);
+values (:'o3', :'variant', 'Capri Perfume', '50 ml', 'TST-P-CAP-50', 1, 28000, 28000, 28000);
 insert into public.order_line_costs (order_line_id, unit_cost_fils) values (:'l1', 9000);
 
 insert into public.payments (order_id, amount_fils, method, status) values

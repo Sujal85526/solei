@@ -32,15 +32,15 @@ select tests.create_staff('sales@loyalty.test', 'sales_staff') as sales \gset
 select tests.login_as(:'owner');
 
 -- Cumulative 1 + 1 + 2 + 3 + 5
-select tests.buy(:'a', 'SOL-P-CAP-50', 1) as a1 \gset
+select tests.buy(:'a', 'TST-P-CAP-50', 1) as a1 \gset
 select is(tests.balance(:'a'), 1, 'first purchase: 1 stamp');
 select is((select count(*)::int from public.passports where customer_id = :'a'), 0, 'no passport after 1 purchase');
-select tests.buy(:'a', 'SOL-S-SOH-100', 1) as a2 \gset
+select tests.buy(:'a', 'TST-S-SOH-100', 1) as a2 \gset
 select is((select how::text from public.passports where customer_id = :'a'), 'auto', 'passport auto-issued after 2 purchases');
-select tests.buy(:'a', 'SOL-P-CAP-50', 2) as a3 \gset
-select tests.buy(:'a', 'SOL-P-CAP-50', 3) as a4 \gset
+select tests.buy(:'a', 'TST-P-CAP-50', 2) as a3 \gset
+select tests.buy(:'a', 'TST-P-CAP-50', 3) as a4 \gset
 select is(tests.balance(:'a'), 7, '1 + 1 + 2 + 3 = 7');
-select tests.buy(:'a', 'SOL-S-SOH-100', 5) as a5 \gset
+select tests.buy(:'a', 'TST-S-SOH-100', 5) as a5 \gset
 select is(tests.balance(:'a'), 0, '+5 = 12 → card exchanged for a reward');
 select is(tests.rewards(:'a'), 'available', 'one reward unlocked');
 select is((select d.slug from public.loyalty_stamps s join public.destinations d on d.id = s.destination_id
@@ -55,7 +55,7 @@ select is(tests.balance(:'a'), 0, 'award is idempotent per line');
 
 -- Threshold crossing in one order: 11 + 3 → 1 reward, 2 carried
 select public.loyalty_adjust_stamps(:'b', 11, 'Paper passport from the Yas pop-up');
-select tests.buy(:'b', 'SOL-P-CAP-50', 3) as b1 \gset
+select tests.buy(:'b', 'TST-P-CAP-50', 3) as b1 \gset
 select is(tests.balance(:'b'), 2, '11 + 3 → 2 carried');
 select is(tests.rewards(:'b'), 'available', '11 + 3 → 1 reward');
 
@@ -73,7 +73,7 @@ select throws_ok(format('select public.loyalty_adjust_stamps(%L, 1, %L)', :'b', 
 
 -- Redeem: zero-priced reward line, reward_redemption movement, no stamps for the reward.
 select id as reward from public.loyalty_rewards where customer_id = :'a' and status = 'available' \gset
-select order_id as ro from public.loyalty_redeem_reward(:'reward', (select id from public.product_variants where sku = 'SOL-S-SOH-100')) \gset
+select order_id as ro from public.loyalty_redeem_reward(:'reward', (select id from public.product_variants where sku = 'TST-S-SOH-100')) \gset
 select is((select total_fils || '/' || (paid_at is not null) from public.orders where id = :'ro'), '0/true', 'reward order is free and settled');
 select is((select string_agg(m.type::text || m.qty, ',') from public.stock_movements m
              join public.order_lines l on l.id = m.order_line_id where l.order_id = :'ro'), 'reward_redemption-1', 'reward leaves stock');
@@ -88,7 +88,7 @@ select is(tests.balance(:'a'), -1, 'full refund reverses the order stamp (card o
 select public.loyalty_save_rules(jsonb_build_object('enabled', true, 'stamps_per_item', 2, 'stamps_for_reward', 10,
   'reward_type', 'fixed_amount', 'reward_config', jsonb_build_object('amount_fils', 5000), 'reward_label', 'AED 50 off',
   'issue_passport_after_purchases', 2, 'reward_items_earn_stamps', false));
-select tests.buy(:'a', 'SOL-P-CAP-50', 1) as a6 \gset
+select tests.buy(:'a', 'TST-P-CAP-50', 1) as a6 \gset
 select is((select stamps from public.loyalty_stamps where order_id = :'a6' and kind = 'earned'), 2, 'new rule: 2 stamps per item');
 select is((select count(distinct rule_version_id)::int from public.loyalty_stamps where customer_id = :'a' and kind = 'earned'), 2,
   'earlier stamps keep their rule version');

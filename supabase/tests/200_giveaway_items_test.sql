@@ -7,9 +7,9 @@ select plan(23);
 insert into public.products (slug, name, category_id, active, min_order_qty, is_giveaway)
 select 'test-wedding-giveaway', 'Test Wedding Giveaway', id, true, 20, true from public.categories where slug = 'perfume'
 returning id as gw \gset
-select id as cannes from public.product_variants where sku = 'SOL-P-CAN-50' \gset
-select id as soho from public.product_variants where sku = 'SOL-S-SOH-100' \gset
-select id as capri from public.product_variants where sku = 'SOL-P-CAP-50' \gset
+select id as cannes from public.product_variants where sku = 'TST-P-CAN-50' \gset
+select id as soho from public.product_variants where sku = 'TST-S-SOH-100' \gset
+select id as capri from public.product_variants where sku = 'TST-P-CAP-50' \gset
 insert into public.giveaway_items (product_id, variant_id, price_fils, sort) values (:'gw', :'cannes', 15000, 1);
 insert into public.giveaway_items (product_id, variant_id, sort) values (:'gw', :'soho', 2);
 insert into public.product_option_groups (product_id, name, kind, required, sort)

@@ -5,7 +5,7 @@ select plan(28);
 select tests.create_staff('owner@test60.solei', 'owner') as owner_id \gset
 select tests.create_staff('manager@test60.solei', 'manager') as manager_id \gset
 select tests.create_staff('sales@test60.solei', 'sales_staff') as sales_id \gset
-select id as variant from public.product_variants where sku = 'SOL-P-CAP-50' \gset
+select id as variant from public.product_variants where sku = 'TST-P-CAP-50' \gset
 select id as main from public.stock_locations where is_default \gset
 select public.on_hand(:'variant', :'main') as main_before \gset
 

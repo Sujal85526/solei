@@ -3,8 +3,8 @@ begin;
 select plan(16);
 
 select tests.create_user('cart.shopper@solei.test') as shopper \gset
-select id as perfume from public.product_variants where sku = 'SOL-P-CAN-50' \gset
-select id as spray from public.product_variants where sku = 'SOL-S-SOH-100' \gset
+select id as perfume from public.product_variants where sku = 'TST-P-CAN-50' \gset
+select id as spray from public.product_variants where sku = 'TST-S-SOH-100' \gset
 update public.settings set cart_reminders_enabled = true, cart_reminder_first_hours = 4,
   cart_reminder_second_hours = 48 where id = 1;
 

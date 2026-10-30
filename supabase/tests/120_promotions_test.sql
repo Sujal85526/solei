@@ -2,8 +2,8 @@ begin;
 \ir helpers/setup.psql
 select plan(17);
 
-select v.id as perfume from public.product_variants v where v.sku = 'SOL-P-CAN-50' \gset
-select v.id as spray from public.product_variants v where v.sku = 'SOL-S-SOH-100' \gset
+select v.id as perfume from public.product_variants v where v.sku = 'TST-P-CAN-50' \gset
+select v.id as spray from public.product_variants v where v.sku = 'TST-S-SOH-100' \gset
 select id as spray_cat from public.categories where slug = 'all_over_spray' \gset
 
 insert into public.coupons (code, kind, percent_bp, category_ids)
@@ -38,7 +38,7 @@ returns uuid language sql as $$
     'client_uuid', p_uuid, 'emirate', 'abu_dhabi',
     'contact', jsonb_build_object('name', 'Promo Tester', 'phone', '+971501112233', 'email', 'promo@solei.test'),
     'address', jsonb_build_object('line1', 'Street 1'),
-    'lines', jsonb_build_array(jsonb_build_object('variant_id', (select id from public.product_variants where sku = 'SOL-P-CAN-50'), 'qty', 2, 'unit_price_fils', 28000)),
+    'lines', jsonb_build_array(jsonb_build_object('variant_id', (select id from public.product_variants where sku = 'TST-P-CAN-50'), 'qty', 2, 'unit_price_fils', 28000)),
     'subtotal_fils', 56000, 'coupon_code', p_code, 'discount_fils', p_discount,
     'delivery_fee_fils', p_fee, 'delivery_discount_fils', p_delivery_discount,
     'vat_fils', 0, 'total_fils', p_total, 'vat_rate_bp', 0, 'prices_include_vat', true));
@@ -90,7 +90,7 @@ select lives_ok($$ select * from public.create_web_order(jsonb_build_object(
     'client_uuid', gen_random_uuid(), 'emirate', 'abu_dhabi',
     'contact', jsonb_build_object('name', 'Main Shopper', 'phone', '+971501110000', 'email', 'main@solei.test'),
     'address', jsonb_build_object('line1', 'Street 1'),
-    'lines', jsonb_build_array(jsonb_build_object('variant_id', (select id from public.product_variants where sku = 'SOL-P-CAN-50'), 'qty', 1, 'unit_price_fils', 28000)),
+    'lines', jsonb_build_array(jsonb_build_object('variant_id', (select id from public.product_variants where sku = 'TST-P-CAN-50'), 'qty', 1, 'unit_price_fils', 28000)),
     'subtotal_fils', 28000, 'coupon_code', 'TSTMAINONCE', 'discount_fils', 2800,
     'delivery_fee_fils', 3000, 'vat_fils', 0, 'total_fils', 28200, 'vat_rate_bp', 0, 'prices_include_vat', true)) $$,
   'an order shaped like main''s checkout still goes through');

@@ -11,14 +11,14 @@ insert into public.customers (name, email, emirate, marketing_consent, marketing
 values ('Seg WhatsApp', 'seg.wa@solei.test', 'abu_dhabi', true, '{whatsapp}') returning id as wa \gset
 
 select id as capri_dest from public.destinations where slug = 'capri' \gset
-select id as capri from public.product_variants where sku = 'SOL-P-CAP-50' \gset
+select id as capri from public.product_variants where sku = 'TST-P-CAP-50' \gset
 
 -- Big spender: AED 560 of Capri, paid, 10 days ago.
 insert into public.orders (customer_id, channel, status, total_fils, subtotal_fils, fulfilment, placed_at, contact_email)
 values (:'big', 'pos', 'completed', 56000, 56000, 'handed_over', now() - interval '10 days', 'seg.big@solei.test')
 returning id as o1 \gset
 insert into public.order_lines (order_id, variant_id, product_name, sku, destination_id, qty, list_price_fils, unit_price_fils, line_total_fils)
-values (:'o1', :'capri', 'Capri Perfume', 'SOL-P-CAP-50', :'capri_dest', 2, 28000, 28000, 56000);
+values (:'o1', :'capri', 'Capri Perfume', 'TST-P-CAP-50', :'capri_dest', 2, 28000, 28000, 56000);
 insert into public.payments (order_id, amount_fils, method, status) values (:'o1', 56000, 'cash', 'succeeded');
 -- Lapsed buyer: AED 190, 200 days ago.
 insert into public.orders (customer_id, channel, status, total_fils, subtotal_fils, fulfilment, placed_at, contact_email)

@@ -2,10 +2,10 @@ begin;
 \ir helpers/setup.psql
 select plan(75);
 
-select id as p1 from public.product_variants where sku = 'SOL-P-CAN-50' \gset
-select id as p2 from public.product_variants where sku = 'SOL-P-CAP-50' \gset
-select id as s1 from public.product_variants where sku = 'SOL-S-SOH-100' \gset
-select id as s2 from public.product_variants where sku = 'SOL-S-MAY-100' \gset
+select id as p1 from public.product_variants where sku = 'TST-P-CAN-50' \gset
+select id as p2 from public.product_variants where sku = 'TST-P-CAP-50' \gset
+select id as s1 from public.product_variants where sku = 'TST-S-SOH-100' \gset
+select id as s2 from public.product_variants where sku = 'TST-S-MAY-100' \gset
 select id as perfume_cat from public.categories where slug = 'perfume' \gset
 select id as spray_cat from public.categories where slug = 'all_over_spray' \gset
 

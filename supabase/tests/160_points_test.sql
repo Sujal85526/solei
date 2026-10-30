@@ -4,7 +4,7 @@ select plan(18);
 
 insert into public.customers (name, email, phone) values ('Points Tester', 'points.tester@solei.test', '+971507776655')
 returning id as cust \gset
-select id as capri from public.product_variants where sku = 'SOL-P-CAP-50' \gset
+select id as capri from public.product_variants where sku = 'TST-P-CAP-50' \gset
 
 -- A paid POS-style order: AED 280 cash.
 create function pg_temp.paid_order(p_customer uuid, p_total int, p_days_ago int default 0)
@@ -15,7 +15,7 @@ begin
   values (p_customer, 'pos', 'completed', p_total, p_total, 'handed_over', now() - make_interval(days => p_days_ago))
   returning id into v;
   insert into public.order_lines (order_id, variant_id, product_name, sku, qty, list_price_fils, unit_price_fils, line_total_fils)
-  values (v, (select id from public.product_variants where sku = 'SOL-P-CAP-50'), 'Capri Perfume', 'SOL-P-CAP-50', 1, p_total, p_total, p_total);
+  values (v, (select id from public.product_variants where sku = 'TST-P-CAP-50'), 'Capri Perfume', 'TST-P-CAP-50', 1, p_total, p_total, p_total);
   insert into public.payments (order_id, amount_fils, method, status) values (v, p_total, 'cash', 'succeeded');
   perform public.settle_if_paid(v);
   return v;

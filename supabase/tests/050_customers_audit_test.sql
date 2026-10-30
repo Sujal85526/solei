@@ -23,7 +23,7 @@ select ok((select marketing_consent and marketing_consent_at is not null and 'wh
 
 select tests.create_staff('owner@test.solei', 'owner') as owner_id \gset
 select tests.login_as(:'owner_id');
-update public.product_variants set price_fils = 29000 where sku = 'SOL-P-CAN-50';
+update public.product_variants set price_fils = 29000 where sku = 'TST-P-CAN-50';
 select tests.logout();
 select is((select actor_id from public.audit_log where entity = 'product_variants' and action = 'product_variants.update' order by id desc limit 1),
   :'owner_id'::uuid, 'price change is audited with the actor');

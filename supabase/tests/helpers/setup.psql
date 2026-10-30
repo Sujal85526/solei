@@ -62,3 +62,45 @@ end;
 $$;
 
 grant execute on all functions in schema tests to anon, authenticated;
+
+-- ---------------------------------------------------------------------------------------------
+-- Known starting point, so the files pass on a freshly seeded DB and on a copy of live data alike.
+-- Everything below runs inside each file's transaction and is rolled back with it.
+
+-- Owner and manager need MFA (T15), whatever the DB's own setting is (live may have it off).
+update public.roles set requires_mfa = true where key in ('owner', 'manager') and not requires_mfa;
+
+-- The test catalogue: the seed's 8 bottles under TST-* SKUs, at seed prices and costs, 50 each in
+-- the default location. Tests use these instead of the real products, whose prices can change.
+insert into public.categories (slug, name, sort) values ('perfume', 'Perfumes', 0), ('all_over_spray', 'All-over sprays', 1)
+on conflict (slug) do nothing;
+insert into public.destinations (slug, name, country, sort)
+select d.slug, initcap(d.slug), 'Test', 99
+from unnest(array['cannes', 'marbella', 'verona', 'capri', 'santorini', 'soho', 'monaco', 'mayfair']) d (slug)
+on conflict (slug) do nothing;
+insert into public.stock_locations (name, is_default)
+select 'Main stock', true where not exists (select 1 from public.stock_locations where is_default);
+
+with t (dest, cat, kind, sku, label, ml, price, cost) as (values
+  ('cannes', 'perfume', 'Perfume', 'TST-P-CAN-50', '50 ml', 50, 28000, 9000),
+  ('marbella', 'perfume', 'Perfume', 'TST-P-MAR-50', '50 ml', 50, 28000, 9000),
+  ('verona', 'perfume', 'Perfume', 'TST-P-VER-50', '50 ml', 50, 28000, 9000),
+  ('capri', 'perfume', 'Perfume', 'TST-P-CAP-50', '50 ml', 50, 28000, 9000),
+  ('santorini', 'perfume', 'Perfume', 'TST-P-SAN-50', '50 ml', 50, 28000, 9000),
+  ('soho', 'all_over_spray', 'All-over spray', 'TST-S-SOH-100', '100 ml', 100, 19000, 5500),
+  ('monaco', 'all_over_spray', 'All-over spray', 'TST-S-MON-100', '100 ml', 100, 19000, 5500),
+  ('mayfair', 'all_over_spray', 'All-over spray', 'TST-S-MAY-100', '100 ml', 100, 19000, 5500)
+), p as (
+  insert into public.products (category_id, destination_id, name, slug, sort)
+  select c.id, d.id, initcap(t.dest) || ' ' || t.kind, lower(t.sku), 900
+  from t join public.categories c on c.slug = t.cat join public.destinations d on d.slug = t.dest
+  returning id, slug
+), v as (
+  insert into public.product_variants (product_id, label, size_ml, sku, price_fils, low_stock_threshold)
+  select p.id, t.label, t.ml, t.sku, t.price, 5 from t join p on p.slug = lower(t.sku)
+  returning id, sku
+), c as (
+  insert into public.variant_costs (variant_id, cost_fils) select v.id, t.cost from v join t using (sku)
+)
+insert into public.stock_movements (variant_id, location_id, qty, type, reason)
+select v.id, l.id, 50, 'receive', 'Test opening stock' from v cross join public.stock_locations l where l.is_default;
