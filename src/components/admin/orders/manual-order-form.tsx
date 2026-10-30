@@ -79,7 +79,7 @@ export function ManualOrderForm({
 }) {
   const router = useRouter();
   const byId = useMemo(() => new Map(variants.map((v) => [v.id, v])), [variants]);
-  const [channel, setChannel] = useState<"whatsapp" | "direct">("whatsapp");
+  const [channel, setChannel] = useState<"whatsapp" | "instagram" | "direct">("whatsapp");
   const [customer, setCustomer] = useState<CustomerOption | null>(null);
   const [lines, setLines] = useState<Line[]>([]);
   const [picker, setPicker] = useState("");
@@ -195,6 +195,7 @@ export function ManualOrderForm({
               onChange={setChannel}
               options={[
                 { value: "whatsapp", label: "WhatsApp" },
+                { value: "instagram", label: "Instagram" },
                 { value: "direct", label: "Direct" },
               ]}
             />

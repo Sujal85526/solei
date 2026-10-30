@@ -12,6 +12,11 @@ const base = {
 };
 
 describe("manual order schema", () => {
+  it("takes an Instagram order, but not an order from a channel staff can't enter", () => {
+    expect(manualOrderSchema.safeParse({ ...base, channel: "instagram" }).success).toBe(true);
+    expect(manualOrderSchema.safeParse({ ...base, channel: "pos" }).success).toBe(false);
+  });
+
   it("accepts a simple order", () => {
     expect(manualOrderSchema.safeParse(base).success).toBe(true);
   });
