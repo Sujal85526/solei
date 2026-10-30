@@ -44,7 +44,7 @@ const timeFmt = new Intl.DateTimeFormat("en-GB", {
 });
 const when = (iso: string | null) => (iso ? timeFmt.format(new Date(iso)) : "—");
 
-const GUEST_LINK_CHANNELS = new Set(["website", "whatsapp", "direct", "payment_link"]);
+const GUEST_LINK_CHANNELS = new Set(["website", "whatsapp", "instagram", "direct", "payment_link"]);
 
 export default async function OrderDetailPage({ params }: PageProps<"/admin/orders/[id]">) {
   const staff = await requirePagePermission("orders.view");
