@@ -294,36 +294,50 @@ export function TiersForm({ tiers, canManage }: { tiers: Tier[]; canManage: bool
           key={r.key}
           className="grid grid-cols-2 gap-3 rounded-lg border p-3 sm:grid-cols-[1fr_8rem_6rem_2fr_2.5rem] sm:border-0 sm:p-0"
         >
-          <Input
-            name="name"
-            aria-label="Tier name"
-            defaultValue={r.name}
-            disabled={!canManage}
-            className="col-span-2 h-10 sm:col-span-1"
-          />
-          <Input
-            name="minSpend"
-            aria-label="From (AED)"
-            inputMode="decimal"
-            defaultValue={r.minSpend}
-            disabled={!canManage}
-            className="numeric h-10"
-          />
-          <Input
-            name="multiplier"
-            aria-label="Points multiplier"
-            inputMode="decimal"
-            defaultValue={r.multiplier}
-            disabled={!canManage}
-            className="numeric h-10"
-          />
-          <Input
-            name="perks"
-            aria-label="Perks"
-            defaultValue={r.perks}
-            disabled={!canManage}
-            className="col-span-2 h-10 sm:col-span-1"
-          />
+          <label className="col-span-2 flex min-w-0 flex-col gap-1 sm:col-span-1">
+            <span className="text-muted-foreground text-xs sm:hidden">Tier</span>
+            <Input
+              name="name"
+              aria-label="Tier name"
+              defaultValue={r.name}
+              disabled={!canManage}
+              className="h-10"
+            />
+          </label>
+          <label className="flex min-w-0 flex-col gap-1">
+            <span className="text-muted-foreground text-xs sm:hidden">From (AED, 12 months)</span>
+            <Input
+              name="minSpend"
+              aria-label="From (AED)"
+              inputMode="decimal"
+              defaultValue={r.minSpend}
+              disabled={!canManage}
+              className="numeric h-10"
+            />
+          </label>
+          <label className="flex min-w-0 flex-col gap-1">
+            <span className="text-muted-foreground text-xs sm:hidden">Points ×</span>
+            <Input
+              name="multiplier"
+              aria-label="Points multiplier"
+              inputMode="decimal"
+              defaultValue={r.multiplier}
+              disabled={!canManage}
+              className="numeric h-10"
+            />
+          </label>
+          <label className="col-span-2 flex min-w-0 flex-col gap-1 sm:col-span-1">
+            <span className="text-muted-foreground text-xs sm:hidden">
+              Perks (shown to customers)
+            </span>
+            <Input
+              name="perks"
+              aria-label="Perks"
+              defaultValue={r.perks}
+              disabled={!canManage}
+              className="h-10"
+            />
+          </label>
           {canManage ? (
             <Button
               type="button"
