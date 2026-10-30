@@ -332,7 +332,7 @@ export function PosScreen({
         >
           <SelectTrigger
             aria-label="Event"
-            className="bg-card min-w-0 flex-1 rounded-md text-base font-medium data-[size=default]:h-12"
+            className="bg-card dark:bg-card dark:hover:bg-card min-w-0 flex-1 rounded-md text-base font-medium data-[size=default]:h-12"
           >
             <SelectValue />
           </SelectTrigger>
