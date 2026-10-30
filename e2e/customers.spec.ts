@@ -136,7 +136,6 @@ test.describe("customers CRM", () => {
     // Phone is prefilled from the search; add a name and save.
     await expect(dialog.getByLabel("Phone")).toHaveValue(phone.local);
     await dialog.getByLabel("Name").fill(name);
-    // Email is required for staff-added customers (it's how they later claim their passport).
     await dialog.getByRole("textbox", { name: /^Email/ }).fill(`e2e-${Date.now()}@example.com`);
     await dialog.getByLabel("Emirate").selectOption({ label: "Dubai" });
     await dialog.getByLabel("Agrees to marketing messages").check();
