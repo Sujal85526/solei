@@ -23,13 +23,6 @@ import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { NativeSelect } from "@/components/ui/native-select";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { formatAED } from "@/lib/money";
 import { cn } from "@/lib/utils";
 import { checkGiftCardAtTillAction } from "@/modules/gift-cards/actions";
@@ -314,36 +307,25 @@ export function PosScreen({
 
   const shown = products.filter((p) => category === "all" || p.category === category);
   const event = events.find((e) => e.id === eventId);
-  const eventItems = events.map((e) => ({
-    value: e.id,
-    label: `${e.today ? "● " : ""}${e.name}${e.closed ? " (closed)" : ""}`,
-  }));
 
   return (
     <div className={cn("flex flex-col gap-4", items ? "pb-60 lg:pb-44" : "pb-40 lg:pb-28")}>
       {/* Top bar: event, sync, today */}
       <div className="flex flex-wrap items-center gap-2">
-        <Select
-          items={eventItems}
+        <NativeSelect
+          aria-label="Event"
           value={eventId}
-          onValueChange={(id) => {
-            if (id) router.push(`/admin/pos?event=${id}`);
-          }}
+          onChange={(e) => router.push(`/admin/pos?event=${e.target.value}`)}
+          className="min-w-0 flex-1 [&_button]:h-12 [&_button]:text-base [&_button]:font-medium"
         >
-          <SelectTrigger
-            aria-label="Event"
-            className="bg-card dark:bg-card dark:hover:bg-card min-w-0 flex-1 rounded-md text-base font-medium data-[size=default]:h-12"
-          >
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent alignItemWithTrigger={false}>
-            {eventItems.map((e) => (
-              <SelectItem key={e.value} value={e.value} className="min-h-11 text-base">
-                {e.label}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
+          {events.map((e) => (
+            <option key={e.id} value={e.id}>
+              {e.today ? "● " : ""}
+              {e.name}
+              {e.closed ? " (closed)" : ""}
+            </option>
+          ))}
+        </NativeSelect>
         <button
           type="button"
           onClick={flush}
