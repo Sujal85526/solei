@@ -16,7 +16,7 @@ import { stampsLine } from "./welcome-text";
 
 const KEY = "customer_welcome";
 /** Customers added by staff — not website sign-ups, newsletter or event-booking contacts. */
-const HAND_ENTERED = ["manual", "whatsapp", "direct"] as const;
+const HAND_ENTERED = ["manual", "whatsapp", "instagram", "direct"] as const;
 /** Emails per click: keeps one request short and well inside the email provider's rate limit. */
 export const WELCOME_BATCH = 20;
 
