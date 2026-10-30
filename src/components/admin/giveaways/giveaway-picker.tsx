@@ -120,7 +120,7 @@ export function GiveawayPicker({
               aria-label="Giveaway"
               value={giveawayId}
               onChange={(e) => reset(e.target.value)}
-              className="[&_select]:h-11"
+              className="[&_button]:h-11"
             >
               {giveaways.map((g) => (
                 <option key={g.id} value={g.id}>

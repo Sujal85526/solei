@@ -77,7 +77,7 @@ export function RotaShiftDialog({
                 id="rotaUser"
                 name="userId"
                 defaultValue={shift?.userId ?? ""}
-                className="[&_select]:h-11"
+                className="[&_button]:h-11"
               >
                 <option value="">Choose…</option>
                 {people.map((p) => (
@@ -121,7 +121,7 @@ export function RotaShiftDialog({
                 id="rotaEvent"
                 name="eventId"
                 defaultValue={shift?.eventId ?? ""}
-                className="[&_select]:h-11"
+                className="[&_button]:h-11"
               >
                 <option value="">No event (shop, office…)</option>
                 {events.map((ev) => (

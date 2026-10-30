@@ -137,7 +137,7 @@ export function EventForm({
             id="type"
             name="type"
             defaultValue={event?.type ?? "exhibition"}
-            className="[&_select]:h-11"
+            className="[&_button]:h-11"
           >
             {eventTypes.map((t) => (
               <option key={t} value={t}>
@@ -151,7 +151,7 @@ export function EventForm({
             id="status"
             name="status"
             defaultValue={event?.status ?? "potential"}
-            className="[&_select]:h-11"
+            className="[&_button]:h-11"
           >
             {eventStatuses.map((s) => (
               <option key={s} value={s}>
@@ -198,7 +198,7 @@ export function EventForm({
             id="emirate"
             name="emirate"
             defaultValue={event?.emirate ?? ""}
-            className="[&_select]:h-11"
+            className="[&_button]:h-11"
           >
             <option value="">—</option>
             {emirates.map((em) => (
@@ -387,7 +387,7 @@ export function EventForm({
             id="feePaymentStatus"
             name="feePaymentStatus"
             defaultValue={event?.fee_payment_status ?? "not_applicable"}
-            className="[&_select]:h-11"
+            className="[&_button]:h-11"
           >
             {feePaymentStatuses.map((f) => (
               <option key={f} value={f}>

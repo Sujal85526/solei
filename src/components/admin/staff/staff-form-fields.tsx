@@ -49,7 +49,7 @@ export function StaffFormFields({
           id="roleId"
           name="roleId"
           defaultValue={defaults?.roleId ?? ""}
-          className="[&_select]:h-11"
+          className="[&_button]:h-11"
         >
           <option value="" disabled>
             Choose a role
@@ -85,7 +85,7 @@ export function StaffFormFields({
           id="employmentStatus"
           name="employmentStatus"
           defaultValue={defaults?.employmentStatus ?? "full_time"}
-          className="[&_select]:h-11"
+          className="[&_button]:h-11"
         >
           {employmentStatuses.map((s) => (
             <option key={s} value={s}>

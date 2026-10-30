@@ -395,7 +395,7 @@ function CloseDialog({
                 id="toLocationId"
                 name="toLocationId"
                 defaultValue={warehouses.find((w) => w.is_default)?.id}
-                className="[&_select]:h-11"
+                className="[&_button]:h-11"
               >
                 {warehouses.map((w) => (
                   <option key={w.id} value={w.id}>

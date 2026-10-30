@@ -77,7 +77,7 @@ export function ProductForm({
             id="categoryId"
             name="categoryId"
             defaultValue={product?.category_id ?? ""}
-            className="[&_select]:h-11"
+            className="[&_button]:h-11"
           >
             <option value="" disabled>
               Choose…
@@ -99,7 +99,7 @@ export function ProductForm({
             id="destinationId"
             name="destinationId"
             defaultValue={product?.destination_id ?? ""}
-            className="[&_select]:h-11"
+            className="[&_button]:h-11"
           >
             <option value="">None</option>
             {destinations.map((d) => (

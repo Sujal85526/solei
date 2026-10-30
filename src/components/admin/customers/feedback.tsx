@@ -110,7 +110,7 @@ export function FeedbackDialog({
             )}
             {!entry && orders.length ? (
               <Field label="About an order" htmlFor="fbOrder">
-                <NativeSelect id="fbOrder" name="orderId" className="[&_select]:h-11">
+                <NativeSelect id="fbOrder" name="orderId" className="[&_button]:h-11">
                   <option value="">No particular order</option>
                   {orders.map((o) => (
                     <option key={o.id} value={o.id}>
@@ -126,7 +126,7 @@ export function FeedbackDialog({
                   id="fbKind"
                   name="kind"
                   defaultValue={entry?.kind ?? "complaint"}
-                  className="[&_select]:h-11"
+                  className="[&_button]:h-11"
                 >
                   {feedbackKinds.map((k) => (
                     <option key={k} value={k}>
@@ -140,7 +140,7 @@ export function FeedbackDialog({
                   id="fbStatus"
                   name="status"
                   defaultValue={entry?.status ?? "open"}
-                  className="[&_select]:h-11"
+                  className="[&_button]:h-11"
                 >
                   {feedbackStatuses.map((s) => (
                     <option key={s} value={s}>
@@ -164,7 +164,7 @@ export function FeedbackDialog({
                 id="fbAssigned"
                 name="assignedTo"
                 defaultValue={entry?.assignedTo ?? ""}
-                className="[&_select]:h-11"
+                className="[&_button]:h-11"
               >
                 <option value="">Nobody yet</option>
                 {staff
@@ -209,7 +209,7 @@ function StatusSelect({ id, status }: { id: string; status: FeedbackStatus }) {
       aria-label="Status"
       defaultValue={status}
       disabled={pending}
-      className="[&_select]:h-9 [&_select]:text-xs"
+      className="[&_button]:h-9 [&_button]:text-xs"
       onChange={(ev) => {
         const next = ev.target.value as FeedbackStatus;
         start(async () => {

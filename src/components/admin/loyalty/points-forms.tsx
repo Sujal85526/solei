@@ -185,7 +185,7 @@ export function RewardsSettingsForm({
                 name="birthdayCodeKind"
                 value={codeKind}
                 onChange={(ev) => setCodeKind(ev.target.value as "percent" | "amount")}
-                className="[&_select]:h-11"
+                className="[&_button]:h-11"
               >
                 <option value="percent">% off</option>
                 <option value="amount">AED off</option>

@@ -143,7 +143,7 @@ export function EditContactDialog({ customer }: { customer: Contact }) {
               <NativeSelect
                 {...fieldAria("emirate", errors.emirate)}
                 defaultValue={customer.emirate ?? ""}
-                className="[&_select]:h-11"
+                className="[&_button]:h-11"
               >
                 <option value="">Not given</option>
                 {emirates.map((e) => (

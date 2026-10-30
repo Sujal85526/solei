@@ -252,7 +252,7 @@ export function ManualOrderForm({
             aria-label="Add a product"
             value={picker}
             onChange={(e) => addVariant(e.target.value)}
-            className="[&_select]:h-12"
+            className="[&_button]:h-12"
           >
             <option value="">Add a product…</option>
             {variants.map((v) => (
@@ -452,7 +452,7 @@ export function ManualOrderForm({
                       const z = zones.find((x) => x.emirate === e.target.value);
                       if (z) setFee(toAed(z.fee_fils));
                     }}
-                    className="[&_select]:h-11"
+                    className="[&_button]:h-11"
                   >
                     <option value="">Choose…</option>
                     {zones.map((z) => (
@@ -506,7 +506,7 @@ export function ManualOrderForm({
                       id="method"
                       value={method}
                       onChange={(e) => setMethod(e.target.value as typeof method)}
-                      className="[&_select]:h-11"
+                      className="[&_button]:h-11"
                     >
                       {MANUAL_PAYMENT_METHODS.map((m) => (
                         <option key={m} value={m}>

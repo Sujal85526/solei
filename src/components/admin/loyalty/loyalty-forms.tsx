@@ -123,7 +123,7 @@ export function AdjustStampsDialog({
               <NativeSelect
                 {...fieldAria("destinationId", errors.destinationId)}
                 defaultValue=""
-                className="[&_select]:h-11"
+                className="[&_button]:h-11"
               >
                 <option value="">No destination</option>
                 {destinations.map((d) => (
@@ -219,7 +219,7 @@ export function RedeemRewardDialog({
                   <NativeSelect
                     {...fieldAria("variantId", errors.variantId)}
                     defaultValue={options[0]?.variant_id}
-                    className="[&_select]:h-11"
+                    className="[&_button]:h-11"
                   >
                     {options.map((o) => (
                       <option key={o.variant_id} value={o.variant_id}>

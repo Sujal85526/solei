@@ -161,7 +161,7 @@ function ExpenseForm({
           id="categoryId"
           name="categoryId"
           defaultValue={editing?.category_id ?? ""}
-          className="[&_select]:h-11"
+          className="[&_button]:h-11"
         >
           <option value="" disabled>
             Choose…

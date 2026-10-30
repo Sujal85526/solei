@@ -196,7 +196,7 @@ export function SegmentForm({
                   id="passport"
                   name="passport"
                   defaultValue={v.passport}
-                  className="[&_select]:h-11"
+                  className="[&_button]:h-11"
                 >
                   <option value="">Any</option>
                   <option value="has">Has a passport</option>

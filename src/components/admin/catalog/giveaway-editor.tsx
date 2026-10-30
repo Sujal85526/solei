@@ -175,7 +175,7 @@ export function GiveawayEditor({
                   aria-label="Add a bottle"
                   value={adding}
                   onChange={(e) => setAdding(e.target.value)}
-                  className="min-w-0 flex-1 [&_select]:h-10"
+                  className="min-w-0 flex-1 [&_button]:h-10"
                 >
                   <option value="">Add a bottle…</option>
                   {categories.map((c) => (

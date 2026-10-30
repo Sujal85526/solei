@@ -196,7 +196,7 @@ function RewardForm({
             id="reward-variant"
             name="variantId"
             defaultValue={reward?.variantId ?? ""}
-            className="[&_select]:h-11"
+            className="[&_button]:h-11"
           >
             <option value="" disabled>
               Choose…

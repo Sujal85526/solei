@@ -847,7 +847,7 @@ export function PosScreen({
                         ),
                       )
                     }
-                    className="flex-1 [&_select]:h-12"
+                    className="flex-1 [&_button]:h-12"
                   >
                     {POS_METHODS.map((m) => (
                       <option key={m} value={m}>

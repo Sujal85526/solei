@@ -72,7 +72,7 @@ export function ClockCard({
               aria-label="Event"
               value={eventId}
               onChange={(e) => setEventId(e.target.value)}
-              className="[&_select]:h-9"
+              className="[&_button]:h-9"
             >
               <option value="">No event</option>
               {events.map((e) => (

@@ -84,7 +84,7 @@ export function EventStaff({
         >
           <input type="hidden" name="eventId" value={eventId} />
           <Field label="Team member" htmlFor="userId" error={e.userId}>
-            <NativeSelect id="userId" name="userId" defaultValue="" className="[&_select]:h-11">
+            <NativeSelect id="userId" name="userId" defaultValue="" className="[&_button]:h-11">
               <option value="" disabled>
                 {available.length ? "Choose…" : "Everyone is assigned"}
               </option>

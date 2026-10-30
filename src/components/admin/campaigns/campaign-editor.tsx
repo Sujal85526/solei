@@ -117,7 +117,7 @@ export function CampaignEditor({
               name="segmentId"
               value={segmentId}
               onChange={(ev) => setSegmentId(ev.target.value)}
-              className="[&_select]:h-11"
+              className="[&_button]:h-11"
             >
               <option value="">Choose a segment…</option>
               {segments.map((s) => (

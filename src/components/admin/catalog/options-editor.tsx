@@ -273,7 +273,7 @@ function GroupDialog({
               id="ogKind"
               value={kind}
               onChange={(e) => setKind(e.target.value as OptionGroupKind)}
-              className="[&_select]:h-11"
+              className="[&_button]:h-11"
             >
               {(Object.keys(KIND_LABELS) as OptionGroupKind[]).map((k) => (
                 <option key={k} value={k}>

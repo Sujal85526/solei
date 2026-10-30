@@ -62,7 +62,7 @@ export default async function AttendancePage({ searchParams }: PageProps<"/admin
         {all ? (
           <label className="flex flex-col gap-1.5 text-sm">
             Who
-            <NativeSelect name="who" defaultValue={who ?? ""} className="[&_select]:h-10">
+            <NativeSelect name="who" defaultValue={who ?? ""} className="[&_button]:h-10">
               <option value="">Everyone</option>
               {people.map((p) => (
                 <option key={p.id} value={p.id}>

@@ -62,7 +62,7 @@ export function ShiftDialog({
                 id="shiftUser"
                 name="userId"
                 defaultValue={shift?.userId ?? ""}
-                className="[&_select]:h-11"
+                className="[&_button]:h-11"
               >
                 <option value="">Choose…</option>
                 {people.map((p) => (
@@ -102,7 +102,7 @@ export function ShiftDialog({
                 id="shiftEvent"
                 name="eventId"
                 defaultValue={shift?.eventId ?? ""}
-                className="[&_select]:h-11"
+                className="[&_button]:h-11"
               >
                 <option value="">No event</option>
                 {events.map((ev) => (

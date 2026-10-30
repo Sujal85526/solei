@@ -199,7 +199,7 @@ export function LoyaltySettingsForm({
             {...fieldAria("rewardType", errors.rewardType)}
             value={rewardType}
             onChange={(e) => setRewardType(e.target.value as RewardType)}
-            className="[&_select]:h-11"
+            className="[&_button]:h-11"
           >
             {rewardTypes.map((t) => (
               <option key={t} value={t}>
@@ -213,7 +213,7 @@ export function LoyaltySettingsForm({
             <NativeSelect
               {...fieldAria("rewardCategoryId", errors.rewardCategoryId)}
               defaultValue={String(cfg.category_id ?? "")}
-              className="[&_select]:h-11"
+              className="[&_button]:h-11"
             >
               <option value="">Choose…</option>
               {categories.map((c) => (

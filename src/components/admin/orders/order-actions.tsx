@@ -231,7 +231,7 @@ function PaymentDialog({ orderId, outstandingFils, onClose }: DialogProps) {
           />
         </Field>
         <Field label="Method" htmlFor="method" error={e.method} required>
-          <NativeSelect id="method" name="method" defaultValue="cash" className="[&_select]:h-11">
+          <NativeSelect id="method" name="method" defaultValue="cash" className="[&_button]:h-11">
             {MANUAL_PAYMENT_METHODS.map((m) => (
               <option key={m} value={m}>
                 {PAYMENT_METHOD_LABELS[m]}
@@ -299,7 +299,7 @@ function RefundDialog({ orderId, refundableFils, onClose }: DialogProps) {
             id="refundMethod"
             name="method"
             defaultValue="cash"
-            className="[&_select]:h-11"
+            className="[&_button]:h-11"
           >
             {REFUND_METHODS.map((m) => (
               <option key={m} value={m}>

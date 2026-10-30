@@ -161,7 +161,7 @@ export function EventExpenses({
           <input type="hidden" name="eventId" value={eventId} />
           <input type="hidden" name="receiptPath" value={receipt?.path ?? ""} />
           <Field label="Category" htmlFor="category" error={e.category} required>
-            <NativeSelect id="category" name="category" defaultValue="" className="[&_select]:h-11">
+            <NativeSelect id="category" name="category" defaultValue="" className="[&_button]:h-11">
               <option value="" disabled>
                 Choose…
               </option>

@@ -369,7 +369,7 @@ export function QuickCreateCustomerForm({
           />
         </Field>
         <Field label="Emirate" htmlFor={id("emirate")} error={errors.emirate}>
-          <NativeSelect {...aria("emirate")} defaultValue="" className="[&_select]:h-12">
+          <NativeSelect {...aria("emirate")} defaultValue="" className="[&_button]:h-12">
             <option value="">Not given</option>
             {emirates.map((e) => (
               <option key={e} value={e}>

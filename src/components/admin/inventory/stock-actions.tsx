@@ -126,7 +126,7 @@ function StockDialog({
         id="variantId"
         name="variantId"
         defaultValue={defaultVariantId ?? ""}
-        className="[&_select]:h-11"
+        className="[&_button]:h-11"
       >
         <option value="" disabled>
           Choose a product…
@@ -142,7 +142,7 @@ function StockDialog({
   );
   const locationSelect = (name: string, label: string, def = defaultLocation) => (
     <Field label={label} htmlFor={name} error={e[name]} required>
-      <NativeSelect id={name} name={name} defaultValue={def} className="[&_select]:h-11">
+      <NativeSelect id={name} name={name} defaultValue={def} className="[&_button]:h-11">
         <option value="" disabled>
           Choose…
         </option>
@@ -175,7 +175,7 @@ function StockDialog({
           )}
           {mode === "adjust" ? (
             <Field label="Type" htmlFor="kind" error={e.kind} required>
-              <NativeSelect id="kind" name="kind" defaultValue="damage" className="[&_select]:h-11">
+              <NativeSelect id="kind" name="kind" defaultValue="damage" className="[&_button]:h-11">
                 <option value="damage">Damaged / broken (−)</option>
                 <option value="correction_remove">Count correction (−)</option>
                 <option value="correction_add">Count correction (+)</option>
