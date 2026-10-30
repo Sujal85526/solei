@@ -717,8 +717,9 @@ export function PosScreen({
           <fieldset className="flex flex-col gap-2 rounded-lg border p-3">
             <legend className="px-1 text-sm font-medium">Customer for Passport</legend>
             <p className="text-muted-foreground -mt-1 text-xs">
-              Optional — with an email their stamps also show in their online account. You can add
-              this to the order later too.
+              Optional — the sale saves either way. Add a mobile or email to give them stickers;
+              with an email they also show in their online account. You can add this to the order
+              later too.
             </p>
             <Input
               autoComplete="off"
