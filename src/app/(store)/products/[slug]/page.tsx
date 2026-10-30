@@ -219,7 +219,9 @@ function ProductPrice({ product, sales }: { product: StoreProduct; sales: LiveSa
         <>
           <s className="text-primary/55 me-2">{formatAED(from)}</s>
           {formatAED(sale.priceFils)}
-          <span className="ms-3 text-[0.65rem] tracking-[0.18em] uppercase">{sale.sale.name}</span>
+          <span className="mt-1.5 block text-[0.65rem] tracking-[0.18em] uppercase">
+            {sale.sale.name}
+          </span>
         </>
       ) : (
         formatAED(from)
