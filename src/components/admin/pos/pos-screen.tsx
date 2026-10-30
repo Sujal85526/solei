@@ -77,8 +77,15 @@ export function PosScreen({
   const [category, setCategory] = useState<string>("all");
   const [cartOpen, setCartOpen] = useState(false);
   const [payOpen, setPayOpen] = useState(false);
+  const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
   const [email, setEmail] = useState("");
+  // A payment tapped while the price is being checked: runs once the price is back, if unchanged.
+  const [queuedTap, setQueuedTap] = useState<{
+    method: (typeof POS_METHODS)[number];
+    totalFils: number;
+  } | null>(null);
+  const [priceChanged, setPriceChanged] = useState(false);
   const [split, setSplit] = useState<SplitRow[] | null>(null);
   // Gift card: null = not in use; "entering" = typing the code; else the checked card.
   const [gift, setGift] = useState<TillGift | "entering" | null>(null);
@@ -211,6 +218,7 @@ export function PosScreen({
       soldAt: new Date().toISOString(),
       customerPhone: phone.trim() || undefined,
       customerEmail: email.trim() || undefined,
+      customerName: name.trim() || undefined,
       lines: [...saleLines, ...extras.rewardLines],
       couponCodes: extras.couponCodes,
       points: extras.points,
@@ -245,8 +253,10 @@ export function PosScreen({
     setCart([]);
     setGiveawayLines([]);
     promo.reset();
+    setName("");
     setPhone("");
     setEmail("");
+    setPriceChanged(false);
     setSplit(null);
     resetGift();
     setPayOpen(false);
@@ -254,6 +264,19 @@ export function PosScreen({
     setBusy(false);
     window.setTimeout(() => setDone(null), 2200);
   }
+
+  useEffect(() => {
+    if (!queuedTap || promo.pending) return;
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- the price check just came back
+    setQueuedTap(null);
+    if (!payOpen) return;
+    if (total === queuedTap.totalFils) {
+      void complete([{ method: queuedTap.method, amountFils: total }]);
+    } else {
+      setPriceChanged(true); // never charge a price the cashier hasn't seen
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [queuedTap, promo.pending]);
 
   const splitValid = (() => {
     if (!split) return false;
@@ -656,6 +679,14 @@ export function PosScreen({
               this to the order later too.
             </p>
             <Input
+              autoComplete="off"
+              aria-label="Customer name"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              placeholder="Name"
+              className="h-12 text-base"
+            />
+            <Input
               type="email"
               inputMode="email"
               autoComplete="off"
@@ -679,6 +710,10 @@ export function PosScreen({
           {promo.pending ? (
             <p role="status" className="text-muted-foreground text-sm">
               Updating the price…
+            </p>
+          ) : priceChanged ? (
+            <p role="status" className="text-destructive text-sm">
+              The price changed for this customer. Check it, then tap the payment again.
             </p>
           ) : null}
           {gift === "entering" ? (
@@ -853,8 +888,12 @@ export function PosScreen({
                   key={m}
                   size="xl"
                   variant={m === "cash" ? "default" : "outline"}
-                  disabled={busy || promo.pending}
-                  onClick={() => complete([{ method: m, amountFils: total }])}
+                  disabled={busy || Boolean(queuedTap)}
+                  onClick={() => {
+                    setPriceChanged(false);
+                    if (promo.pending) setQueuedTap({ method: m, totalFils: total });
+                    else void complete([{ method: m, amountFils: total }]);
+                  }}
                 >
                   {POS_METHOD_LABELS[m]}
                 </Button>
