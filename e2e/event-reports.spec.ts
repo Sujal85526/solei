@@ -1,5 +1,6 @@
 import { expect, test } from "@playwright/test";
 import { adminClient, signInAsOwner, signInAsSales } from "./helpers/auth";
+import { createTestProduct } from "./helpers/catalog";
 
 /**
  * Seeds an event with POS-style sales straight into the ledger (the POS itself has its own
@@ -26,10 +27,11 @@ async function seedEvent(
     .select("id")
     .single();
   if (error) throw error;
+  const perfume = await createTestProduct("report", { stock: 0 });
   const { data: variant } = await admin
     .from("product_variants")
     .select("id, sku, label, price_fils, products(name, category_id, destination_id)")
-    .eq("sku", "SOL-P-CAP-50")
+    .eq("id", perfume.variantId)
     .single();
   const product = variant!.products as unknown as {
     name: string;
@@ -124,7 +126,9 @@ test.describe("event reports", () => {
     expect(pdf.status()).toBe(200);
     expect(pdf.headers()["content-type"]).toBe("application/pdf");
     expect((await pdf.body()).subarray(0, 5).toString()).toBe("%PDF-");
-    await expect(page.getByTestId("export-pdf")).toBeVisible();
+    await expect(
+      page.locator(`[data-testid="export-pdf"][href^="/admin/reports/events/${expo}/export"]`),
+    ).toBeVisible();
     const csv = await page.request.get(`/admin/reports/events/${expo}/export?format=csv`);
     expect(await csv.text()).toContain("COGS (AED)");
 

@@ -2,6 +2,7 @@ import { createHash, createHmac } from "node:crypto";
 import { expect, test } from "@playwright/test";
 import { adminClient, signInAsOwner } from "./helpers/auth";
 import { localEnv } from "./helpers/env";
+import { createTestProduct } from "./helpers/catalog";
 
 /** Same signing as src/modules/carts/links.ts with the derived secret. */
 const cartLinkSecret = () =>
@@ -27,9 +28,10 @@ test.describe("abandoned carts", () => {
       user_metadata: { first_name: "Huda", last_name: "Test" },
     });
     if (error) throw error;
+    const perfume = await createTestProduct("bag");
 
     // Sign in at checkout with a perfume in the bag → the bag is saved.
-    await page.goto("/products/capri-perfume");
+    await page.goto(`/products/${perfume.slug}`);
     await page.getByRole("button", { name: /add to cart/i }).click();
     await page.goto("/checkout");
     await page.getByRole("button", { name: /already have an account/i }).click();
@@ -75,12 +77,7 @@ test.describe("abandoned carts", () => {
     await other.goto(`/cart/restore?c=${cartId}&t=${token(cartId, "restore")}`);
     await other.waitForURL("**/checkout");
     const restored = await other.evaluate(() => localStorage.getItem("solei.cart.v1") ?? "");
-    const { data: capri } = await admin
-      .from("product_variants")
-      .select("id")
-      .eq("sku", "SOL-P-CAP-50")
-      .single();
-    expect(restored).toContain(capri!.id);
+    expect(restored).toContain(perfume.variantId);
 
     // "Turn them off".
     await other.goto(`/cart/stop?c=${cartId}&t=${token(cartId, "optout")}`);

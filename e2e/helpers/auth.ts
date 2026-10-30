@@ -4,8 +4,6 @@ import { localEnv, MAILPIT_URL } from "./env";
 import { totp } from "./totp";
 
 export const DEV_PASSWORD = "Solei-dev-2026";
-export const OWNER = { email: "owner@solei.test", totpSecret: "JBSWY3DPEHPK3PXPJBSWY3DPEHPK3PXP" };
-export const SALES = { email: "sales@solei.test" };
 
 export function adminClient() {
   const env = localEnv();
@@ -33,7 +31,11 @@ export type TotpUser = { id: string; email: string; totpSecret: string };
  * logins of the same owner would sign each other out.
  */
 export async function createOwnerWithTotp(tag: string): Promise<TotpUser> {
-  const { id, email } = await createStaffUser("owner", tag);
+  return enrolTotp(await createStaffUser("owner", tag));
+}
+
+/** Enrol and verify a TOTP factor for a staff user, as the MFA page does. */
+export async function enrolTotp({ id, email }: { id: string; email: string }): Promise<TotpUser> {
   const env = localEnv();
   const client = createClient(
     env.NEXT_PUBLIC_SUPABASE_URL ?? "http://127.0.0.1:54321",
@@ -56,19 +58,44 @@ export async function createOwnerWithTotp(tag: string): Promise<TotpUser> {
 export async function signInAsOwner(page: Page, owner?: TotpUser) {
   const who = owner ?? (await createOwnerWithTotp(`p${process.pid}`));
   await signIn(page, who.email);
-  await expect(page.getByRole("heading", { name: "Verify it's you" })).toBeVisible();
-  await page.getByLabel("6-digit code").fill(totp(who.totpSecret));
-  await page.getByRole("button", { name: "Verify" }).click();
+  // The TOTP step only shows while the owner role requires two-factor (Staff → Roles).
+  const verify = page.getByRole("heading", { name: "Verify it's you" });
+  const hello = page.getByRole("heading", { level: 1, name: /^Hello/ });
+  await expect(verify.or(hello)).toBeVisible();
+  if (await verify.isVisible()) {
+    await page.getByLabel("6-digit code").fill(totp(who.totpSecret));
+    await page.getByRole("button", { name: "Verify" }).click();
+  }
+  await expect(hello).toBeVisible();
+}
+
+/** Sign in as a throwaway sales-staff user (no MFA for that role). */
+export async function signInAsSales(page: Page) {
+  const { email } = await createStaffUser("sales_staff", `s${process.pid}`);
+  await signIn(page, email);
   await expect(page.getByRole("heading", { level: 1, name: /^Hello/ })).toBeVisible();
 }
 
-export async function signInAsSales(page: Page) {
-  await signIn(page, SALES.email);
-  await expect(page.getByRole("heading", { level: 1, name: /^Hello/ })).toBeVisible();
+/**
+ * A test role that requires two-factor sign-in (Staff → Roles). Owner and manager don't on the
+ * live shop, so the MFA flow is tested with this role instead. Created once, reused.
+ */
+export const MFA_ROLE = "e2e_mfa";
+export async function ensureMfaRole() {
+  const { error } = await adminClient()
+    .from("roles")
+    .upsert(
+      { key: MFA_ROLE, name: "E2E two-factor", requires_mfa: true },
+      { onConflict: "key", ignoreDuplicates: true },
+    );
+  if (error) throw error;
 }
 
 /** Create a throwaway staff user directly (for tests that mutate state). */
-export async function createStaffUser(role: "owner" | "manager" | "sales_staff", tag: string) {
+export async function createStaffUser(
+  role: "owner" | "manager" | "sales_staff" | typeof MFA_ROLE,
+  tag: string,
+) {
   const admin = adminClient();
   const email = `e2e-${role}-${tag}-${Date.now()}@solei.test`;
   const { data, error } = await admin.auth.admin.createUser({
@@ -83,6 +110,19 @@ export async function createStaffUser(role: "owner" | "manager" | "sales_staff",
     .insert({ user_id: data.user.id, full_name: `E2E ${role}`, email, role_id: r!.id });
   if (e2) throw e2;
   return { id: data.user.id, email };
+}
+
+/**
+ * True when a local Mailpit catches the auth emails (local Supabase). A hosted test project sends
+ * real emails instead (and refuses @solei.test addresses), so flows that follow an email link can't
+ * run against it.
+ */
+export async function mailpitAvailable() {
+  try {
+    return (await fetch(`${MAILPIT_URL}/api/v1/info`, { signal: AbortSignal.timeout(1000) })).ok;
+  } catch {
+    return false;
+  }
 }
 
 /** Find the newest email to `to` in Mailpit and return the first link matching `pattern`. */

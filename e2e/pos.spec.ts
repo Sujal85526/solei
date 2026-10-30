@@ -1,5 +1,6 @@
 import { expect, test } from "@playwright/test";
 import { adminClient, signInAsOwner } from "./helpers/auth";
+import { createTestProduct } from "./helpers/catalog";
 
 test.describe("event POS", () => {
   test("two perfumes, cash, in four taps — stock and totals update", async ({ page }, info) => {
@@ -16,24 +17,26 @@ test.describe("event POS", () => {
       .select("id")
       .eq("event_id", event!.id)
       .single();
-    const { data: v } = await admin
-      .from("product_variants")
-      .select("id")
-      .eq("sku", "SOL-P-CAP-50")
-      .single();
-    await admin
-      .from("stock_movements")
-      .insert({ variant_id: v!.id, location_id: loc!.id, qty: 10, type: "receive", reason: "e2e" });
+    const perfume = await createTestProduct(`pos-${info.project.name}`, { stock: 0 });
+    await admin.from("stock_movements").insert({
+      variant_id: perfume.variantId,
+      location_id: loc!.id,
+      qty: 10,
+      type: "receive",
+      reason: "e2e",
+    });
 
     await signInAsOwner(page);
     await page.goto(`/admin/pos?event=${event!.id}`);
-    const tile = page.getByRole("button", { name: /^Add Capri Perfume/ });
+    const tile = page.getByRole("button", { name: new RegExp(`^Add ${perfume.name}`) });
     await tile.click();
     await tile.click();
     await page.getByRole("button", { name: /^Charge/ }).click();
     await page.getByRole("button", { name: "Cash", exact: true }).click();
     await expect(page.getByRole("status").filter({ hasText: /SOL-\d+ · AED 560/ })).toBeVisible();
-    await expect(page.getByRole("button", { name: /^Add Capri Perfume.*8 left/ })).toBeVisible();
+    await expect(
+      page.getByRole("button", { name: new RegExp(`^Add ${perfume.name}.*8 left`) }),
+    ).toBeVisible();
 
     const { data: orders } = await admin
       .from("orders")

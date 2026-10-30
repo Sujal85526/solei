@@ -1,5 +1,6 @@
 import { expect, test } from "@playwright/test";
 import { adminClient, signInAsOwner, signInAsSales } from "./helpers/auth";
+import { createTestProduct } from "./helpers/catalog";
 
 // 1×1 PNG
 const PNG = Buffer.from(
@@ -25,7 +26,8 @@ test.describe("catalog & inventory admin", () => {
     await page.goto("/admin/products/new");
     await page.getByLabel("Product name").fill(name);
     await page.getByLabel("Category").selectOption({ label: "Perfumes" });
-    await page.getByLabel("Destination").selectOption({ label: "Capri" });
+    // Any destination (the list is whatever the shop has).
+    await page.getByLabel("Destination").selectOption({ index: 1 });
     await page.getByLabel("Top notes").fill("Lemon, Neroli");
     await page.getByRole("button", { name: "Create product" }).click();
     await expect(page.getByRole("heading", { level: 1, name })).toBeVisible();
@@ -101,15 +103,18 @@ test.describe("catalog & inventory admin", () => {
   });
 
   test("sales staff see stock but can't change it or see costs", async ({ page }) => {
+    const perfume = await createTestProduct("sales-view", {
+      name: `E2E Scent sales ${Date.now()}`,
+    });
     await signInAsSales(page);
     await page.goto("/admin/inventory");
     await expect(page.getByText("Units in stock")).toBeVisible();
-    await expect(page.getByRole("button", { name: "Receive" })).toHaveCount(0);
+    await expect(page.getByRole("button", { name: "Add stock" })).toHaveCount(0);
     await expect(page.getByRole("button", { name: "Damage / correction" })).toHaveCount(0);
     await page.goto("/admin/products");
     await expect(page.getByRole("link", { name: "New product" })).toHaveCount(0);
     await page
-      .getByRole("link", { name: /Capri Perfume/ })
+      .getByRole("link", { name: new RegExp(perfume.name) })
       .first()
       .click();
     await expect(page.getByText(/cost AED/)).toHaveCount(0);

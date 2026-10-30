@@ -1,5 +1,6 @@
 import { expect, test, type Page } from "@playwright/test";
 import { adminClient, signInAsOwner } from "./helpers/auth";
+import { createTestProduct } from "./helpers/catalog";
 
 /** A verified storefront account, created directly for the test. */
 async function customerAccount(tag: string) {
@@ -66,7 +67,8 @@ test.describe("gift cards", () => {
     // the card covers it all, so there's no payment page.
     await page.context().clearCookies();
     const mira = await customerAccount("mira");
-    await page.goto("/products/capri-perfume");
+    const perfume = await createTestProduct("giftcard");
+    await page.goto(`/products/${perfume.slug}`);
     await page.getByRole("button", { name: /add to cart/i }).click();
     await page.goto("/checkout");
     await signInFromDrawer(page, mira);
@@ -82,6 +84,7 @@ test.describe("gift cards", () => {
     await page.getByRole("textbox", { name: "Gift card" }).locator("visible=true").fill(card!.code);
     await page.getByRole("button", { name: "Apply" }).locator("visible=true").nth(1).click();
     await expect(page.getByText("To pay by card").locator("visible=true")).toBeVisible();
+    await page.getByRole("checkbox", { name: /I agree to the/i }).check();
     await page.getByRole("button", { name: "Place order" }).click();
     await expect(page.getByRole("heading", { name: "Thank you." })).toBeVisible({
       timeout: 20_000,

@@ -1,15 +1,13 @@
 import { randomUUID } from "node:crypto";
 import { expect, test } from "@playwright/test";
 import { adminClient, createStaffUser, signIn, signInAsOwner } from "./helpers/auth";
+import { createTestProduct } from "./helpers/catalog";
 
 /** A paid website delivery order (AED 280 + 30), created straight in the database. */
 async function paidDeliveryOrder() {
   const admin = adminClient();
-  const { data: variant } = await admin
-    .from("product_variants")
-    .select("id, price_fils")
-    .eq("sku", "SOL-P-CAN-50")
-    .single();
+  const perfume = await createTestProduct("courier");
+  const variant = { id: perfume.variantId, price_fils: perfume.priceFils };
   const { data, error } = await admin
     .rpc("create_web_order", {
       p: {
@@ -21,12 +19,12 @@ async function paidDeliveryOrder() {
           email: `courier.e2e+${Date.now()}@solei.test`,
         },
         address: { line1: "Villa 9, Street 3", area: "Al Bateen", city: "Abu Dhabi" },
-        lines: [{ variant_id: variant!.id, qty: 1, unit_price_fils: variant!.price_fils }],
-        subtotal_fils: variant!.price_fils,
+        lines: [{ variant_id: variant.id, qty: 1, unit_price_fils: variant.price_fils }],
+        subtotal_fils: variant.price_fils,
         discount_fils: 0,
         delivery_fee_fils: 3000,
         vat_fils: 0,
-        total_fils: variant!.price_fils + 3000,
+        total_fils: variant.price_fils + 3000,
         vat_rate_bp: 0,
         prices_include_vat: true,
       },
@@ -36,7 +34,7 @@ async function paidDeliveryOrder() {
   const created = data as { order_id: string };
   await admin.from("payments").insert({
     order_id: created.order_id,
-    amount_fils: variant!.price_fils + 3000,
+    amount_fils: variant.price_fils + 3000,
     method: "cash",
     status: "succeeded",
   });

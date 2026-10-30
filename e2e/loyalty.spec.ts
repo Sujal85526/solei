@@ -1,7 +1,8 @@
 import { expect, test } from "@playwright/test";
 import { adminClient, signInAsOwner } from "./helpers/auth";
+import { createTestProduct } from "./helpers/catalog";
 
-/** A customer with one unpaid WhatsApp order for 1 × Capri (service role, bypasses RLS). */
+/** A customer with one unpaid WhatsApp order for 1 × a destination perfume (service role). */
 async function seedCustomerWithOrder(tag: string) {
   const admin = adminClient();
   const n = String(Date.now() % 10_000_000).padStart(7, "0");
@@ -16,10 +17,11 @@ async function seedCustomerWithOrder(tag: string) {
     .select("id")
     .single();
   if (error) throw error;
+  const perfume = await createTestProduct(`loyalty-${tag}`, { destination: true });
   const { data: variant } = await admin
     .from("product_variants")
     .select("id, sku, label, price_fils, products(name, category_id, destination_id)")
-    .eq("sku", "SOL-P-CAP-50")
+    .eq("id", perfume.variantId)
     .single();
   const product = variant!.products as unknown as {
     name: string;
@@ -53,14 +55,14 @@ async function seedCustomerWithOrder(tag: string) {
     line_total_fils: variant!.price_fils,
   });
   if (e3) throw e3;
-  return { customerId: customer.id, orderId: order.id };
+  return { customerId: customer.id, orderId: order.id, destination: perfume.destination!.name };
 }
 
 test.describe("Solei Passport", () => {
   test("paid order stamps the passport, manual stamps unlock a reward, staff redeem it", async ({
     page,
   }, info) => {
-    const { customerId, orderId } = await seedCustomerWithOrder(info.project.name);
+    const { customerId, orderId, destination } = await seedCustomerWithOrder(info.project.name);
     await signInAsOwner(page);
 
     // Paying the order awards the stamp (after_order_paid).
@@ -72,7 +74,7 @@ test.describe("Solei Passport", () => {
     await page.goto(`/admin/customers/${customerId}`);
     const panel = page.getByTestId("passport-panel");
     await expect(panel.getByTestId("passport-progress")).toHaveText("1 / 12");
-    await expect(panel.getByText("Capri", { exact: true })).toBeVisible();
+    await expect(panel.getByText(destination, { exact: true })).toBeVisible();
 
     // +11 by hand (reason required) → 12 → reward unlocks, card restarts.
     await panel.getByRole("button", { name: "Adjust stamps" }).click();
@@ -87,7 +89,9 @@ test.describe("Solei Passport", () => {
     // Redeem → zero-priced order.
     await panel.getByRole("button", { name: "Redeem" }).click();
     await page.getByRole("dialog").getByRole("button", { name: "Redeem reward" }).click();
-    await expect(page.getByRole("dialog").getByText(/Redeemed on order SOL-/)).toBeVisible();
+    // The dialog closes and the reward is marked as used on the new order.
+    await expect(panel.getByText(/used on SOL-\d+/)).toBeVisible();
+    await expect(panel.getByText("Redeemed", { exact: true })).toBeVisible();
   });
 
   test("passport page explains the programme and offers account sign-in", async ({ page }) => {
@@ -97,7 +101,11 @@ test.describe("Solei Passport", () => {
     const tracker = page.locator("#your-passport");
     await expect(tracker.getByTestId("passport-progress")).toContainText("0 / 12");
     await tracker.getByRole("button", { name: /Sign in to view progress/ }).click();
-    await expect(page.getByLabel("Email address")).toBeVisible();
+    // Sign-in opens in the account drawer; close it to read the FAQ.
+    const signIn = page.getByRole("dialog");
+    await expect(signIn.getByLabel("Email address")).toBeVisible();
+    await page.keyboard.press("Escape");
+    await expect(signIn).toHaveCount(0);
     await page.getByText("Which purchases earn a sticker?").click();
     await expect(page.getByText(/one destination sticker per item/)).toBeVisible();
   });

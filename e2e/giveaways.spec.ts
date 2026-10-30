@@ -151,6 +151,7 @@ test.describe("giveaways customiser", () => {
     await page.getByLabel("Street address").fill("Hall 3, Emirates Palace");
     await page.getByLabel("Area").fill("Ras Al Akhdar");
     await page.getByLabel("City").fill("Abu Dhabi");
+    await page.getByRole("checkbox", { name: /I agree to the/i }).check();
     await page.getByRole("button", { name: /continue to payment/i }).click();
     await page.getByRole("button", { name: "Pay with test card" }).click();
     await expect(page.getByRole("heading", { name: "Thank you." })).toBeVisible({

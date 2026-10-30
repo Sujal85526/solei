@@ -23,7 +23,7 @@ test("store header navigation adapts to the viewport", async ({ page, isMobile }
 
 test("admin shell shows bottom nav on phones and sidebar on desktop", async ({ page }) => {
   await signInAsSales(page);
-  await expect(page.getByRole("heading", { name: "Dashboard" })).toBeVisible();
+  await expect(page.getByRole("heading", { level: 1, name: /^Hello/ })).toBeVisible();
   const width = page.viewportSize()?.width ?? 0;
   const nav = page.getByRole("navigation", { name: "Admin" });
   if (width >= 1024) await expect(nav.first()).toBeVisible();

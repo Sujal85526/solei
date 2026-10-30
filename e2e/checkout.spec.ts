@@ -1,17 +1,19 @@
 import { createHash, createHmac } from "node:crypto";
 import { expect, test, type Page } from "@playwright/test";
 import { adminClient } from "./helpers/auth";
+import { createTestProduct, type TestProduct } from "./helpers/catalog";
 import { localEnv } from "./helpers/env";
 
 const mockSecret = () =>
   createHash("sha256").update(`mock-payments:${localEnv().SUPABASE_SECRET_KEY}`).digest("hex");
 
-async function stockOf(sku: string) {
-  const admin = adminClient();
-  const { data: v } = await admin.from("product_variants").select("id").eq("sku", sku).single();
-  const { data } = await admin.rpc("online_availability", { p_variant_ids: [v!.id] });
+async function stockOf(variantId: string) {
+  const { data } = await adminClient().rpc("online_availability", { p_variant_ids: [variantId] });
   return data![0].available as number;
 }
+
+/** The suite's own AED 280 perfume (created in beforeAll). */
+let perfume: TestProduct;
 
 /** A verified storefront account (checkout requires one), created directly for the test. */
 async function customerAccount() {
@@ -27,21 +29,22 @@ async function customerAccount() {
   return { email, password };
 }
 
-async function checkoutCapri(page: Page, qty: number, phone: string) {
+async function checkoutPerfume(page: Page, qty: number, phone: string) {
   const account = await customerAccount();
-  await page.goto("/products/capri-perfume");
-  for (let i = 1; i < qty; i++)
-    await page
-      .getByRole("button", { name: /increase/i })
-      .first()
-      .click();
+  await page.goto(`/products/${perfume.slug}`);
+  // Plain products have no stepper on the product page: adding opens the bag drawer, set the
+  // quantity there.
   await page.getByRole("button", { name: /add to cart/i }).click();
+  const drawer = page.getByRole("dialog", { name: /Your Cart/ });
+  for (let i = 1; i < qty; i++)
+    await drawer.getByRole("button", { name: "Increase quantity" }).click();
+  await expect(page.getByTestId("cart-count")).toHaveText(String(qty));
   await page.goto("/checkout");
   // Signed-out visitors sign in (or create an account) before the delivery form.
   await page.getByRole("button", { name: /already have an account/i }).click();
   await page.getByLabel("Email address").fill(account.email);
-  await page.getByLabel("Password").fill(account.password);
-  await page.getByRole("button", { name: "Sign in" }).click();
+  await page.getByLabel("Password", { exact: true }).fill(account.password);
+  await page.getByRole("button", { name: "Sign in", exact: true }).click();
   await expect(page.getByText(`Signed in as ${account.email}`)).toBeVisible();
   await page.getByLabel("Mobile").fill(phone);
   await page.getByLabel("Emirate").click();
@@ -58,26 +61,36 @@ async function checkoutCapri(page: Page, qty: number, phone: string) {
 
 test.describe("checkout & payments", () => {
   test.describe.configure({ mode: "serial" });
+  test.beforeAll(async ({}, info) => {
+    perfume = await createTestProduct(`checkout-${info.project.name}`);
+  });
 
   test("paying via the hosted page confirms the order and deducts stock once", async ({ page }) => {
-    const before = await stockOf("SOL-P-CAP-50");
-    await checkoutCapri(page, 2, "050 111 2233");
-    await expect(page.getByText("AED 560")).toBeVisible(); // 2 × 280, free delivery from AED 500
+    const before = await stockOf(perfume.variantId);
+    await checkoutPerfume(page, 2, "050 111 2233");
+    // 2 × 280 + delivery (AED 30 Abu Dhabi), unless the bag reaches a free-delivery threshold.
+    const { data: settings } = await adminClient()
+      .from("settings")
+      .select("free_delivery_threshold_fils")
+      .single();
+    const threshold = settings!.free_delivery_threshold_fils;
+    const total = 56_000 + (threshold !== null && 56_000 >= threshold ? 0 : 3_000);
+    await expect(page.getByText(`AED ${total / 100}`)).toBeVisible();
     await page.getByRole("button", { name: "Pay with test card" }).click();
     await expect(page.getByRole("heading", { name: "Thank you." })).toBeVisible({
       timeout: 20_000,
     });
     await expect(page.getByText("Stamp earned")).toBeVisible();
-    expect(await stockOf("SOL-P-CAP-50")).toBe(before - 2);
+    expect(await stockOf(perfume.variantId)).toBe(before - 2);
 
     // Cart cleared after payment.
     await page.goto("/shop");
-    await page.getByRole("button", { name: "Cart" }).click();
+    await page.getByRole("button", { name: /Cart$/ }).click();
     await expect(page.getByText("Your cart is empty")).toBeVisible();
   });
 
   test("a declined payment can be retried from the order page", async ({ page }) => {
-    await checkoutCapri(page, 1, "050 222 3344");
+    await checkoutPerfume(page, 1, "050 222 3344");
     await page.getByRole("button", { name: "Decline payment" }).click();
     await expect(page.getByRole("heading", { name: "Awaiting payment" })).toBeVisible();
     await expect(page.getByText(/didn't go through/)).toBeVisible();

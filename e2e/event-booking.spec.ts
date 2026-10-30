@@ -44,7 +44,7 @@ test.describe("event booking", () => {
     await pick(page, "Wedding");
     await next(page);
 
-    await expect(page.getByRole("heading", { name: "Your event" })).toBeFocused();
+    await expect(page.getByRole("heading", { name: "Your event", exact: true })).toBeFocused();
     await page.getByLabel("Event date").fill(eventDate(project));
     await page.getByLabel("Number of guests").fill("120");
     await page.getByLabel("Start time").fill("18:00");

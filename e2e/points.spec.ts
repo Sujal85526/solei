@@ -1,5 +1,6 @@
 import { expect, test } from "@playwright/test";
 import { adminClient, signInAsOwner } from "./helpers/auth";
+import { createTestProduct } from "./helpers/catalog";
 
 test.describe("points & tiers", () => {
   test.describe.configure({ mode: "serial" });
@@ -13,6 +14,8 @@ test.describe("points & tiers", () => {
     page,
     browser,
   }) => {
+    // Owner sign-in, a full checkout and the account page: more than the default 30 s.
+    test.setTimeout(90_000);
     const admin = adminClient();
 
     // Owner turns the programme on.
@@ -44,8 +47,9 @@ test.describe("points & tiers", () => {
       .from("points_ledger")
       .insert({ customer_id: customer!.id, entry: "adjust", points: 500, note: "e2e" });
 
-    // Checkout: Capri AED 280 + AED 30 delivery, 500 points = AED 25 off.
-    await page.goto("/products/capri-perfume");
+    // Checkout: a AED 280 perfume + AED 30 delivery, 500 points = AED 25 off.
+    const perfume = await createTestProduct("points");
+    await page.goto(`/products/${perfume.slug}`);
     await page.getByRole("button", { name: /add to cart/i }).click();
     await page.goto("/checkout");
     await page.getByRole("button", { name: /already have an account/i }).click();
@@ -67,6 +71,7 @@ test.describe("points & tiers", () => {
       .locator("visible=true")
       .check();
     await expect(page.getByText("AED 285").locator("visible=true").first()).toBeVisible();
+    await page.getByRole("checkbox", { name: /I agree to the/i }).check();
     await page.getByRole("button", { name: /continue to payment/i }).click();
     await page.getByRole("button", { name: "Pay with test card" }).click();
     await expect(page.getByRole("heading", { name: "Thank you." })).toBeVisible({

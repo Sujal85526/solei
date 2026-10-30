@@ -1,15 +1,34 @@
 import { expect, test } from "@playwright/test";
 import { adminClient } from "./helpers/auth";
+import { createTestProduct } from "./helpers/catalog";
+
+/** An active product the shop lists in a category (from whatever catalogue the database has). */
+async function listedProduct(category: string) {
+  const { data } = await adminClient()
+    .from("products")
+    .select("name, categories!inner(slug), product_variants!inner(active)")
+    .eq("active", true)
+    .eq("categories.slug", category)
+    .eq("product_variants.active", true)
+    .not("name", "like", "E2E%")
+    .limit(1)
+    .single();
+  return data!.name;
+}
 
 test.describe("storefront — browse and cart", () => {
   test("shop → filter → product → add 2 → cart totals, delivery, qty, remove, persistence", async ({
     page,
-  }) => {
+  }, info) => {
+    const perfumeName = await listedProduct("perfume");
+    const sprayName = await listedProduct("all_over_spray");
+    const perfume = await createTestProduct(`store-${info.project.name}`, { destination: true });
+
     await page.goto("/shop");
     await expect(
       page.getByRole("heading", { level: 1, name: /Scents for every destination/ }),
     ).toBeVisible();
-    await expect(page.getByRole("link", { name: /Mayfair All-over spray/ })).toBeVisible();
+    await expect(page.getByRole("link", { name: new RegExp(sprayName) }).first()).toBeVisible();
 
     // Filter by category, then sort by price (plain links — URL search params).
     // Phones open a side drawer from an icon; wider screens open the inline panel.
@@ -20,24 +39,36 @@ test.describe("storefront — browse and cart", () => {
     await categories.getByRole("link", { name: "Perfumes" }).click();
     await expect(page).toHaveURL(/category=perfume/);
     // Other suites may add throwaway products, so check membership rather than exact counts.
-    await expect(page.getByRole("link", { name: /Cannes Perfume/ })).toBeVisible();
-    await expect(page.getByRole("link", { name: /Mayfair All-over spray/ })).toHaveCount(0);
+    await expect(page.getByRole("link", { name: new RegExp(perfumeName) }).first()).toBeVisible();
+    await expect(page.getByRole("link", { name: new RegExp(sprayName) })).toHaveCount(0);
     if (await drawerToggle.isVisible()) await drawerToggle.click();
     await page.getByRole("link", { name: "Low to high" }).click();
     await expect(page).toHaveURL(/sort=price-asc/);
     await expect(page.getByRole("link", { name: "Clear filters" })).toBeVisible();
+    await page
+      .getByRole("link", { name: new RegExp(perfumeName) })
+      .first()
+      .click();
+    await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
 
-    // Product page.
-    await page.getByRole("link", { name: /Cannes Perfume/ }).click();
+    // Product page (the suite's own AED 280 perfume with a destination).
+    await page.goto(`/products/${perfume.slug}`);
     await expect(
-      page.getByRole("heading", { level: 1, name: /Cannes Eau de parfum/ }),
+      page.getByRole("heading", { level: 1, name: new RegExp(perfume.destination!.name) }),
     ).toBeVisible();
     await expect(page.getByTestId("product-price")).toHaveText("AED 280");
-    await expect(page.getByText("Price includes VAT")).toBeVisible();
+    // The VAT note shows only while the business is VAT-registered (rate > 0 in settings).
+    const { data: settings } = await adminClient()
+      .from("settings")
+      .select("vat_rate_bp, free_delivery_threshold_fils")
+      .single();
+    await expect(page.getByText("Price includes VAT")).toHaveCount(settings!.vat_rate_bp ? 1 : 0);
     await page.getByText("Details", { exact: true }).click();
-    await expect(page.getByText(/Earn a Cannes stamp in your Solei Passport/)).toBeVisible();
+    await expect(
+      page.getByText(`Earn a ${perfume.destination!.name} stamp in your Solei Passport`),
+    ).toBeVisible();
     const jsonLd = await page.locator('script[type="application/ld+json"]').textContent();
-    expect(JSON.parse(jsonLd!)).toMatchObject({ "@type": "Product", name: "Cannes Perfume" });
+    expect(JSON.parse(jsonLd!)).toMatchObject({ "@type": "Product", name: perfume.name });
 
     const panel = page.getByTestId("purchase-panel");
     const add = panel.getByTestId("add-to-cart");
@@ -48,23 +79,33 @@ test.describe("storefront — browse and cart", () => {
     await expect(drawer.getByTestId("drawer-line")).toHaveCount(1);
     await drawer.getByRole("button", { name: "Increase quantity" }).click();
     await expect(page.getByTestId("cart-count")).toHaveText("2");
-    // 2 × AED 280 = AED 560, above the AED 500 free-delivery threshold.
     await expect(drawer.getByTestId("drawer-subtotal")).toHaveText("AED 560");
-    await expect(drawer.getByText("You've unlocked free delivery.")).toBeVisible();
-
-    // Down to 1 → the free-delivery nudge comes back.
-    await drawer.getByRole("button", { name: "Decrease quantity" }).click();
-    await expect(drawer.getByTestId("drawer-subtotal")).toHaveText("AED 280");
-    await expect(drawer.getByText(/AED 220/)).toBeVisible();
+    // The free-delivery nudge shows only while the owner sets a threshold (none today: D3).
+    const threshold = settings!.free_delivery_threshold_fils;
+    if (threshold === null) {
+      await expect(drawer.getByRole("progressbar")).toHaveCount(0);
+      await drawer.getByRole("button", { name: "Decrease quantity" }).click();
+      await expect(drawer.getByTestId("drawer-subtotal")).toHaveText("AED 280");
+    } else {
+      await expect(
+        drawer.getByText(
+          threshold <= 56_000 ? "You've unlocked free delivery." : /away from free delivery/,
+        ),
+      ).toBeVisible();
+      await drawer.getByRole("button", { name: "Decrease quantity" }).click();
+      await expect(drawer.getByTestId("drawer-subtotal")).toHaveText("AED 280");
+      if (threshold > 28_000)
+        await expect(drawer.getByText(`AED ${(threshold - 28_000) / 100}`)).toBeVisible();
+    }
 
     // Persists across reload; the header bag reopens the drawer.
     await page.reload();
     await expect(page.getByTestId("cart-count")).toHaveText("1");
-    await page.getByRole("button", { name: "Cart" }).click();
+    await page.getByRole("button", { name: /Cart$/ }).click();
     await expect(drawer.getByTestId("drawer-line")).toHaveCount(1);
 
     // Remove → empty state.
-    await drawer.getByRole("button", { name: "Remove Cannes Perfume" }).click();
+    await drawer.getByRole("button", { name: `Remove ${perfume.name}` }).click();
     await expect(drawer.getByText("Your cart is empty")).toBeVisible();
     await expect(page.getByTestId("cart-count")).toHaveText("0");
   });
@@ -72,12 +113,19 @@ test.describe("storefront — browse and cart", () => {
   test("category pages, removed destination pages redirect, and 404s for unknown slugs", async ({
     page,
   }) => {
+    const sprayName = await listedProduct("all_over_spray");
+    const perfumeName = await listedProduct("perfume");
     await page.goto("/shop/all_over_spray");
     await expect(page.getByRole("heading", { level: 1, name: "All-over sprays" })).toBeVisible();
-    await expect(page.getByRole("link", { name: /Soho All-over spray/ })).toBeVisible();
-    await expect(page.getByRole("link", { name: /Cannes Perfume/ })).toHaveCount(0);
+    await expect(page.getByRole("link", { name: new RegExp(sprayName) }).first()).toBeVisible();
+    await expect(page.getByRole("link", { name: new RegExp(perfumeName) })).toHaveCount(0);
 
-    await page.goto("/destinations/capri");
+    const { data: destination } = await adminClient()
+      .from("destinations")
+      .select("slug")
+      .limit(1)
+      .single();
+    await page.goto(`/destinations/${destination!.slug}`);
     await expect(page).toHaveURL(/\/shop$/);
 
     for (const path of ["/products/nope", "/shop/nope"]) {
@@ -132,9 +180,10 @@ test.describe("storefront — sold out", () => {
   test("disables add to cart and clears it from the cart", async ({ page }) => {
     await page.goto(`/products/${slug}`);
     await expect(page.getByRole("heading", { level: 1, name: "E2E Sold Out" })).toBeVisible();
-    const add = page.getByTestId("add-to-cart");
+    // While the availability streams in, the "Checking availability…" fallback can still be in the
+    // DOM next to the real panel.
+    const add = page.getByTestId("add-to-cart").filter({ hasText: "Sold out" });
     await expect(add).toBeDisabled();
-    await expect(add).toHaveText(/Sold out/);
 
     // A stale cart line for the sold-out variant is removed with a gentle notice.
     await page.evaluate(
@@ -146,7 +195,7 @@ test.describe("storefront — sold out", () => {
       variantId,
     );
     await page.reload();
-    await page.getByRole("button", { name: "Cart" }).click();
+    await page.getByRole("button", { name: /Cart$/ }).click();
     await expect(page.getByText("E2E Sold Out has just sold out")).toBeVisible();
   });
 });

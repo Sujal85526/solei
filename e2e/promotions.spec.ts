@@ -1,5 +1,6 @@
 import { expect, test } from "@playwright/test";
 import { adminClient, signInAsOwner } from "./helpers/auth";
+import { createTestProduct } from "./helpers/catalog";
 
 /** A verified storefront account (checkout requires one), created directly for the test. */
 async function customerAccount() {
@@ -47,8 +48,9 @@ test.describe("promotions", () => {
       .insert({ code, kind: "free_delivery", per_customer_limit: 1 });
     if (error) throw error;
     const account = await customerAccount();
+    const perfume = await createTestProduct("freeship");
 
-    await page.goto("/products/capri-perfume");
+    await page.goto(`/products/${perfume.slug}`);
     await page.getByRole("button", { name: /add to cart/i }).click();
     await page.goto("/checkout");
     await page.getByRole("button", { name: /already have an account/i }).click();
@@ -72,6 +74,8 @@ test.describe("promotions", () => {
     await page.getByRole("button", { name: "Apply" }).locator("visible=true").first().click();
     await expect(page.getByText(code).locator("visible=true").first()).toBeVisible();
     await expect(page.getByText("AED 30").locator("visible=true").first()).toBeVisible(); // struck through
+
+    await page.getByRole("checkbox", { name: /I agree to the/i }).check();
 
     await page.getByRole("button", { name: /continue to payment/i }).click();
     await expect(page.getByText("Test payment · no real card")).toBeVisible();

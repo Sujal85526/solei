@@ -78,8 +78,8 @@ test.describe("customers CRM", () => {
     await expect(orders.getByText(seeded.orderNumber)).toBeVisible();
     await expect(orders.getByText("WhatsApp")).toBeVisible();
     await expect(orders.getByText("Part paid")).toBeVisible();
-    await expect(page.getByText("Passport launches soon")).toBeVisible();
-    await expect(page.getByRole("link", { name: /WhatsApp/ })).toHaveAttribute(
+    await expect(page.getByText("No passport issued yet")).toBeVisible();
+    await expect(page.getByRole("link", { name: /^WhatsApp/ })).toHaveAttribute(
       "href",
       `https://wa.me/${seeded.phone.e164.slice(1)}`,
     );
@@ -92,11 +92,13 @@ test.describe("customers CRM", () => {
     await expect(page.getByLabel("Notes")).toHaveValue("Prefers Capri; gift wrap for birthdays.");
 
     // Opt-out
-    await expect(page.getByText("Opted in")).toBeVisible();
+    await expect(page.getByText("Opted in", { exact: true }).locator("visible=true")).toBeVisible();
     await page.getByRole("button", { name: "Record opt-out" }).click();
     await page.getByRole("alertdialog").getByRole("button", { name: "Record opt-out" }).click();
     await expect(page.getByText("Opt-out recorded — no more marketing.")).toBeVisible();
-    await expect(page.getByText("Unsubscribed")).toBeVisible();
+    await expect(
+      page.getByText("Unsubscribed", { exact: true }).locator("visible=true"),
+    ).toBeVisible();
     await expect(page.getByText(/Opted out on/)).toBeVisible();
 
     const { data } = await adminClient()
@@ -135,13 +137,16 @@ test.describe("customers CRM", () => {
     await expect(dialog.getByLabel("Phone")).toHaveValue(phone.local);
     await dialog.getByLabel("Name").fill(name);
     // Email is required for staff-added customers (it's how they later claim their passport).
-    await dialog.getByLabel("Email").fill(`e2e-${Date.now()}@example.com`);
+    await dialog.getByRole("textbox", { name: /^Email/ }).fill(`e2e-${Date.now()}@example.com`);
     await dialog.getByLabel("Emirate").selectOption({ label: "Dubai" });
     await dialog.getByLabel("Agrees to marketing messages").check();
     await dialog.getByRole("button", { name: "Save customer" }).click();
 
     await expect(page.getByRole("heading", { level: 1, name })).toBeVisible();
-    await expect(page.getByText("Opted in")).toBeVisible();
+    // Next keeps the list page mounted (hidden) behind the profile: look at visible text only.
+    await expect(
+      page.getByText("Opted in", { exact: true }).locator("visible=true").first(),
+    ).toBeVisible();
 
     // Searching the same number again finds the record instead of offering a duplicate.
     await page.goto("/admin/customers");
@@ -160,7 +165,8 @@ test.describe("customers CRM", () => {
       phone: phone.e164,
       emirate: "dubai",
       source: "manual",
-      marketing_channels: ["whatsapp"],
+      // Staff-added customers always have an email now, so consent covers both channels.
+      marketing_channels: ["email", "whatsapp"],
     });
   });
 
