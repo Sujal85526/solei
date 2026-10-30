@@ -51,7 +51,7 @@ test.describe("staff rota & staff report", () => {
     await page.goto(`/admin/attendance/rota?week=${week}`);
     await page.getByRole("button", { name: "Plan shift" }).click();
     const dialog = page.getByRole("dialog", { name: "Plan a shift" });
-    await dialog.getByRole("combobox", { name: /^Who/ }).selectOption({ label: name });
+    await dialog.locator("select").first().selectOption({ label: name });
     await dialog.locator("#rotaDay").fill(shiftDay);
     await dialog.locator("#rotaStart").fill("10:00");
     await dialog.locator("#rotaEnd").fill("14:00");

@@ -77,7 +77,11 @@ test.describe("business report & expenses", () => {
     await expect(
       page.getByRole("navigation", { name: "Section" }).getByRole("link", { name: "Expenses" }),
     ).toHaveAttribute("aria-current", "page");
-    await page.getByRole("combobox", { name: /^Category/ }).selectOption({ label: "Rent" });
+    await page
+      .locator("select")
+      .filter({ hasText: "Rent" })
+      .first()
+      .selectOption({ label: "Rent" });
     await page.getByRole("textbox", { name: /^Amount/ }).fill("1234");
     await page.getByLabel(/^Date/).fill(day);
     await page.getByRole("textbox", { name: /^Note/ }).fill(note);
