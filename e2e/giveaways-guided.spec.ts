@@ -165,7 +165,7 @@ test.describe("giveaways — guided order", () => {
     await page.goto(`/admin/pos?event=${event.id}`);
     await page.getByRole("button", { name: "Giveaway", exact: true }).click();
     const dialog = page.getByRole("dialog", { name: "Add a giveaway" });
-    await dialog.getByRole("combobox", { name: "Giveaway" }).selectOption({ label: g.name });
+    await dialog.getByLabel("Giveaway", { exact: true }).selectOption({ label: g.name });
     await dialog.getByText(g.perfume.name).click();
     await expect(dialog.getByText(/30 in stock/)).toBeVisible();
     await dialog.getByText("Gold box").click();
