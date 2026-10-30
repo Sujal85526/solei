@@ -321,6 +321,9 @@ export function QuickCreateCustomerForm({
       <p id={id("title")} className="font-medium">
         New customer
       </p>
+      <p className="text-muted-foreground -mt-3 text-sm">
+        Enter a name and at least a phone or an email.
+      </p>
       <div className="grid gap-4 sm:grid-cols-2">
         <Field
           label="Name"
@@ -355,8 +358,7 @@ export function QuickCreateCustomerForm({
           label="Email"
           htmlFor={id("email")}
           error={errors.email}
-          required
-          hint="Check it's spelled right — their Solei Passport links to this email."
+          hint="Optional. Without an email, sales are still saved and stickers still count, but they won't show in an online account, and this customer gets no emails or payment links. You can add it later."
         >
           <Input
             {...aria("email")}
@@ -405,7 +407,7 @@ export function QuickCreateCustomerForm({
                 defaultChecked
                 className="accent-burgundy size-5"
               />
-              Email them a welcome to the website now
+              Email them a welcome to the website now (only if you entered an email)
             </label>
           </>
         ) : null}
